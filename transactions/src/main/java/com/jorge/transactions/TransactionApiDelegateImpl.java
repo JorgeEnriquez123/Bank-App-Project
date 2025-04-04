@@ -3,7 +3,6 @@ package com.jorge.transactions;
 import com.jorge.transactions.api.TransactionsApiDelegate;
 import com.jorge.transactions.model.TransactionRequest;
 import com.jorge.transactions.model.TransactionResponse;
-import com.jorge.transactions.model.UpdateTransactionStatusRequest;
 import com.jorge.transactions.service.TransactionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -13,10 +12,10 @@ import reactor.core.publisher.Mono;
 
 @Component
 @RequiredArgsConstructor
-public class TransactionApiDelegateImpl implements TransactionsApiDelegate {
-    private final TransactionService transactionService;
+public class TransactionApiDelegateImpl {
 
-    @Override
+
+    /*@Override
     public Mono<TransactionResponse> createTransaction(Mono<TransactionRequest> transactionRequest, ServerWebExchange exchange) {
         return transactionRequest.flatMap(transactionService::createTransaction);
     }
@@ -40,6 +39,6 @@ public class TransactionApiDelegateImpl implements TransactionsApiDelegate {
     public Mono<TransactionResponse> updateTransactionStatusByTransactionId(String id, Mono<UpdateTransactionStatusRequest> updateTransactionStatusRequest, ServerWebExchange exchange) {
         return updateTransactionStatusRequest.flatMap(
                 updateTransactionStatusRequest1 ->
-                transactionService.updateTransactionStatusByTransactionId(id, updateTransactionStatusRequest1));
-    }
+                transactionService.updateTransactionById(id, updateTransactionStatusRequest1));
+    }*/
 }

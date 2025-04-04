@@ -73,11 +73,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-    patch:
-      summary: Actualiza el estado de una transacción por su ID
+    put:
+      summary: Actualiza completamente una transacción por su ID
       tags:
         - Transactions
-      operationId: updateTransactionStatusByTransactionId
+      operationId: updateTransaction
       parameters:
         - in: path
           name: id
@@ -90,10 +90,10 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UpdateTransactionStatusRequest'
+              $ref: '#/components/schemas/TransactionRequest'
       responses:
         '200':
-          description: Estado de la transacción actualizado exitosamente
+          description: Transacción actualizada exitosamente
           content:
             application/json:
               schema:
@@ -104,6 +104,34 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Transacción no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      summary: Elimina una transacción por su ID
+      tags:
+        - Transactions
+      operationId: deleteTransactionById
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID de la transacción a eliminar
+      responses:
+        '204':
+          description: Transacción eliminada exitosamente
         '404':
           description: Transacción no encontrada
           content:
@@ -187,7 +215,177 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-/transactions/credit-card-number
+  /credit-card-transactions:
+    post:
+      summary: Crea una nueva transacción de tarjeta de crédito
+      tags:
+        - CreditCardTransactions
+      operationId: createCreditCardTransaction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreditCardTransactionRequest'
+      responses:
+        '201':
+          description: Transacción de tarjeta de crédito creada exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreditCardTransactionResponse'
+        '400':
+          description: Solicitud inválida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /credit-card-transactions/{id}:
+    get:
+      summary: Obtiene una transacción de tarjeta de crédito por su ID
+      tags:
+        - CreditCardTransactions
+      operationId: getCreditCardTransactionById
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID de la transacción de tarjeta de crédito
+      responses:
+        '200':
+          description: Transacción de tarjeta de crédito obtenida exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreditCardTransactionResponse'
+        '404':
+          description: Transacción de tarjeta de crédito no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      summary: Actualiza completamente una transacción de tarjeta de crédito por su ID
+      tags:
+        - CreditCardTransactions
+      operationId: updateCreditCardTransaction
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID de la transacción de tarjeta de crédito a actualizar
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreditCardTransactionRequest'
+      responses:
+        '200':
+          description: Transacción de tarjeta de crédito actualizada exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreditCardTransactionResponse'
+        '400':
+          description: Solicitud inválida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Transacción de tarjeta de crédito no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      summary: Elimina una transacción de tarjeta de crédito por su ID
+      tags:
+        - CreditCardTransactions
+      operationId: deleteCreditCardTransactionById
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID de la transacción de tarjeta de crédito a eliminar
+      responses:
+        '204':
+          description: Transacción de tarjeta de crédito eliminada exitosamente
+        '404':
+          description: Transacción de tarjeta de crédito no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /credit-card-transactions/credit-card-number/{creditCardNumber}:
+    get:
+      summary: Obtiene todas las transacciones asociadas a un número de tarjeta de crédito.
+      tags:
+        - CreditCardTransactions
+      operationId: getCreditCardTransactionsByCreditCardNumber
+      parameters:
+        - in: path
+          name: creditCardNumber
+          schema:
+            type: string
+          required: true
+          description: Número de la tarjeta de crédito
+      responses:
+        '200':
+          description: Lista de transacciones obtenida exitosamente
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CreditCardTransactionResponse'
+        '404':
+          description: Tarjeta de crédito no encontrada o sin transacciones asociadas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
 components:
   schemas:
@@ -199,87 +397,100 @@ components:
           description: ID de la transacción
         accountNumber:
           type: string
-          description: Numero de cuenta relacionado
-        creditId:
-          type: string
-          description: Id de crédito relacionado
+          description: Número de cuenta relacionado
         fee:
           type: number
           format: decimal
           description: Comisión de la transacción
         transactionType:
           type: string
-          enum: [DEBIT, CREDIT, DEPOSIT, WITHDRAWAL, CREDIT_PAYMENT, CREDIT_DEPOSIT, CREDIT_CARD_CONSUMPTION, CREDIT_CARD_PAYMENT, MAINTENANCE_FEE]
+          enum: [DEBIT, CREDIT, DEPOSIT, WITHDRAWAL, CREDIT_PAYMENT, CREDIT_DEPOSIT, MAINTENANCE_FEE]
           description: Tipo de transacción
-        currencyType:
-          type: string
-          enum: [PEN, USD]
-          description: Tipo de moneda
         amount:
           type: number
           format: decimal
           description: Monto de la transacción
-        status:
-          type: string
-          enum: [PENDING, COMPLETED, FAILED]
-          description: Estado de la transacción
         description:
           type: string
           description: Descripción de la transacción
-        transactionDate:
+        createdAt:
           type: string
           format: date-time
           description: Fecha y hora de la transacción
+        relatedCreditId:
+          type: string
+          description: Id de crédito relacionado
 
     TransactionRequest:
       type: object
       required:
         - accountNumber
         - transactionType
-        - currencyType
         - amount
-        - status
         - description
       properties:
         accountNumber:
           type: string
-          description: Numero de cuenta relacionado
-        creditId:
-          type: string
-          description: Id de crédito relacionado
+          description: Número de cuenta relacionado
         fee:
           type: number
           format: decimal
-          description: Comision de la transacción
+          description: Comisión de la transacción
         transactionType:
           type: string
-          enum: [DEBIT, CREDIT, DEPOSIT, WITHDRAWAL, CREDIT_PAYMENT, CREDIT_DEPOSIT, CREDIT_CARD_CONSUMPTION, CREDIT_CARD_PAYMENT, MAINTENANCE_FEE]
+          enum: [DEBIT, CREDIT, DEPOSIT, WITHDRAWAL, CREDIT_PAYMENT, CREDIT_DEPOSIT, MAINTENANCE_FEE]
           description: Tipo de transacción
-        currencyType:
-          type: string
-          enum: [PEN, USD]
-          description: Tipo de moneda
         amount:
           type: number
           format: decimal
           description: Monto de la transacción
-        status:
-          type: string
-          enum: [ PENDING, COMPLETED, FAILED ]
-          description: Estado de la transacción
         description:
           type: string
           description: Descripción de la transacción
+        relatedCreditId:
+          type: string
+          description: Id de crédito relacionado
 
-    UpdateTransactionStatusRequest:
+    CreditCardTransactionResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ID de la transacción de tarjeta de crédito
+        creditCardNumber:
+          type: string
+          description: Número de tarjeta de crédito
+        transactionType:
+          type: string
+          enum: [CREDIT_CARD_CONSUMPTION, CREDIT_CARD_PAYMENT]
+          description: Tipo de transacción de tarjeta de crédito
+        amount:
+          type: number
+          format: decimal
+          description: Monto de la transacción de tarjeta de crédito
+        createdAt:
+          type: string
+          format: date-time
+          description: Fecha y hora de la transacción de tarjeta de crédito
+
+    CreditCardTransactionRequest:
       type: object
       required:
-        - status
+        - creditCardNumber
+        - transactionType
+        - amount
       properties:
-        status:
+        creditCardNumber:
           type: string
-          enum: [PENDING, COMPLETED, FAILED]
-          description: Nuevo estado de la transacción
+          description: Número de tarjeta de crédito
+        transactionType:
+          type: string
+          enum: [CREDIT_CARD_CONSUMPTION, CREDIT_CARD_PAYMENT]
+          description: Tipo de transacción de tarjeta de crédito
+        amount:
+          type: number
+          format: decimal
+          description: Monto de la transacción de tarjeta de crédito
 
     ErrorResponse:
       type: object

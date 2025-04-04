@@ -19,16 +19,13 @@ public class Transaction {
     @Id
     private String id;
     private String accountNumber;
-    //Credit field
-    private String creditId;
-
     private BigDecimal fee;
     private TransactionType transactionType;
-    private CurrencyType currencyType;
     private BigDecimal amount;
-    private TransactionStatus status;
     private String description;
-    private LocalDateTime transactionDate;
+    private LocalDateTime createdAt;
+
+    private String relatedCreditId;
 
     public enum TransactionType {
         DEBIT,
@@ -37,18 +34,6 @@ public class Transaction {
         WITHDRAWAL,
         CREDIT_PAYMENT,
         CREDIT_DEPOSIT,
-        CREDIT_CARD_CONSUMPTION,
-        CREDIT_CARD_PAYMENT,
         MAINTENANCE_FEE
-    }
-
-    public enum TransactionStatus {
-        PENDING,
-        COMPLETED,
-        FAILED
-    }
-
-    public enum CurrencyType{
-        PEN, USD
     }
 }
