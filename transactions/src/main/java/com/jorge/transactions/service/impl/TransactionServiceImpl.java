@@ -24,6 +24,12 @@ public class TransactionServiceImpl implements TransactionService {
     private final TransactionRepository transactionRepository;
 
     @Override
+    public Flux<TransactionResponse> getAllTransactions() {
+        return transactionRepository.findAll()
+                .map(transactionMapper::mapToTransactionResponse);
+    }
+
+    @Override
     public Mono<TransactionResponse> createTransaction(TransactionRequest transactionRequest) {
         log.info("Creating a new transaction");
         Transaction transaction = transactionMapper.mapToTransaction(transactionRequest);

@@ -16,6 +16,11 @@ public class CreditCardTransactionApiDelegateImpl implements CreditCardTransacti
     private final CreditCardTransactionService creditCardTransactionService;
 
     @Override
+    public Flux<CreditCardTransactionResponse> getAllCreditCardTransactions(ServerWebExchange exchange) {
+        return creditCardTransactionService.getAllCreditCardTransactions();
+    }
+
+    @Override
     public Mono<CreditCardTransactionResponse> createCreditCardTransaction(Mono<CreditCardTransactionRequest> creditCardTransactionRequest, ServerWebExchange exchange) {
         return creditCardTransactionRequest.flatMap(creditCardTransactionService::createCreditCardTransaction);
     }

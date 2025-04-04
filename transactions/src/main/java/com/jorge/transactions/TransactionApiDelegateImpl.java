@@ -3,7 +3,6 @@ package com.jorge.transactions;
 import com.jorge.transactions.api.TransactionsApiDelegate;
 import com.jorge.transactions.model.TransactionRequest;
 import com.jorge.transactions.model.TransactionResponse;
-import com.jorge.transactions.service.CreditCardTransactionService;
 import com.jorge.transactions.service.TransactionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -15,6 +14,11 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class TransactionApiDelegateImpl implements TransactionsApiDelegate {
     private final TransactionService transactionService;
+
+    @Override
+    public Flux<TransactionResponse> getAllTransactions(ServerWebExchange exchange) {
+        return transactionService.getAllTransactions();
+    }
 
     @Override
     public Mono<TransactionResponse> createTransaction(Mono<TransactionRequest> transactionRequest, ServerWebExchange exchange) {

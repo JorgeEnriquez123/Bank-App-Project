@@ -4,6 +4,7 @@ import com.jorge.transactions.mapper.CreditCardTransactionMapper;
 import com.jorge.transactions.model.CreditCardTransaction;
 import com.jorge.transactions.model.CreditCardTransactionRequest;
 import com.jorge.transactions.model.CreditCardTransactionResponse;
+import com.jorge.transactions.model.TransactionResponse;
 import com.jorge.transactions.repository.CreditCardTransactionRepository;
 import com.jorge.transactions.service.CreditCardTransactionService;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,12 @@ import reactor.core.publisher.Mono;
 public class CreditCardTransactionServiceImpl implements CreditCardTransactionService {
     private final CreditCardTransactionRepository creditCardTransactionRepository;
     private final CreditCardTransactionMapper creditCardTransactionMapper;
+
+    @Override
+    public Flux<CreditCardTransactionResponse> getAllCreditCardTransactions() {
+        return creditCardTransactionRepository.findAll()
+                .map(creditCardTransactionMapper::mapToCreditCardTransactionResponse);
+    }
 
     @Override
     public Mono<CreditCardTransactionResponse> createCreditCardTransaction(CreditCardTransactionRequest creditCardTransactionRequest) {
