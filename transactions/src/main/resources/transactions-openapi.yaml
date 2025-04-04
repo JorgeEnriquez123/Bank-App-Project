@@ -1,0 +1,306 @@
+openapi: 3.0.0
+info:
+  title: Transaction API
+  version: 1.0.0
+  description: API para la gestión de transacciones bancarias.
+servers:
+  - url: http://localhost:8082
+    description: Development server
+
+paths:
+  /transactions:
+    post:
+      summary: Crea una nueva transacción
+      tags:
+        - Transactions
+      operationId: createTransaction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransactionRequest'
+      responses:
+        '201':
+          description: Transacción creada exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionResponse'
+        '400':
+          description: Solicitud inválida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /transactions/{id}:
+    get:
+      summary: Obtiene una transacción por su ID
+      tags:
+        - Transactions
+      operationId: getTransactionById
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID de la transacción
+      responses:
+        '200':
+          description: Transacción obtenida exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionResponse'
+        '404':
+          description: Transacción no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    patch:
+      summary: Actualiza el estado de una transacción por su ID
+      tags:
+        - Transactions
+      operationId: updateTransactionStatusByTransactionId
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID de la transacción a actualizar
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTransactionStatusRequest'
+      responses:
+        '200':
+          description: Estado de la transacción actualizado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionResponse'
+        '400':
+          description: Solicitud inválida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Transacción no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /transactions/account-number/{accountNumber}:
+    get:
+      summary: Obtiene todas las transacciones asociadas a un producto bancario.
+      tags:
+        - Transactions
+      operationId: getTransactionsByAccountNumber
+      parameters:
+        - in: path
+          name: accountNumber
+          schema:
+            type: string
+          required: true
+          description: ID del producto bancario
+      responses:
+        '200':
+          description: Lista de transacciones obtenida exitosamente
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TransactionResponse'
+        '404':
+          description: Producto bancario no encontrado o sin transacciones asociadas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /transactions/credit-id/{creditId}:
+    get:
+      summary: Obtiene todas las transacciones asociadas a un crédito.
+      tags:
+        - Transactions
+      operationId: getTransactionsByCreditId
+      parameters:
+        - in: path
+          name: creditId
+          schema:
+            type: string
+          required: true
+          description: ID del crédito
+      responses:
+        '200':
+          description: Lista de transacciones obtenida exitosamente
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TransactionResponse'
+        '404':
+          description: Crédito no encontrado o sin transacciones asociadas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+/transactions/credit-card-number
+
+components:
+  schemas:
+    TransactionResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ID de la transacción
+        accountNumber:
+          type: string
+          description: Numero de cuenta relacionado
+        creditId:
+          type: string
+          description: Id de crédito relacionado
+        fee:
+          type: number
+          format: decimal
+          description: Comisión de la transacción
+        transactionType:
+          type: string
+          enum: [DEBIT, CREDIT, DEPOSIT, WITHDRAWAL, CREDIT_PAYMENT, CREDIT_DEPOSIT, CREDIT_CARD_CONSUMPTION, CREDIT_CARD_PAYMENT, MAINTENANCE_FEE]
+          description: Tipo de transacción
+        currencyType:
+          type: string
+          enum: [PEN, USD]
+          description: Tipo de moneda
+        amount:
+          type: number
+          format: decimal
+          description: Monto de la transacción
+        status:
+          type: string
+          enum: [PENDING, COMPLETED, FAILED]
+          description: Estado de la transacción
+        description:
+          type: string
+          description: Descripción de la transacción
+        transactionDate:
+          type: string
+          format: date-time
+          description: Fecha y hora de la transacción
+
+    TransactionRequest:
+      type: object
+      required:
+        - accountNumber
+        - transactionType
+        - currencyType
+        - amount
+        - status
+        - description
+      properties:
+        accountNumber:
+          type: string
+          description: Numero de cuenta relacionado
+        creditId:
+          type: string
+          description: Id de crédito relacionado
+        fee:
+          type: number
+          format: decimal
+          description: Comision de la transacción
+        transactionType:
+          type: string
+          enum: [DEBIT, CREDIT, DEPOSIT, WITHDRAWAL, CREDIT_PAYMENT, CREDIT_DEPOSIT, CREDIT_CARD_CONSUMPTION, CREDIT_CARD_PAYMENT, MAINTENANCE_FEE]
+          description: Tipo de transacción
+        currencyType:
+          type: string
+          enum: [PEN, USD]
+          description: Tipo de moneda
+        amount:
+          type: number
+          format: decimal
+          description: Monto de la transacción
+        status:
+          type: string
+          enum: [ PENDING, COMPLETED, FAILED ]
+          description: Estado de la transacción
+        description:
+          type: string
+          description: Descripción de la transacción
+
+    UpdateTransactionStatusRequest:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          enum: [PENDING, COMPLETED, FAILED]
+          description: Nuevo estado de la transacción
+
+    ErrorResponse:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+          description: Fecha y hora del error
+        path:
+          type: string
+          description: Ruta de la solicitud
+        status:
+          type: integer
+          format: int32
+          description: Código de estado HTTP
+        error:
+          type: string
+          description: Mensaje de error corto
+        requestId:
+          type: string
+          description: ID de la solicitud
+        message:
+          type: string
+          description: Mensaje de error detallado

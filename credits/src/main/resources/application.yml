@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: transaction-service
+  config:
+    import: configserver:http://localhost:8888
+
+server:
+  port: 8083
+  error:
+    include-message: always

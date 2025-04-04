@@ -1,0 +1,266 @@
+openapi: 3.0.0
+info:
+  title: Customer API
+  version: 1.0.0
+  description: API para la gestión de clientes
+servers:
+  - url: http://localhost:8080
+    description: Development server
+
+components:
+  schemas:
+    CustomerTypeEnum:
+      type: string
+      description: Tipo de cliente (PERSONAL o BUSINESS)
+      enum:
+        - PERSONAL
+        - BUSINESS
+
+    CustomerRequest:
+      type: object
+      required:
+        - customerType
+        - phoneNumber
+        - address
+        - dni
+        - firstName
+        - lastName
+      properties:
+        customerType:
+          $ref: '#/components/schemas/CustomerTypeEnum'
+          description: Tipo de cliente (PERSONAL o BUSINESS). Debe ser 'PERSONAL' o 'BUSINESS'.
+        email:
+          type: string
+          format: email
+          description: Email del cliente
+        phoneNumber:
+          type: string
+          description: Número de teléfono del cliente
+        address:
+          type: string
+          description: Dirección del cliente
+        dni:
+          type: string
+          description: DNI del cliente (solo para tipo PERSONAL)
+          pattern: "^[0-9]{8}[A-Z]$"
+        firstName:
+          type: string
+          description: Nombre del cliente (solo para tipo PERSONAL)
+        lastName:
+          type: string
+          description: Apellido del cliente (solo para tipo PERSONAL)
+
+    CustomerResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ID del cliente
+        customerType:
+          $ref: '#/components/schemas/CustomerTypeEnum'
+          description: Tipo de cliente (PERSONAL o BUSINESS).
+        email:
+          type: string
+          format: email
+          description: Email del cliente
+        phoneNumber:
+          type: string
+          description: Número de teléfono del cliente
+        address:
+          type: string
+          description: Dirección del cliente
+        dni:
+          type: string
+          description: DNI del cliente (solo para tipo PERSONAL)
+        firstName:
+          type: string
+          description: Nombre del cliente (solo para tipo PERSONAL)
+        lastName:
+          type: string
+          description: Apellido del cliente (solo para tipo PERSONAL)
+
+    ErrorResponse:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+          description: Fecha y hora del error
+        path:
+          type: string
+          description: Ruta de la solicitud
+        status:
+          type: integer
+          format: int32
+          description: Código de estado HTTP
+        error:
+          type: string
+          description: Mensaje de error corto
+        requestId:
+          type: string
+          description: ID de la solicitud
+        message:
+          type: string
+          description: Mensaje de error detallado
+paths:
+  /customers:
+    get:
+      summary: Retrieve all customers.
+      tags:
+        - Customers
+      description: Returns a list of all customers.
+      operationId: getAllCustomers
+      responses:
+        '200':
+          description: A list of customers.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CustomerResponse'
+        '500':
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Create a new customer.
+      tags:
+        - Customers
+      description: Creates a new customer based on the provided information.
+      operationId: createCustomer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomerRequest'
+      responses:
+        '201':
+          description: Customer created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerResponse'
+        '400':
+          description: Bad Request.  Validation errors or invalid input data.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /customers/dni/{dni}:
+    get:
+      summary: Retrieve a customer by DNI.
+      tags:
+        - Customers
+      description: Returns a single customer based on the provided DNI.
+      operationId: getCustomerByDni
+      parameters:
+        - in: path
+          name: dni
+          required: true
+          schema:
+            type: string
+          description: The DNI of the customer to retrieve.
+      responses:
+        '200':
+          description: Customer retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerResponse'
+        '404':
+          description: Customer not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      summary: Update a customer by DNI.
+      tags:
+        - Customers
+      description: Updates an existing customer based on the provided DNI and data.
+      operationId: updateCustomerByDni
+      parameters:
+        - in: path
+          name: dni
+          required: true
+          schema:
+            type: string
+          description: The DNI of the customer to update.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomerRequest'
+      responses:
+        '200':
+          description: Customer updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerResponse'
+        '400':
+          description: Bad Request.  Validation errors or invalid input data.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Customer not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      summary: Delete a customer by DNI.
+      tags:
+        - Customers
+      description: Deletes an existing customer based on the provided DNI.
+      operationId: deleteCustomerByDni
+      parameters:
+        - in: path
+          name: dni
+          required: true
+          schema:
+            type: string
+          description: The DNI of the customer to delete.
+      responses:
+        '204':
+          description: Customer deleted successfully (no content returned).
+        '404':
+          description: Customer not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'

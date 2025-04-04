@@ -1,0 +1,8 @@
+src/main/java/com/jorge/customers/api/ApiUtil.java
+src/main/java/com/jorge/customers/api/CustomersApi.java
+src/main/java/com/jorge/customers/api/CustomersApiController.java
+src/main/java/com/jorge/customers/api/CustomersApiDelegate.java
+src/main/java/com/jorge/customers/model/CustomerRequest.java
+src/main/java/com/jorge/customers/model/CustomerResponse.java
+src/main/java/com/jorge/customers/model/CustomerType.java
+src/main/java/com/jorge/customers/model/ErrorResponse.java
