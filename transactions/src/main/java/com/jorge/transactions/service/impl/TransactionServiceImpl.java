@@ -19,16 +19,15 @@ import java.time.LocalDateTime;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class TransactionServiceImpl {
+public class TransactionServiceImpl implements TransactionService {
     private final TransactionMapper transactionMapper;
     private final TransactionRepository transactionRepository;
 
-    /*@Override
-    public Flux<TransactionResponse> getTransactionsByAccountNumber(String accountNumber) {
-        log.info("Fetching transactions for account number: {}", accountNumber);
-        return transactionRepository.findByAccountNumber(accountNumber)
-                .switchIfEmpty(Mono.error(
-                        new ResponseStatusException(HttpStatus.NOT_FOUND, "Transactions not found for account number: " + accountNumber)))
+    @Override
+    public Mono<TransactionResponse> createTransaction(TransactionRequest transactionRequest) {
+        log.info("Creating a new transaction");
+        Transaction transaction = transactionMapper.mapToTransaction(transactionRequest);
+        return transactionRepository.save(transaction)
                 .map(transactionMapper::mapToTransactionResponse);
     }
 
@@ -42,6 +41,33 @@ public class TransactionServiceImpl {
     }
 
     @Override
+    public Mono<TransactionResponse> updateTransaction(String id, TransactionRequest transactionRequest) {
+        log.info("Updating transaction status for transaction id: {}", id);
+        Mono<Transaction> transactionMono = transactionRepository.findById(id)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Movimiento con id: " + id + " no encontrado")));
+        return transactionMono.flatMap(existingTransaction ->
+                                transactionRepository.save(
+                                        updateTransactionFromRequest(existingTransaction, transactionRequest))
+                ).map(transactionMapper::mapToTransactionResponse);
+    }
+
+    @Override
+    public Mono<Void> deleteTransactionById(String id) {
+        log.info("Deleting transaction by id: {}", id);
+        return transactionRepository.deleteById(id);
+    }
+
+    @Override
+    public Flux<TransactionResponse> getTransactionsByAccountNumber(String accountNumber) {
+        log.info("Fetching transactions for account number: {}", accountNumber);
+        return transactionRepository.findByAccountNumber(accountNumber)
+                .switchIfEmpty(Mono.error(
+                        new ResponseStatusException(HttpStatus.NOT_FOUND, "Transactions not found for account number: " + accountNumber)))
+                .map(transactionMapper::mapToTransactionResponse);
+    }
+
+    @Override
     public Flux<TransactionResponse> getTransactionsByCreditId(String creditId) {
         log.info("Fetching transactions for credit id: {}", creditId);
         return transactionRepository.findByRelatedCreditId((creditId))
@@ -50,23 +76,13 @@ public class TransactionServiceImpl {
                 .map(transactionMapper::mapToTransactionResponse);
     }
 
-    @Override
-    public Mono<TransactionResponse> createTransaction(TransactionRequest transactionRequest) {
-        log.info("Creating a new transaction");
-        Transaction transaction = transactionMapper.mapToTransaction(transactionRequest);
-        transaction.setCreatedAt(LocalDateTime.now());
-
-        return transactionRepository.save(transaction)
-                .map(transactionMapper::mapToTransactionResponse);
+    public Transaction updateTransactionFromRequest(Transaction existingTransaction, TransactionRequest transactionRequest) {
+        existingTransaction.setAccountNumber(transactionRequest.getAccountNumber());
+        existingTransaction.setFee(transactionRequest.getFee());
+        existingTransaction.setTransactionType(Transaction.TransactionType.valueOf(transactionRequest.getTransactionType().name()));
+        existingTransaction.setAmount(transactionRequest.getAmount());
+        existingTransaction.setDescription(transactionRequest.getDescription());
+        existingTransaction.setRelatedCreditId(transactionRequest.getRelatedCreditId());
+        return existingTransaction;
     }
-
-    @Override
-    public Mono<TransactionResponse> updateTransactionById(String transactionId, UpdateTransactionStatusRequest updateTransactionStatusRequest) {
-        log.info("Updating transaction status for transaction id: {}", transactionId);
-        Mono<Transaction> transactionMono = transactionRepository.findById(transactionId)
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
-                        "Movimiento con id: " + transactionId + " no encontrado")));
-        return transactionMono.flatMap(transactionRepository::save)
-                .map(transactionMapper::mapToTransactionResponse);
-    }*/
 }

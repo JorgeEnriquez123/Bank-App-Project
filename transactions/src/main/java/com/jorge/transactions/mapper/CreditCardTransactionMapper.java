@@ -1,9 +1,11 @@
 package com.jorge.transactions.mapper;
 
 import com.jorge.transactions.model.*;
+import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 
+@Component
 public class CreditCardTransactionMapper {
     public CreditCardTransaction mapToCreditCardTransaction(CreditCardTransactionRequest creditCardTransactionRequest) {
         CreditCardTransaction creditCardTransaction = new CreditCardTransaction();

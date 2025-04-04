@@ -3,6 +3,7 @@ package com.jorge.transactions;
 import com.jorge.transactions.api.TransactionsApiDelegate;
 import com.jorge.transactions.model.TransactionRequest;
 import com.jorge.transactions.model.TransactionResponse;
+import com.jorge.transactions.service.CreditCardTransactionService;
 import com.jorge.transactions.service.TransactionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -12,17 +13,17 @@ import reactor.core.publisher.Mono;
 
 @Component
 @RequiredArgsConstructor
-public class TransactionApiDelegateImpl {
+public class TransactionApiDelegateImpl implements TransactionsApiDelegate {
+    private final TransactionService transactionService;
 
-
-    /*@Override
+    @Override
     public Mono<TransactionResponse> createTransaction(Mono<TransactionRequest> transactionRequest, ServerWebExchange exchange) {
         return transactionRequest.flatMap(transactionService::createTransaction);
     }
 
     @Override
-    public Flux<TransactionResponse> getTransactionsByCreditId(String creditId, ServerWebExchange exchange) {
-        return transactionService.getTransactionsByCreditId(creditId);
+    public Mono<Void> deleteTransactionById(String id, ServerWebExchange exchange) {
+        return transactionService.deleteTransactionById(id);
     }
 
     @Override
@@ -36,9 +37,13 @@ public class TransactionApiDelegateImpl {
     }
 
     @Override
-    public Mono<TransactionResponse> updateTransactionStatusByTransactionId(String id, Mono<UpdateTransactionStatusRequest> updateTransactionStatusRequest, ServerWebExchange exchange) {
-        return updateTransactionStatusRequest.flatMap(
-                updateTransactionStatusRequest1 ->
-                transactionService.updateTransactionById(id, updateTransactionStatusRequest1));
-    }*/
+    public Flux<TransactionResponse> getTransactionsByCreditId(String creditId, ServerWebExchange exchange) {
+        return transactionService.getTransactionsByCreditId(creditId);
+    }
+
+    @Override
+    public Mono<TransactionResponse> updateTransaction(String id, Mono<TransactionRequest> transactionRequest, ServerWebExchange exchange) {
+        return transactionRequest.flatMap(transactionRequest1 ->
+                transactionService.updateTransaction(id, transactionRequest1));
+    }
 }
