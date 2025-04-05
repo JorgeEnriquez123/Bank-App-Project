@@ -64,14 +64,8 @@ public class CustomerServiceImpl implements CustomerService {
 
     public Customer updateCustomerFromRequest(Customer existingCustomer, CustomerRequest customerRequest) {
         log.debug("Updating existing customer: {} with request: {}", existingCustomer, customerRequest);
-        existingCustomer.setCustomerType(CustomerType.valueOf(customerRequest.getCustomerType().name()));
-        existingCustomer.setEmail(customerRequest.getEmail());
-        existingCustomer.setPhoneNumber(customerRequest.getPhoneNumber());
-        existingCustomer.setAddress(customerRequest.getAddress());
-        existingCustomer.setDni(customerRequest.getDni());
-        existingCustomer.setFirstName(customerRequest.getFirstName());
-        existingCustomer.setLastName(customerRequest.getLastName());
-        log.debug("Updated customer: {}", existingCustomer);
-        return existingCustomer;
+        Customer updatedCustomer = customerMapper.mapToCustomer(customerRequest);
+        updatedCustomer.setId(existingCustomer.getId());
+        return updatedCustomer;
     }
 }
