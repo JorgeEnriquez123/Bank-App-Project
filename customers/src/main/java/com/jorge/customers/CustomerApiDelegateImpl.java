@@ -12,7 +12,7 @@ import reactor.core.publisher.Mono;
 
 @Component
 @RequiredArgsConstructor
-public class CustomerApiDelegateImpl implements CustomersApiDelegate {
+public class CustomerApiDelegateImpl implements CustomersApiDelegate{
     private final CustomerService customerService;
 
     @Override
@@ -21,8 +21,8 @@ public class CustomerApiDelegateImpl implements CustomersApiDelegate {
     }
 
     @Override
-    public Mono<Void> deleteCustomerByDni(String id, ServerWebExchange exchange) {
-        return customerService.deleteCustomerByDni(id);
+    public Mono<Void> deleteCustomerById(String id, ServerWebExchange exchange) {
+        return customerService.deleteCustomerById(id);
     }
 
     @Override
@@ -31,13 +31,13 @@ public class CustomerApiDelegateImpl implements CustomersApiDelegate {
     }
 
     @Override
-    public Mono<CustomerResponse> getCustomerByDni(String dni, ServerWebExchange exchange) {
-        return customerService.getCustomerByDni(dni);
+    public Mono<CustomerResponse> getCustomerById(String id, ServerWebExchange exchange) {
+        return customerService.getCustomerById(id);
     }
 
     @Override
-    public Mono<CustomerResponse> updateCustomerByDni(String dni, Mono<CustomerRequest> customerRequest, ServerWebExchange exchange) {
+    public Mono<CustomerResponse> updateCustomerById(String id, Mono<CustomerRequest> customerRequest, ServerWebExchange exchange) {
         return customerRequest
-                .flatMap(customerReq -> customerService.updateCustomerByDni(dni, customerReq));
+                .flatMap(customerReq -> customerService.updateCustomerById(id, customerReq));
     }
 }

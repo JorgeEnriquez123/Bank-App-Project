@@ -30,11 +30,11 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    public Mono<CustomerResponse> getCustomerByDni(String dni) {
-        log.info("Fetching customer by DNI: {}", dni);
-        return customerRepository.findByDni(dni)
+    public Mono<CustomerResponse> getCustomerById(String id) {
+        log.info("Fetching customer by id: {}", id);
+        return customerRepository.findById(id)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
-                        "Cliente con dni: " + dni + " no encontrado")))
+                        "Cliente con id: " + id + " no encontrado")))
                 .map(customerMapper::mapToCustomerResponse);
     }
 
@@ -46,20 +46,20 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    public Mono<CustomerResponse> updateCustomerByDni(String dni, CustomerRequest customerRequest) {
-        log.info("Updating customer with DNI: {} with data: {}", dni, customerRequest);
-        return customerRepository.findByDni(dni)
+    public Mono<CustomerResponse> updateCustomerById(String id, CustomerRequest customerRequest) {
+        log.info("Updating customer with id: {} with data: {}", id, customerRequest);
+        return customerRepository.findById(id)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
-                        "Cliente con dni: " + dni + " no encontrado")))
+                        "Cliente con id: " + id + " no encontrado")))
                 .flatMap(existingCustomer ->
                         customerRepository.save(updateCustomerFromRequest(existingCustomer, customerRequest)))
                 .map(customerMapper::mapToCustomerResponse);
     }
 
     @Override
-    public Mono<Void> deleteCustomerByDni(String dni) {
-        log.info("Deleting customer with DNI: {}", dni);
-        return customerRepository.deleteByDni((dni));
+    public Mono<Void> deleteCustomerById(String id) {
+        log.info("Deleting customer with id: {}", id);
+        return customerRepository.deleteById((id));
     }
 
     public Customer updateCustomerFromRequest(Customer existingCustomer, CustomerRequest customerRequest) {
