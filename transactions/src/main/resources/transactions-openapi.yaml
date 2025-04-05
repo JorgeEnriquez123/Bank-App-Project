@@ -446,7 +446,7 @@ components:
           description: Comisión de la transacción
         transactionType:
           type: string
-          enum: [DEBIT, CREDIT, DEPOSIT, WITHDRAWAL, CREDIT_PAYMENT, CREDIT_DEPOSIT, MAINTENANCE_FEE]
+          enum: [DEBIT, CREDIT, DEPOSIT, WITHDRAWAL, CREDIT_PAYMENT, CREDIT_DEPOSIT, MAINTENANCE_FEE, CREDIT_CARD_PAYMENT]
           description: Tipo de transacción
         amount:
           type: number
@@ -480,7 +480,7 @@ components:
           description: Comisión de la transacción
         transactionType:
           type: string
-          enum: [DEBIT, CREDIT, DEPOSIT, WITHDRAWAL, CREDIT_PAYMENT, CREDIT_DEPOSIT, MAINTENANCE_FEE]
+          enum: [DEBIT, CREDIT, DEPOSIT, WITHDRAWAL, CREDIT_PAYMENT, CREDIT_DEPOSIT, MAINTENANCE_FEE, CREDIT_CARD_PAYMENT]
           description: Tipo de transacción
         amount:
           type: number

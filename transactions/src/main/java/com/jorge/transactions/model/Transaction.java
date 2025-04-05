@@ -34,6 +34,7 @@ public class Transaction {
         WITHDRAWAL,
         CREDIT_PAYMENT,
         CREDIT_DEPOSIT,
+        CREDIT_CARD_PAYMENT,
         MAINTENANCE_FEE
     }
 }
