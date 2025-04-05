@@ -61,6 +61,37 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
 
   /credits/{id}:
+    get:
+      summary: Obtiene un crédito por su ID.
+      tags:
+        - Credits
+      operationId: getCreditById
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID del crédito a obtener
+      responses:
+        '200':
+          description: Crédito obtenido exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreditResponse'
+        '404':
+          description: Crédito no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
     put:
       summary: Actualiza un crédito por su ID.
       tags:
@@ -132,19 +163,19 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /credits/customer/{customerDni}:
+  /credits/customer/{creditHolderId}:
     get:
-      summary: Obtiene todos los créditos asociados a un DNI de cliente.
+      summary: Obtiene todos los créditos asociados a un ID de cliente.
       tags:
         - Credits
-      operationId: getCreditsByCustomerDni
+      operationId: getCreditsByCreditHolderId
       parameters:
         - in: path
-          name: customerDni
+          name: creditHolderId
           schema:
             type: string
           required: true
-          description: DNI del cliente
+          description: ID del cliente
       responses:
         '200':
           description: Lista de créditos obtenida exitosamente
@@ -167,11 +198,201 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /credits/credit-card/{creditCardNumber}/available-balance:
+  /credit-cards:
+    get:
+      summary: Obtiene todas las tarjetas de crédito.
+      tags:
+        - CreditCards
+      operationId: getAllCreditCards
+      responses:
+        '200':
+          description: Lista de tarjetas de crédito obtenida exitosamente
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CreditCardResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Crea una nueva tarjeta de crédito.
+      tags:
+        - CreditCards
+      operationId: createCreditCard
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreditCardRequest'
+      responses:
+        '201':
+          description: Tarjeta de crédito creada exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreditCardResponse'
+        '400':
+          description: Solicitud inválida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /credit-cards/{id}:
+    get:
+      summary: Obtiene una tarjeta de crédito por su ID.
+      tags:
+        - CreditCards
+      operationId: getCreditCardById
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID de la tarjeta de crédito a obtener
+      responses:
+        '200':
+          description: Tarjeta de crédito obtenida exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreditCardResponse'
+        '404':
+          description: Tarjeta de crédito no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      summary: Actualiza una tarjeta de crédito por su ID.
+      tags:
+        - CreditCards
+      operationId: updateCreditCardById
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID de la tarjeta de crédito a actualizar
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreditCardRequest'
+      responses:
+        '200':
+          description: Tarjeta de crédito actualizada exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreditCardResponse'
+        '400':
+          description: Solicitud inválida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Tarjeta de crédito no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Elimina una tarjeta de crédito por su ID.
+      tags:
+        - CreditCards
+      operationId: deleteCreditCardById
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID de la tarjeta de crédito a eliminar
+      responses:
+        '204':
+          description: Tarjeta de crédito eliminada exitosamente (No Content)
+        '404':
+          description: Tarjeta de crédito no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /credit-cards/customer/{cardHolderId}:
+    get:
+      summary: Obtiene todas las tarjetas de crédito asociadas a un ID de cliente.
+      tags:
+        - CreditCards
+      operationId: getCreditCardsByCardHolderId
+      parameters:
+        - in: path
+          name: cardHolderId
+          schema:
+            type: string
+          required: true
+          description: ID del cliente
+      responses:
+        '200':
+          description: Lista de tarjetas de crédito obtenida exitosamente
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CreditCardResponse'
+        '404':
+          description: Cliente no encontrado o sin tarjetas de crédito asociadas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /credit-cards/credit-card/{creditCardNumber}/available-balance:
     get:
       summary: Obtiene el saldo disponible de una tarjeta de crédito por su número.
       tags:
-        - Credits
+        - CreditCards
       operationId: getCreditCardAvailableBalanceByCreditCardNumber
       parameters:
         - in: path
@@ -280,11 +501,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /credits/credit-card/{creditCardNumber}/pay:
+  /credit-cards/credit-card/{creditCardNumber}/pay:
     patch:
       summary: Paga una tarjeta de crédito por su número de tarjeta.
       tags:
-        - Credits
+        - CreditCards
       operationId: payCreditCardByCreditCardNumber
       parameters:
         - in: path
@@ -305,7 +526,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CreditResponse'
+                $ref: '#/components/schemas/CreditCardResponse'
         '400':
           description: Solicitud inválida
           content:
@@ -325,11 +546,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /credits/credit-card/{creditCardNumber}/consume:
+  /credit-cards/credit-card/{creditCardNumber}/consume:
     patch:
       summary: Consume saldo de una tarjeta de crédito por su número de tarjeta.
       tags:
-        - Credits
+        - CreditCards
       operationId: consumeCreditCardByCreditCardNumber
       parameters:
         - in: path
@@ -350,7 +571,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CreditResponse'
+                $ref: '#/components/schemas/CreditCardResponse'
         '400':
           description: Solicitud inválida (Saldo insuficiente, etc.)
           content:
@@ -378,16 +599,16 @@ components:
         id:
           type: string
           description: ID del crédito
-        customerDni:
+        creditHolderId:
           type: string
-          description: DNI del cliente
+          description: ID del cliente titular del crédito
         creditType:
           type: string
-          enum: [PERSONAL, BUSINESS, PERSONAL_CREDIT_CARD, BUSINESS_CREDIT_CARD]
+          enum: [PERSONAL, BUSINESS]
           description: Tipo de crédito
         status:
           type: string
-          enum: [ACTIVE, PAID, BLOCKED]
+          enum: [ACTIVE, PAID]
           description: Estado del crédito
         creditAmount:
           type: number
@@ -397,56 +618,44 @@ components:
           type: string
           format: date-time
           description: Fecha y hora de la creación del crédito
-        availableBalance:
-          type: number
-          format: decimal
-          description: Saldo disponible (para tarjetas de crédito)
-        outstandingBalance:
-          type: number
-          format: decimal
-          description: Saldo pendiente (para tarjetas de crédito)
-        creditCardNumber:
-          type: string
-          description: Número de tarjeta de crédito
-        cvv:
-          type: string
-          description: CVV de la tarjeta de crédito
-        expiryDate:
-          type: string
-          format: date
-          description: Fecha de expiración de la tarjeta de crédito
 
     CreditRequest:
       type: object
       required:
-        - customerDni
+        - creditHolderId
         - creditType
         - status
         - creditAmount
       properties:
-        customerDni:
+        creditHolderId:
           type: string
-          description: DNI del cliente
+          description: ID del cliente titular del crédito
         creditType:
           type: string
-          enum: [PERSONAL, BUSINESS, PERSONAL_CREDIT_CARD, BUSINESS_CREDIT_CARD]
+          enum: [PERSONAL, BUSINESS]
           description: Tipo de crédito
         status:
           type: string
-          enum: [ACTIVE, PAID, BLOCKED]
+          enum: [ACTIVE, PAID]
           description: Estado del crédito
         creditAmount:
           type: number
           format: decimal
           description: Monto del crédito
-        availableBalance:
-          type: number
-          format: decimal
-          description: Saldo disponible (para tarjetas de crédito)
-        outstandingBalance:
-          type: number
-          format: decimal
-          description: Saldo pendiente (para tarjetas de crédito)
+
+    CreditCardResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ID de la tarjeta de crédito
+        cardHolderId:
+          type: string
+          description: ID del cliente titular de la tarjeta
+        type:
+          type: string
+          enum: [PERSONAL_CREDIT_CARD, BUSINESS_CREDIT_CARD]
+          description: Tipo de tarjeta de crédito
         creditCardNumber:
           type: string
           description: Número de tarjeta de crédito
@@ -457,6 +666,65 @@ components:
           type: string
           format: date
           description: Fecha de expiración de la tarjeta de crédito
+        status:
+          type: string
+          enum: [ACTIVE, BLOCKED]
+          description: Estado de la tarjeta de crédito
+        creditLimit:
+          type: string
+          description: Límite de crédito de la tarjeta
+        availableBalance:
+          type: number
+          format: decimal
+          description: Saldo disponible
+        outstandingBalance:
+          type: number
+          format: decimal
+          description: Saldo pendiente
+
+    CreditCardRequest:
+      type: object
+      required:
+        - cardHolderId
+        - type
+        - creditCardNumber
+        - cvv
+        - expiryDate
+        - status
+        - creditLimit
+      properties:
+        cardHolderId:
+          type: string
+          description: ID del cliente titular de la tarjeta
+        type:
+          type: string
+          enum: [PERSONAL_CREDIT_CARD, BUSINESS_CREDIT_CARD]
+          description: Tipo de tarjeta de crédito
+        creditCardNumber:
+          type: string
+          description: Número de tarjeta de crédito
+        cvv:
+          type: string
+          description: CVV de la tarjeta de crédito
+        expiryDate:
+          type: string
+          format: date
+          description: Fecha de expiración de la tarjeta de crédito
+        status:
+          type: string
+          enum: [ACTIVE, BLOCKED]
+          description: Estado de la tarjeta de crédito
+        creditLimit:
+          type: string
+          description: Límite de crédito de la tarjeta
+        availableBalance:
+          type: number
+          format: decimal
+          description: Saldo disponible
+        outstandingBalance:
+          type: number
+          format: decimal
+          description: Saldo pendiente
 
     TransactionResponse:
       type: object
@@ -467,7 +735,7 @@ components:
         accountNumber:
           type: string
           description: Numero de cuenta relacionado
-        creditId:
+        relatedCreditId:
           type: string
           description: Id de crédito relacionado
         fee:
@@ -476,24 +744,38 @@ components:
           description: Comisión de la transacción
         transactionType:
           type: string
-          enum: [DEBIT, CREDIT, DEPOSIT, WITHDRAWAL, CREDIT_PAYMENT, CREDIT_DEPOSIT, CREDIT_CARD_CONSUMPTION, CREDIT_CARD_PAYMENT, MAINTENANCE_FEE]
+          enum: [ DEBIT, CREDIT, DEPOSIT, WITHDRAWAL, CREDIT_PAYMENT, CREDIT_DEPOSIT, CREDIT_CARD_PAYMENT, MAINTENANCE_FEE ]
           description: Tipo de transacción
-        currencyType:
-          type: string
-          enum: [PEN, USD]
-          description: Tipo de moneda
         amount:
           type: number
           format: decimal
           description: Monto de la transacción
-        status:
-          type: string
-          enum: [PENDING, COMPLETED, FAILED]
-          description: Estado de la transacción
         description:
           type: string
           description: Descripción de la transacción
-        transactionDate:
+        createdAt:
+          type: string
+          format: date-time
+          description: Fecha y hora de la transacción
+
+    CreditCardTransactionResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ID de la transacción
+        creditCardNumber:
+          type: string
+          description: Número de la tarjeta de crédito
+        transactionType:
+          type: string
+          enum: [ CREDIT_CARD_CONSUMPTION, CREDIT_CARD_PAYMENT ]
+          description: Tipo de transacción (Consumption or Payment)
+        amount:
+          type: number
+          format: decimal
+          description: Monto de la transacción
+        createdAt:
           type: string
           format: date-time
           description: Fecha y hora de la transacción
@@ -503,7 +785,7 @@ components:
       required:
         - amount
         - accountNumber
-        - currencyType
+        - creditTypeEnum
       properties:
         amount:
           type: number
@@ -512,10 +794,10 @@ components:
         accountNumber:
           type: string
           description: Número de cuenta del cliente
-        currencyType:
+        creditTypeEnum:
           type: string
-          enum: [ PEN, USD ]
-          description: Tipo de moneda
+          enum: [CREDIT_PAYMENT, CREDIT_CARD_PAYMENT]
+          description: tipo de pago
 
     ConsumptionRequest:
       type: object

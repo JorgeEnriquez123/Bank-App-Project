@@ -1,6 +1,6 @@
 spring:
   application:
-    name: transaction-service
+    name: credit-service
   config:
     import: configserver:http://localhost:8888
 

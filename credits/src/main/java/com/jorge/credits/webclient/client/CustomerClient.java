@@ -14,9 +14,9 @@ public class CustomerClient {
         this.webClient = webClientBuilder.baseUrl("http://localhost:8080/customers").build();
     }
 
-    public Mono<CustomerResponse> getCustomerByDni(String customerDni) {
+    public Mono<CustomerResponse> getCustomerById(String customerId) {
         return webClient.get()
-                .uri("/dni/" + customerDni)
+                .uri("/" + customerId)
                 .retrieve()
                 .bodyToMono(CustomerResponse.class);
     }

@@ -1,9 +1,11 @@
 package com.jorge.credits;
 
 import com.jorge.credits.api.CreditsApiDelegate;
-import com.jorge.credits.model.*;
+import com.jorge.credits.model.CreditPaymentRequest;
+import com.jorge.credits.model.CreditRequest;
+import com.jorge.credits.model.CreditResponse;
+import com.jorge.credits.model.TransactionResponse;
 import com.jorge.credits.service.CreditService;
-import com.jorge.credits.service.OperationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
@@ -14,14 +16,6 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class CreditApiDelegateImpl implements CreditsApiDelegate {
     private final CreditService creditService;
-    private final OperationService operationService;
-
-
-    @Override
-    public Mono<CreditResponse> consumeCreditCardByCreditCardNumber(String creditCardNumber, Mono<ConsumptionRequest> consumptionRequest, ServerWebExchange exchange) {
-        return consumptionRequest.flatMap(consumptionRequest1 ->
-                operationService.consumeCreditCardByCreditCardNumber(creditCardNumber, consumptionRequest1.getAmount()));
-    }
 
     @Override
     public Mono<CreditResponse> createCredit(Mono<CreditRequest> creditRequest, ServerWebExchange exchange) {
@@ -39,32 +33,24 @@ public class CreditApiDelegateImpl implements CreditsApiDelegate {
     }
 
     @Override
-    public Flux<CreditResponse> getCreditsByCustomerDni(String customerDni, ServerWebExchange exchange) {
-        return creditService.getCreditsByCustomerDni(customerDni);
+    public Mono<CreditResponse> getCreditById(String id, ServerWebExchange exchange) {
+        return creditService.getCreditById(id);
+    }
+
+    @Override
+    public Flux<CreditResponse> getCreditsByCreditHolderId(String creditHolderId, ServerWebExchange exchange) {
+        return creditService.getCreditsByCreditHolderId(creditHolderId);
     }
 
     @Override
     public Flux<TransactionResponse> getTransactionsByCreditId(String id, ServerWebExchange exchange) {
-        return operationService.getTransactionsByCreditId(id);
-    }
-
-    @Override
-    public Mono<BalanceResponse> getCreditCardAvailableBalanceByCreditCardNumber(String creditCardNumber, ServerWebExchange exchange) {
-        return creditService.getCreditCardAvailableBalanceByCreditCardNumber(creditCardNumber);
+        return creditService.getTransactionsByCreditId(id);
     }
 
     @Override
     public Mono<CreditResponse> payCreditById(String id, Mono<CreditPaymentRequest> creditPaymentRequest, ServerWebExchange exchange) {
         return creditPaymentRequest.flatMap(
-                creditPaymentRequest1 ->
-                        operationService.payCreditById(id, creditPaymentRequest1));
-    }
-
-    @Override
-    public Mono<CreditResponse> payCreditCardByCreditCardNumber(String creditCardNumber, Mono<CreditPaymentRequest> creditPaymentRequest, ServerWebExchange exchange) {
-        return creditPaymentRequest.flatMap(
-                creditPaymentRequest1 ->
-                        operationService.payCreditCardByCreditCardNumber(creditCardNumber, creditPaymentRequest1));
+                creditPaymentRequest1 -> creditService.payCreditById(id, creditPaymentRequest1));
     }
 
     @Override

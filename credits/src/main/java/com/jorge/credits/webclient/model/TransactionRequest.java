@@ -11,36 +11,18 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 public class TransactionRequest {
     private String accountNumber;
-    //Credit field
-    private String creditId;
 
     private BigDecimal fee;
     private TransactionType transactionType;
-    private CurrencyType currencyType;
     private BigDecimal amount;
-    private TransactionStatus status;
     private String description;
 
+    private String relatedCreditId;
+
     public enum TransactionType {
-        DEBIT,
-        CREDIT,
-        DEPOSIT,
-        WITHDRAWAL,
         CREDIT_PAYMENT,
         CREDIT_DEPOSIT,
         CREDIT_CARD_CONSUMPTION,
-        CREDIT_CARD_PAYMENT,
-        TRANSACTION_FEE,
-        MAINTENANCE_FEE
-    }
-
-    public enum TransactionStatus {
-        PENDING,
-        COMPLETED,
-        FAILED
-    }
-
-    public enum CurrencyType{
-        PEN, USD
+        CREDIT_CARD_PAYMENT
     }
 }
