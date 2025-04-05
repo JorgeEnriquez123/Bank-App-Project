@@ -83,12 +83,9 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     public Transaction updateTransactionFromRequest(Transaction existingTransaction, TransactionRequest transactionRequest) {
-        existingTransaction.setAccountNumber(transactionRequest.getAccountNumber());
-        existingTransaction.setFee(transactionRequest.getFee());
-        existingTransaction.setTransactionType(Transaction.TransactionType.valueOf(transactionRequest.getTransactionType().name()));
-        existingTransaction.setAmount(transactionRequest.getAmount());
-        existingTransaction.setDescription(transactionRequest.getDescription());
-        existingTransaction.setRelatedCreditId(transactionRequest.getRelatedCreditId());
-        return existingTransaction;
+        Transaction updatedTransaction = transactionMapper.mapToTransaction(transactionRequest);
+        updatedTransaction.setId(existingTransaction.getId());
+        updatedTransaction.setCreatedAt(existingTransaction.getCreatedAt());
+        return updatedTransaction;
     }
 }

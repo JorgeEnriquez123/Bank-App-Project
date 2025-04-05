@@ -74,10 +74,9 @@ public class CreditCardTransactionServiceImpl implements CreditCardTransactionSe
 
     public CreditCardTransaction updateCreditCardTransactionFromRequest(CreditCardTransaction existingTransaction,
                                                                         CreditCardTransactionRequest creditCardTransactionRequest) {
-        existingTransaction.setCreditCardNumber(creditCardTransactionRequest.getCreditCardNumber());
-        existingTransaction.setTransactionType(CreditCardTransaction.CreditCardTransactionType.valueOf(
-                creditCardTransactionRequest.getTransactionType().name()));
-        existingTransaction.setAmount(creditCardTransactionRequest.getAmount());
-        return existingTransaction;
+        CreditCardTransaction creditCardTransaction = creditCardTransactionMapper.mapToCreditCardTransaction(creditCardTransactionRequest);
+        creditCardTransaction.setId(existingTransaction.getId());
+        creditCardTransaction.setCreatedAt(existingTransaction.getCreatedAt());
+        return creditCardTransaction;
     }
 }
