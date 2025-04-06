@@ -17,6 +17,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Mono;
 
+import java.math.BigDecimal;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -30,15 +32,25 @@ public class CheckingAccountServiceImpl implements CheckingAccountService {
     public Mono<CheckingAccountResponse> createCheckingAccount(CheckingAccountRequest checkingAccountRequest) {
         log.info("Creating a new account for customer DNI: {}", checkingAccountRequest.getCustomerDni());
         return customerClient.getCustomerByDni(checkingAccountRequest.getCustomerDni())
+                .flatMap(customer -> {
+                    if(customer.getIsVIP() || customer.getIsPYME())
+                        return customerTypeValidation.validateCreditCardExists(customer);  // Validate if customer has Credit Cards
+                    else
+                        return Mono.just(customer);
+                })
                 .flatMap(customer -> switch (customer.getCustomerType()) {
                     case PERSONAL -> customerTypeValidation.personalCustomerValidation(customer, Account.AccountType.CHECKING)
                             .then(Mono.just(customer));
                     case BUSINESS -> customerTypeValidation.businessCustomerValidation(Account.AccountType.CHECKING)
                             .then(Mono.just(customer));
                 })
-                .flatMap(customer ->
-                        checkingAccountRepository.save(checkingAccountMapper.mapToCheckingAccount(checkingAccountRequest))
-                                .map(checkingAccountMapper::mapToCheckingAccountResponse))
+                .flatMap(customer ->{
+                    CheckingAccount checkingAccount = checkingAccountMapper.mapToCheckingAccount(checkingAccountRequest);
+                    // If Customer is PYME, Checking Account has no maintenance fee
+                    if(customer.getIsPYME()) checkingAccount.setMaintenanceFee(BigDecimal.ZERO);
+                    return checkingAccountRepository.save(checkingAccount);
+                })
+                .map(checkingAccountMapper::mapToCheckingAccountResponse)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "Customer with dni: " + checkingAccountRequest.getCustomerDni() + " not found")));
     }

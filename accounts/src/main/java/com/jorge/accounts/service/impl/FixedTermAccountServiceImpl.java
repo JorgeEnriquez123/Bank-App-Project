@@ -30,6 +30,12 @@ public class FixedTermAccountServiceImpl implements FixedTermAccountService {
     public Mono<FixedTermAccountResponse> createFixedTermAccount(FixedTermAccountRequest fixedTermAccountRequest) {
         log.info("Creating a new account for customer DNI: {}", fixedTermAccountRequest.getCustomerDni());
         return customerClient.getCustomerByDni(fixedTermAccountRequest.getCustomerDni())
+                .flatMap(customer -> {
+                    if(customer.getIsVIP() || customer.getIsPYME())
+                        return customerTypeValidation.validateCreditCardExists(customer);  // Validate if customer has Credit Cards
+                    else
+                        return Mono.just(customer);
+                })
                 .flatMap(customer -> switch (customer.getCustomerType()) {
                     case PERSONAL -> customerTypeValidation.personalCustomerValidation(customer, Account.AccountType.FIXED_TERM)
                             .then(Mono.just(customer));

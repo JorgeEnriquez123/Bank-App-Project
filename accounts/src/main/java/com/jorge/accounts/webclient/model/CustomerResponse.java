@@ -17,6 +17,9 @@ public class CustomerResponse {
     private String phoneNumber;
     private String address;
 
+    private Boolean isVIP;
+    private Boolean isPYME;
+
     public enum CustomerType {
         PERSONAL,
         BUSINESS

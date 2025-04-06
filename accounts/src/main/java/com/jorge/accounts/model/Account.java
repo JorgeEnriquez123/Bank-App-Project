@@ -14,7 +14,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Document(collection = "accounts")
-public class Account {
+public abstract class Account {
     @Id
     private String id;
     private String accountNumber;

@@ -26,6 +26,7 @@ public class SavingsAccountMapper {
         account.setMaxMovementsFeeFreeThisMonth(savingsAccountRequest.getMaxMovementsFeeFreeThisMonth());
         account.setIsCommissionFeeActive(savingsAccountRequest.getIsCommissionFeeActive());
         account.setMovementCommissionFee(savingsAccountRequest.getMovementCommissionFee());
+
         account.setMonthlyMovementsLimit(savingsAccountRequest.getMonthlyMovementsLimit());
         return account;
     }
@@ -42,6 +43,7 @@ public class SavingsAccountMapper {
         response.setMaxMovementsFeeFreeThisMonth(savingsAccount.getMaxMovementsFeeFreeThisMonth());
         response.setIsCommissionFeeActive(savingsAccount.getIsCommissionFeeActive());
         response.setMovementCommissionFee(savingsAccount.getMovementCommissionFee());
+
         response.setMonthlyMovementsLimit(savingsAccount.getMonthlyMovementsLimit());
         return response;
     }

@@ -103,8 +103,6 @@ public class CreditCardServiceImpl implements CreditCardService {
     public Flux<CreditCardResponse> getCreditCardsByCardHolderId(String cardHolderId) {
         log.info("Fetching credit cards by customer Id: {}", cardHolderId);
         return creditCardRepository.findByCardHolderId(cardHolderId)
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
-                        "Credit cards from customer by Id: " + cardHolderId + " not found")))
                 .map(creditCardMapper::mapToCreditCardResponse);
     }
 

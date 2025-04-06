@@ -22,6 +22,7 @@ public class AccountMapper {
         accountResponse.setMaxMovementsFeeFreeThisMonth(account.getMaxMovementsFeeFreeThisMonth());
         accountResponse.setIsCommissionFeeActive(account.getIsCommissionFeeActive());
         accountResponse.setMovementCommissionFee(account.getMovementCommissionFee());
+
         if (account instanceof SavingsAccount savingsAccount) {
             accountResponse.setMonthlyMovementsLimit(savingsAccount.getMonthlyMovementsLimit());
         } else if (account instanceof CheckingAccount checkingAccount) {

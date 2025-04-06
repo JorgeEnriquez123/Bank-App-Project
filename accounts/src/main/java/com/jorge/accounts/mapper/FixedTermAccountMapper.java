@@ -26,6 +26,7 @@ public class FixedTermAccountMapper {
         fixedTermAccount.setMaxMovementsFeeFreeThisMonth(fixedTermAccountRequest.getMaxMovementsFeeFreeThisMonth());
         fixedTermAccount.setIsCommissionFeeActive(fixedTermAccountRequest.getIsCommissionFeeActive());
         fixedTermAccount.setMovementCommissionFee(fixedTermAccountRequest.getMovementCommissionFee());
+
         fixedTermAccount.setAllowedWithdrawal(fixedTermAccountRequest.getAllowedWithdrawal());
 
         return fixedTermAccount;
@@ -43,6 +44,7 @@ public class FixedTermAccountMapper {
         fixedTermAccountResponse.setMaxMovementsFeeFreeThisMonth(fixedTermAccount.getMaxMovementsFeeFreeThisMonth());
         fixedTermAccountResponse.setIsCommissionFeeActive(fixedTermAccount.getIsCommissionFeeActive());
         fixedTermAccountResponse.setMovementCommissionFee(fixedTermAccount.getMovementCommissionFee());
+
         fixedTermAccountResponse.setAllowedWithdrawal(fixedTermAccount.getAllowedWithdrawal());
 
         return fixedTermAccountResponse;

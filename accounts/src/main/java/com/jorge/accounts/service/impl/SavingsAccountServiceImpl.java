@@ -31,6 +31,12 @@ public class SavingsAccountServiceImpl implements SavingsAccountService {
     public Mono<SavingsAccountResponse> createSavingsAccount(SavingsAccountRequest savingsAccountRequest) {
         log.info("Creating a new account for customer DNI: {}", savingsAccountRequest.getCustomerDni());
         return customerClient.getCustomerByDni(savingsAccountRequest.getCustomerDni())
+                .flatMap(customer -> {
+                    if(customer.getIsVIP() || customer.getIsPYME())
+                        return customerTypeValidation.validateCreditCardExists(customer);  // Validate if customer has Credit Cards
+                    else
+                        return Mono.just(customer);
+                })
                 .flatMap(customer -> switch (customer.getCustomerType()) {
                     case PERSONAL -> customerTypeValidation.personalCustomerValidation(customer, Account.AccountType.SAVINGS)
                             .then(Mono.just(customer));

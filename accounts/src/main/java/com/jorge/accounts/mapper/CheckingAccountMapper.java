@@ -26,6 +26,7 @@ public class CheckingAccountMapper {
         checkingAccount.setMaxMovementsFeeFreeThisMonth(checkingAccountRequest.getMaxMovementsFeeFreeThisMonth());
         checkingAccount.setIsCommissionFeeActive(checkingAccountRequest.getIsCommissionFeeActive());
         checkingAccount.setMovementCommissionFee(checkingAccountRequest.getMovementCommissionFee());
+
         checkingAccount.setMaintenanceFee(checkingAccountRequest.getMaintenanceFee());
         checkingAccount.setHolders(checkingAccountRequest.getHolders());
         checkingAccount.setAuthorizedSigners(checkingAccountRequest.getAuthorizedSigners());
@@ -45,6 +46,7 @@ public class CheckingAccountMapper {
         checkingAccountResponse.setMaxMovementsFeeFreeThisMonth(checkingAccount.getMaxMovementsFeeFreeThisMonth());
         checkingAccountResponse.setIsCommissionFeeActive(checkingAccount.getIsCommissionFeeActive());
         checkingAccountResponse.setMovementCommissionFee(checkingAccount.getMovementCommissionFee());
+
         checkingAccountResponse.setMaintenanceFee(checkingAccount.getMaintenanceFee());
         checkingAccountResponse.setHolders(checkingAccount.getHolders());
         checkingAccountResponse.setAuthorizedSigners(checkingAccount.getAuthorizedSigners());
