@@ -25,6 +25,8 @@ components:
         - dni
         - firstName
         - lastName
+        - isVIP
+        - isPYME
       properties:
         customerType:
           $ref: '#/components/schemas/CustomerTypeEnum'
@@ -49,6 +51,12 @@ components:
         lastName:
           type: string
           description: Apellido del cliente (solo para tipo PERSONAL)
+        isVIP:
+          type: boolean
+          description: Si es cliente VIP
+        isPYME:
+          type: boolean
+          description: Si es cliente PYME
 
     CustomerResponse:
       type: object
@@ -78,6 +86,12 @@ components:
         lastName:
           type: string
           description: Apellido del cliente (solo para tipo PERSONAL)
+        isVIP:
+          type: boolean
+          description: Si es cliente VIP
+        isPYME:
+          type: boolean
+          description: Si es cliente PYME
 
     ErrorResponse:
       type: object

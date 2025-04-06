@@ -14,6 +14,8 @@ public class CustomerMapper {
                 .dni(customerRequest.getDni())
                 .firstName(customerRequest.getFirstName())
                 .lastName(customerRequest.getLastName())
+                .isVIP(customerRequest.getIsVIP())
+                .isPYME(customerRequest.getIsPYME())
                 .build();
     }
 
@@ -27,6 +29,8 @@ public class CustomerMapper {
         customerResponse.setDni(customer.getDni());
         customerResponse.setFirstName(customer.getFirstName());
         customerResponse.setLastName(customer.getLastName());
+        customerResponse.setIsVIP(customer.getIsVIP());
+        customerResponse.setIsPYME(customer.getIsPYME());
         return customerResponse;
     }
 }

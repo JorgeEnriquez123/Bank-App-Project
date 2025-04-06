@@ -22,4 +22,7 @@ public class Customer {
     private String email;
     private String phoneNumber;
     private String address;
+
+    private Boolean isVIP;
+    private Boolean isPYME;
 }
