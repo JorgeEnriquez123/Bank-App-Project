@@ -16,6 +16,14 @@ public class CustomerApiDelegateImpl implements CustomersApiDelegate{
     private final CustomerService customerService;
 
     @Override
+    public Mono<CustomerResponse> getCustomerByDni(String dni, ServerWebExchange exchange) {
+        return customerService.getCustomerByDni(dni)
+                .map(response -> {System.out.println(response);
+                    return response;
+                });
+    }
+
+    @Override
     public Mono<CustomerResponse> createCustomer(Mono<CustomerRequest> customerRequest, ServerWebExchange exchange) {
         return customerRequest.flatMap(customerService::createCustomer);
     }

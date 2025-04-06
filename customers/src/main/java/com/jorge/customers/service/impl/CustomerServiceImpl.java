@@ -34,7 +34,7 @@ public class CustomerServiceImpl implements CustomerService {
         log.info("Fetching customer by id: {}", id);
         return customerRepository.findById(id)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
-                        "Cliente con id: " + id + " no encontrado")))
+                        "Customer with id: " + id + " not found")))
                 .map(customerMapper::mapToCustomerResponse);
     }
 
@@ -50,7 +50,7 @@ public class CustomerServiceImpl implements CustomerService {
         log.info("Updating customer with id: {} with data: {}", id, customerRequest);
         return customerRepository.findById(id)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
-                        "Cliente con id: " + id + " no encontrado")))
+                        "Customer with id: " + id + " not found")))
                 .flatMap(existingCustomer ->
                         customerRepository.save(updateCustomerFromRequest(existingCustomer, customerRequest)))
                 .map(customerMapper::mapToCustomerResponse);
@@ -60,6 +60,15 @@ public class CustomerServiceImpl implements CustomerService {
     public Mono<Void> deleteCustomerById(String id) {
         log.info("Deleting customer with id: {}", id);
         return customerRepository.deleteById((id));
+    }
+
+    @Override
+    public Mono<CustomerResponse> getCustomerByDni(String dni) {
+        log.info("Fetching customer by DNI: {}", dni);
+        return customerRepository.findByDni(dni)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Customer with dni: " + dni + " not found")))
+                .map(customerMapper::mapToCustomerResponse);
     }
 
     public Customer updateCustomerFromRequest(Customer existingCustomer, CustomerRequest customerRequest) {

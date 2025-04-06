@@ -29,24 +29,90 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+
+  /accounts/savings:
     post:
-      summary: Crea una nueva cuenta
+      summary: Crea una nueva cuenta de ahorros
       tags:
-        - Accounts
-      operationId: createAccount
+        - SavingsAccounts
+      operationId: createSavingsAccount
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AccountRequest'
+              $ref: '#/components/schemas/SavingsAccountRequest'
       responses:
         '201':
-          description: Cuenta creada exitosamente
+          description: Cuenta de ahorros creada exitosamente
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AccountResponse'
+                $ref: '#/components/schemas/SavingsAccountResponse'
+        '400':
+          description: Solicitud inválida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /accounts/checking:
+    post:
+      summary: Crea una nueva cuenta corriente
+      tags:
+        - CheckingAccounts
+      operationId: createCheckingAccount
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CheckingAccountRequest'
+      responses:
+        '201':
+          description: Cuenta corriente creada exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CheckingAccountResponse'
+        '400':
+          description: Solicitud inválida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /accounts/fixed-term:
+    post:
+      summary: Crea una nueva cuenta a plazo fijo
+      tags:
+        - FixedTermAccounts
+      operationId: createFixedTermAccount
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FixedTermAccountRequest'
+      responses:
+        '201':
+          description: Cuenta a plazo fijo creada exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FixedTermAccountResponse'
         '400':
           description: Solicitud inválida
           content:
@@ -121,11 +187,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+  /accounts/savings/account-number/{accountNumber}:
     put:
-      summary: Actualiza una cuenta existente.
+      summary: Actualiza una cuenta de ahorros existente.
       tags:
-        - Accounts
-      operationId: updateAccountByAccountNumber
+        - SavingsAccounts
+      operationId: updateSavingsAccountByAccountNumber
       parameters:
         - in: path
           name: accountNumber
@@ -138,14 +205,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AccountRequest'
+              $ref: '#/components/schemas/SavingsAccountRequest'
       responses:
         '200':
-          description: Cuenta actualizada exitosamente
+          description: Cuenta de ahorros actualizada exitosamente
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AccountResponse'
+                $ref: '#/components/schemas/SavingsAccountResponse'
         '400':
           description: Solicitud inválida
           content:
@@ -165,6 +232,95 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+  /accounts/checking/account-number/{accountNumber}:
+    put:
+      summary: Actualiza una cuenta corriente existente.
+      tags:
+        - CheckingAccounts
+      operationId: updateCheckingAccountByAccountNumber
+      parameters:
+        - in: path
+          name: accountNumber
+          schema:
+            type: string
+          required: true
+          description: Número de cuenta
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CheckingAccountRequest'
+      responses:
+        '200':
+          description: Cuenta corriente actualizada exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CheckingAccountResponse'
+        '400':
+          description: Solicitud inválida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Cuenta no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /accounts/fixed-term/account-number/{accountNumber}:
+    put:
+      summary: Actualiza una cuenta a plazo fijo existente.
+      tags:
+        - FixedTermAccounts
+      operationId: updateFixedTermAccountByAccountNumber
+      parameters:
+        - in: path
+          name: accountNumber
+          schema:
+            type: string
+          required: true
+          description: Número de cuenta
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FixedTermAccountRequest'
+      responses:
+        '200':
+          description: Cuenta a plazo fijo actualizada exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FixedTermAccountResponse'
+        '400':
+          description: Solicitud inválida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Cuenta no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /accounts/account-number/{accountNumber}/balance:
     get:
@@ -416,34 +572,25 @@ paths:
 
 components:
   schemas:
-    AccountRequest:
+    # Requests
+    SavingsAccountRequest:
       type: object
       required:
-        - accountType
-        - currencyType
-        - balance
-        - status
         - customerDni
+        - balance
+        - movementsThisMonth
+        - maxMovementsFeeFreeThisMonth
+        - isCommissionFeeActive
+        - movementCommissionFee
+        - monthlyMovementsLimit
       properties:
-        accountType:
+        customerDni:
           type: string
-          enum: [SAVINGS, CHECKING, FIXED_TERM]
-          description: Tipo de cuenta
-        currencyType:
-          type: string
-          enum: [PEN, USD]
-          description: Tipo de moneda
+          description: DNI del cliente
         balance:
           type: number
           format: decimal
           description: Saldo de la cuenta
-        status:
-          type: string
-          enum: [ACTIVE, CLOSED, BLOCKED]
-          description: Estado de la cuenta
-        customerDni:
-          type: string
-          description: DNI del cliente
         movementsThisMonth:
           type: integer
           description: Movimientos del mes
@@ -457,13 +604,43 @@ components:
           type: number
           format: decimal
           description: Comisión por movimiento
-
-        #Savings account fields
         monthlyMovementsLimit:
           type: integer
           description: Límite de movimientos mensuales (Solo para cuentas de ahorro)
 
-        #CheckingAccount fields
+    CheckingAccountRequest:
+      type: object
+      required:
+        - customerDni
+        - balance
+        - movementsThisMonth
+        - maxMovementsFeeFreeThisMonth
+        - isCommissionFeeActive
+        - movementCommissionFee
+        - maintenanceFee
+        - holders
+        - authorizedSigners
+      properties:
+        customerDni:
+          type: string
+          description: DNI del cliente
+        balance:
+          type: number
+          format: decimal
+          description: Saldo de la cuenta
+        movementsThisMonth:
+          type: integer
+          description: Movimientos del mes
+        maxMovementsFeeFreeThisMonth:
+          type: integer
+          description: Máximo de movimientos libres de comisión del mes
+        isCommissionFeeActive:
+          type: boolean
+          description: Consultar si la comisión por movimiento está activa
+        movementCommissionFee:
+          type: number
+          format: decimal
+          description: Comisión por movimiento
         maintenanceFee:
           type: number
           format: decimal
@@ -479,7 +656,37 @@ components:
             type: string
           description: Lista de firmantes autorizados (Solo para cuentas corrientes)
 
-        #FixedTerm fields
+    FixedTermAccountRequest:
+      type: object
+      required:
+        - customerDni
+        - balance
+        - movementsThisMonth
+        - maxMovementsFeeFreeThisMonth
+        - isCommissionFeeActive
+        - movementCommissionFee
+        - allowedWithdrawal
+      properties:
+        customerDni:
+          type: string
+          description: DNI del cliente
+        balance:
+          type: number
+          format: decimal
+          description: Saldo de la cuenta
+        movementsThisMonth:
+          type: integer
+          description: Movimientos del mes
+        maxMovementsFeeFreeThisMonth:
+          type: integer
+          description: Máximo de movimientos libres de comisión del mes
+        isCommissionFeeActive:
+          type: boolean
+          description: Consultar si la comisión por movimiento está activa
+        movementCommissionFee:
+          type: number
+          format: decimal
+          description: Comisión por movimiento
         allowedWithdrawal:
           type: string
           format: date
@@ -489,13 +696,8 @@ components:
     DepositRequest:
       type: object
       required:
-        - currencyType
         - amount
       properties:
-        currencyType:
-          type: string
-          enum: [PEN, USD]
-          description: Tipo de moneda.
         amount:
           type: number
           format: decimal
@@ -504,13 +706,8 @@ components:
     WithdrawalRequest:
       type: object
       required:
-        - currencyType
         - amount
       properties:
-        currencyType:
-          type: string
-          enum: [PEN, USD]
-          description: Tipo de moneda.
         amount:
           type: number
           format: decimal
@@ -536,29 +733,21 @@ components:
         accountNumber:
           type: string
           description: Número de cuenta
-        accountType:
-          type: string
-          enum: [SAVINGS, CHECKING, FIXED_TERM]
-          description: Tipo de cuenta
-        currencyType:
-          type: string
-          enum: [PEN, USD]
-          description: Tipo de moneda
         balance:
           type: number
           format: decimal
           description: Saldo de la cuenta
-        status:
+        customerDni:
           type: string
-          enum: [ACTIVE, CLOSED, BLOCKED]
-          description: Estado de la cuenta
+          description: DNI del cliente
+        accountType:
+          type: string
+          enum: [SAVINGS, CHECKING, FIXED_TERM]
+          description: Tipo de cuenta
         createdAt:
           type: string
           format: date-time
           description: Fecha de creación de la cuenta
-        customerDni:
-          type: string
-          description: DNI del cliente
         movementsThisMonth:
           type: integer
           description: Movimientos del mes
@@ -572,12 +761,10 @@ components:
           type: number
           format: decimal
           description: Comisión por movimiento
-
         #Savings account fields
         monthlyMovementsLimit:
           type: integer
           description: Límite de movimientos mensuales (Solo para cuentas de ahorro)
-
         #CheckingAccount fields
         maintenanceFee:
           type: number
@@ -593,8 +780,142 @@ components:
           items:
             type: string
           description: Lista de firmantes autorizados (Solo para cuentas corrientes)
-
         #FixedTerm fields
+        allowedWithdrawal:
+          type: string
+          format: date
+          description: Fecha permitida de retiro (Solo para cuentas a plazo fijo)
+
+    SavingsAccountResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ID de la cuenta
+        accountNumber:
+          type: string
+          description: Número de cuenta
+        balance:
+          type: number
+          format: decimal
+          description: Saldo de la cuenta
+        customerDni:
+          type: string
+          description: DNI del cliente
+        accountType:
+          type: string
+          enum: [SAVINGS, CHECKING, FIXED_TERM]
+          description: Tipo de cuenta
+        createdAt:
+          type: string
+          format: date-time
+          description: Fecha de creación de la cuenta
+        movementsThisMonth:
+          type: integer
+          description: Movimientos del mes
+        maxMovementsFeeFreeThisMonth:
+          type: integer
+          description: Máximo de movimientos libres de comisión del mes
+        isCommissionFeeActive:
+          type: boolean
+          description: Consultar si la comisión por movimiento está activa
+        movementCommissionFee:
+          type: number
+          format: decimal
+          description: Comisión por movimiento
+        monthlyMovementsLimit:
+          type: integer
+          description: Límite de movimientos mensuales (Solo para cuentas de ahorro)
+
+    CheckingAccountResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ID de la cuenta
+        accountNumber:
+          type: string
+          description: Número de cuenta
+        balance:
+          type: number
+          format: decimal
+          description: Saldo de la cuenta
+        customerDni:
+          type: string
+          description: DNI del cliente
+        accountType:
+          type: string
+          enum: [SAVINGS, CHECKING, FIXED_TERM]
+          description: Tipo de cuenta
+        createdAt:
+          type: string
+          format: date-time
+          description: Fecha de creación de la cuenta
+        movementsThisMonth:
+          type: integer
+          description: Movimientos del mes
+        maxMovementsFeeFreeThisMonth:
+          type: integer
+          description: Máximo de movimientos libres de comisión del mes
+        isCommissionFeeActive:
+          type: boolean
+          description: Consultar si la comisión por movimiento está activa
+        movementCommissionFee:
+          type: number
+          format: decimal
+          description: Comisión por movimiento
+        maintenanceFee:
+          type: number
+          format: decimal
+          description: Comisión de mantenimiento (Solo para cuentas corrientes)
+        holders:
+          type: array
+          items:
+            type: string
+          description: Lista de titulares (Solo para cuentas corrientes)
+        authorizedSigners:
+          type: array
+          items:
+            type: string
+          description: Lista de firmantes autorizados (Solo para cuentas corrientes)
+
+    FixedTermAccountResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ID de la cuenta
+        accountNumber:
+          type: string
+          description: Número de cuenta
+        balance:
+          type: number
+          format: decimal
+          description: Saldo de la cuenta
+        customerDni:
+          type: string
+          description: DNI del cliente
+        accountType:
+          type: string
+          enum: [SAVINGS, CHECKING, FIXED_TERM]
+          description: Tipo de cuenta
+        createdAt:
+          type: string
+          format: date-time
+          description: Fecha de creación de la cuenta
+        movementsThisMonth:
+          type: integer
+          description: Movimientos del mes
+        maxMovementsFeeFreeThisMonth:
+          type: integer
+          description: Máximo de movimientos libres de comisión del mes
+        isCommissionFeeActive:
+          type: boolean
+          description: Consultar si la comisión por movimiento está activa
+        movementCommissionFee:
+          type: number
+          format: decimal
+          description: Comisión por movimiento
         allowedWithdrawal:
           type: string
           format: date
@@ -610,10 +931,6 @@ components:
           type: string
           enum: [SAVINGS, CHECKING, FIXED_TERM]
           description: Tipo de cuenta
-        currencyType:
-          type: string
-          enum: [PEN, USD]
-          description: Tipo de moneda
         balance:
           type: number
           format: decimal
@@ -652,7 +969,7 @@ components:
         accountNumber:
           type: string
           description: Numero de cuenta relacionado
-        creditId:
+        relatedCreditId:
           type: string
           description: Id de crédito relacionado
         fee:
@@ -661,24 +978,16 @@ components:
           description: Comisión de la transacción
         transactionType:
           type: string
-          enum: [ DEBIT, CREDIT, DEPOSIT, WITHDRAWAL, CREDIT_PAYMENT, CREDIT_DEPOSIT, CREDIT_CARD_CONSUMPTION, CREDIT_CARD_PAYMENT ]
+          enum: [ DEBIT, CREDIT, DEPOSIT, WITHDRAWAL, CREDIT_PAYMENT, CREDIT_DEPOSIT, CREDIT_CARD_PAYMENT, MAINTENANCE_FEE ]
           description: Tipo de transacción
-        currencyType:
-          type: string
-          enum: [ PEN, USD ]
-          description: Tipo de moneda
         amount:
           type: number
           format: decimal
           description: Monto de la transacción
-        status:
-          type: string
-          enum: [ PENDING, COMPLETED, FAILED ]
-          description: Estado de la transacción
         description:
           type: string
           description: Descripción de la transacción
-        transactionDate:
+        createdAt:
           type: string
           format: date-time
           description: Fecha y hora de la transacción

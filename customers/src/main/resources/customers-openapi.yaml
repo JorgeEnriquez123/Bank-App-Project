@@ -264,3 +264,38 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+
+  /customers/dni/{dni}:
+    get:
+      summary: Obtener un cliente por DNI.
+      tags:
+        - Clientes
+      description: Devuelve un único cliente basado en el DNI proporcionado.
+      operationId: getCustomerByDni
+      parameters:
+        - in: path
+          name: dni
+          required: true
+          schema:
+            type: string
+            pattern: "^[0-9]{8}[A-Z]$"
+          description: El DNI del cliente a obtener.
+      responses:
+        '200':
+          description: Cliente obtenido exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerResponse'
+        '404':
+          description: Cliente no encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'

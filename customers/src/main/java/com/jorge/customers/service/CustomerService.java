@@ -11,4 +11,6 @@ public interface CustomerService {
     Mono<CustomerResponse> createCustomer(CustomerRequest customer);
     Mono<CustomerResponse> updateCustomerById(String dni, CustomerRequest customer);
     Mono<Void> deleteCustomerById(String dni);
+
+    Mono<CustomerResponse> getCustomerByDni(String dni);
 }

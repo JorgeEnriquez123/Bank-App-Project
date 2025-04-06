@@ -8,6 +8,4 @@ import reactor.core.publisher.Mono;
 @Repository
 public interface CustomerRepository extends ReactiveMongoRepository<Customer, String> {
     Mono<Customer> findByDni(String dni);
-
-    Mono<Void> deleteByDni(String dni);
 }

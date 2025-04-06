@@ -9,7 +9,12 @@ import java.math.BigDecimal;
 public interface AccountService {
     Flux<AccountResponse> getAllAccounts();
     Mono<AccountResponse> getAccountByAccountNumber(String accountNumber);
-    Mono<AccountResponse> createAccount(AccountRequest accountRequest);
     Mono<Void> deleteAccountByAccountNumber(String accountNumber);
-    Mono<AccountResponse> updateAccountByAccountNumber(String accountNumber, AccountRequest accountRequest);
+    Mono<BalanceResponse> getBalanceByAccountNumber(String accountNumber);
+
+    Mono<BalanceResponse> increaseBalanceByAccountNumber(String accountNumber, BigDecimal balance);
+    Mono<BalanceResponse> decreaseBalanceByAccountNumber(String accountNumber, BigDecimal balance);
+    Mono<AccountResponse> depositByAccountNumber(String accountNumber, DepositRequest depositRequest);
+    Mono<AccountResponse> withdrawByAccountNumber(String accountNumber, WithdrawalRequest withdrawalRequest);
+    Flux<TransactionResponse> getTransactionsByAccountNumber(String accountNumber);
 }
