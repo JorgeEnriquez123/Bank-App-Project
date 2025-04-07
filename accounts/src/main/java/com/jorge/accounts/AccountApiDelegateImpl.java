@@ -35,7 +35,7 @@ public class AccountApiDelegateImpl implements AccountsApiDelegate {
 
     @Override
     public Mono<TransactionResponse> transferByAccountNumber(String accountNumber, Mono<TransferRequest> transferRequest, ServerWebExchange exchange) {
-        return AccountsApiDelegate.super.transferByAccountNumber(accountNumber, transferRequest, exchange);
+        return transferRequest.flatMap(request -> accountService.transfer(accountNumber, request));
     }
 
     @Override

@@ -14,6 +14,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.util.function.Tuple2;
+import reactor.util.function.Tuples;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -163,7 +165,7 @@ public class AccountServiceImpl implements AccountService {
                                 "Insufficient balance for the withdrawal"));
                     }
 
-                    // If the withdrawal is on a FIXED_TERM account
+                    // If the withdrawal is made on a FIXED_TERM account
                     if (account.getAccountType() == Account.AccountType.FIXED_TERM) {
                         FixedTermAccount fixedTermAccount = (FixedTermAccount) account;
                         if (fixedTermAccount.getAllowedWithdrawal().isAfter(LocalDate.now())) {
@@ -277,9 +279,127 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public Mono<TransactionResponse> transfer(String accountNumber, TransferRequest transferRequest) {
-        return null;
+    public Mono<TransactionResponse> transfer(String accountNumber, TransferRequest transferRequest){
+        String receiverAccountNumber = transferRequest.getReceiverAccountNumber();
+        BigDecimal transferAmount = transferRequest.getAmount();
+
+        // Fetch and Validate Sender ---
+        Mono<Account> validatedSender = accountRepository.findByAccountNumber(accountNumber)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Sender account not found: " + accountNumber)))
+                .flatMap(account -> {
+                    // Sender Validations
+                    if (account instanceof SavingsAccount savingsAccount) {
+                        if (savingsAccount.getMovementsThisMonth() >= savingsAccount.getMonthlyMovementsLimit()) {
+                            return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                                    "Savings account " + accountNumber + " has reached max movements limit ("
+                                            + savingsAccount.getMonthlyMovementsLimit() + ") this month."));
+                        }
+                    } else if (account instanceof FixedTermAccount) {
+                        return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                                "Fixed Term accounts cannot initiate transfers."));
+                    }
+                    // Basic validation passed
+                    return Mono.just(account);
+                });
+        Mono<Account> validatedReceiver = accountRepository.findByAccountNumber(receiverAccountNumber)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Receiver account not found: " + receiverAccountNumber)))
+                .flatMap(account -> {
+                    // Receiver Type Validation
+                    if (account.getAccountType() == Account.AccountType.FIXED_TERM) { // Assuming getAccountType() exists
+                        return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                                "Cannot transfer to a Fixed Term account."));
+                    }
+                    return Mono.just(account);
+                });
+        return Mono.zip(validatedSender, validatedReceiver)
+                .flatMap(accountsTuple -> {
+                    Account senderAccount = accountsTuple.getT1();
+                    Account receiverAccount = accountsTuple.getT2();
+
+                    // Calculate potential fee
+                    BigDecimal fee;
+                    // Check if Commission Fee is applicable
+                    if (senderAccount.getIsCommissionFeeActive()) {
+                        fee = senderAccount.getMovementCommissionFee();
+                    } else {
+                        fee = BigDecimal.ZERO;
+                    }
+                    BigDecimal totalDeduction = transferAmount.add(fee);
+
+                    if (senderAccount.getBalance().compareTo(totalDeduction) < 0) {
+                        return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                                "Insufficient funds in sender account " + accountNumber + " (Required: " + totalDeduction + ")"));
+                    }
+
+                    //  Update Accounts Balances
+                    senderAccount.setBalance(senderAccount.getBalance().subtract(totalDeduction));
+                    receiverAccount.setBalance(receiverAccount.getBalance().add(transferAmount));
+
+                    // Update movements for Savings Account
+                    if (senderAccount instanceof SavingsAccount savingsAccount) {
+                        savingsAccount.setMovementsThisMonth(savingsAccount.getMovementsThisMonth() + 1);
+                    }
+
+                    return accountRepository.save(senderAccount)
+                            .flatMap(savedSender -> accountRepository.save(receiverAccount)
+                                            .map(savedReceiver -> Tuples.of(savedSender, fee))
+                            );
+                })
+                .flatMap(savedSenderAndFeeTuple -> {
+                    BigDecimal fee = savedSenderAndFeeTuple.getT2(); // Retrieve the fee calculated earlier
+
+                    // Create Sender Transaction
+                    TransactionRequest debitRequest = new TransactionRequest();
+                    debitRequest.setAccountNumber(accountNumber);
+                    debitRequest.setAmount(transferAmount); // Amount being transferred
+                    debitRequest.setTransactionType(TransactionRequest.TransactionType.DEBIT);
+                    debitRequest.setDescription("Transfer to account " + receiverAccountNumber);
+                    debitRequest.setFee(fee); // Include the calculated fee
+
+                    // Create Receiver Transaction
+                    TransactionRequest creditRequest = new TransactionRequest();
+                    creditRequest.setAccountNumber(receiverAccountNumber);
+                    creditRequest.setAmount(transferAmount);
+                    creditRequest.setTransactionType(TransactionRequest.TransactionType.CREDIT);
+                    creditRequest.setDescription("Transfer from account " + accountNumber);
+                    creditRequest.setFee(BigDecimal.ZERO); // Receiver does not get a fee
+
+                    // --- Call Transaction Client for Both ---
+                    Mono<TransactionResponse> debitTransactionMono = transactionClient.createTransaction(debitRequest);
+                    Mono<TransactionResponse> creditTransactionMono = transactionClient.createTransaction(creditRequest);
+
+                    // Returning the response from the DEBIT transaction
+                    return Mono.zip(debitTransactionMono, creditTransactionMono)
+                            .map(Tuple2::getT1);
+                });
     }
+
+    /*@Override
+    public Mono<TransactionResponse> transfer(String accountNumber, TransferRequest transferRequest) {
+        String receiverAccountNumber = transferRequest.getReceiverAccountNumber();
+        BigDecimal transferAmount = transferRequest.getAmount();
+        return accountRepository.findByAccountNumber(accountNumber)
+                .flatMap(account -> {
+                    if(account instanceof SavingsAccount savingsAccount) {
+                        if(savingsAccount.getMovementsThisMonth() > savingsAccount.getMonthlyMovementsLimit()) {
+                            return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                                    "Savings account with number: " + accountNumber + " has reached max movements this month"));
+                        }
+                    } else if (account instanceof FixedTermAccount fixedAccount) {
+                        return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                                "Fixed Term accounts can't make transfers"));
+                    }
+                    return Mono.just(account);
+                })
+                .flatMap(account -> accountRepository.findByAccountNumber(receiverAccountNumber).flatMap(recieverAccount -> {
+                    if(recieverAccount.getAccountType() == Account.AccountType.FIXED_TERM){
+                        return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                                "Can't transfer to a Fixed Term account"));
+                    }
+                    return Mono.just(account);
+                }))
+                .map()
+    }*/
 
     @Override
     public Flux<FeeReportResponse> generateFeeReportBetweenDate(String accountNumber,
