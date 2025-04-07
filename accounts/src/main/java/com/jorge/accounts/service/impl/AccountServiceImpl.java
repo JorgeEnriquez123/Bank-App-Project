@@ -222,7 +222,7 @@ public class AccountServiceImpl implements AccountService {
 
 
     private Mono<BigDecimal> calculateAverageBalance(String accountNumber, List<TransactionResponse> transactions, LocalDate firstDayOfMonth, LocalDate lastDayOfMonth) {
-        return obtenerSaldoInicial(accountNumber, firstDayOfMonth)
+        return getInitialBalance(accountNumber, firstDayOfMonth)
                 .flatMap(saldoInicial -> {
                     BigDecimal saldoDiarioTotal = BigDecimal.ZERO;
                     LocalDate fechaActual = firstDayOfMonth;
@@ -252,15 +252,17 @@ public class AccountServiceImpl implements AccountService {
         return switch (transaction.getTransactionType()) {
             case DEBIT, WITHDRAWAL, MAINTENANCE_FEE, CREDIT_PAYMENT, CREDIT_CARD_PAYMENT -> {
                 assert transaction.getAmount() != null;
-                yield saldoActual.subtract(transaction.getAmount().add(transaction.getFee() != null ? transaction.getFee() : BigDecimal.ZERO));
+                yield saldoActual.subtract(transaction.getAmount().add(transaction.getFee()));
             }
-            case CREDIT, DEPOSIT, CREDIT_DEPOSIT ->
-                    saldoActual.add(transaction.getAmount());
+            case CREDIT, DEPOSIT, CREDIT_DEPOSIT -> {
+                assert transaction.getAmount() != null;
+                yield saldoActual.add(transaction.getAmount().subtract(transaction.getFee()));
+            }
         };
     }
 
     // Obtener el saldo inicial de la cuenta al inicio del mes.  Si no hay historial, devuelve 0.
-    private Mono<BigDecimal> obtenerSaldoInicial(String accountNumber, LocalDate firstDayOfMonth) {
+    private Mono<BigDecimal> getInitialBalance(String accountNumber, LocalDate firstDayOfMonth) {
         LocalDateTime startOfMonth = firstDayOfMonth.atStartOfDay();
         return transactionClient.getTransactionsByAccountNumberAndDateRange(accountNumber,
                         LocalDateTime.of(1970, 1, 1, 0, 0, 0), startOfMonth)
