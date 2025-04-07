@@ -21,7 +21,7 @@ public class TransactionApiDelegateImpl implements TransactionsApiDelegate {
 
     @Override
     public Flux<FeeReportResponse> getTransactionsFeesByAccountNumberAndDateRange(String accountNumber, LocalDateTime startDate, LocalDateTime endDate, ServerWebExchange exchange) {
-        return transactionService.getTransactionsFeesByAccountNumberAndDateRange(accountNumber, BigDecimal.ZERO, startDate, endDate);
+        return transactionService.getTransactionsFeesByAccountNumberAndDateRange(accountNumber, startDate, endDate);
     }
 
     @Override

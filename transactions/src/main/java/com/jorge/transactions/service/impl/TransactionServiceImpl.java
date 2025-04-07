@@ -86,15 +86,18 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
-    public Flux<TransactionResponse> getTransactionsByAccountNumberAndDateRange(String accountNumber, LocalDateTime startDate, LocalDateTime endDate) {
+    public Flux<TransactionResponse> getTransactionsByAccountNumberAndDateRange(String accountNumber,
+                                                                                LocalDateTime startDate, LocalDateTime endDate) {
         log.info("Fetching transactions for account number: {} and created at: {}", accountNumber, startDate);
         return transactionRepository.findByAccountNumberAndCreatedAtBetweenOrderByCreatedAt(accountNumber, startDate, endDate)
                 .map(transactionMapper::mapToTransactionResponse);
     }
 
     @Override
-    public Flux<FeeReportResponse> getTransactionsFeesByAccountNumberAndDateRange(String accountNumber, BigDecimal feeIsGreaterThan, LocalDateTime createdAtStart, LocalDateTime createdAtEnd) {
-        return transactionRepository.findByAccountNumberAndFeeGreaterThanAndCreatedAtBetweenOrderByCreatedAt(accountNumber, feeIsGreaterThan, createdAtStart, createdAtEnd)
+    public Flux<FeeReportResponse> getTransactionsFeesByAccountNumberAndDateRange(String accountNumber,
+                                                                                  LocalDateTime createdAtStart, LocalDateTime createdAtEnd) {
+        return transactionRepository.findByAccountNumberAndFeeGreaterThanAndCreatedAtBetweenOrderByCreatedAt(accountNumber,
+                        BigDecimal.ZERO, createdAtStart, createdAtEnd)
                 .map(transaction -> {
                     FeeReportResponse feeReport = new FeeReportResponse();
                     feeReport.setAmount(transaction.getFee());

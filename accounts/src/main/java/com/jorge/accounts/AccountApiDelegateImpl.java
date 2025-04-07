@@ -12,6 +12,8 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.time.LocalDateTime;
+
 @Component
 @RequiredArgsConstructor
 public class AccountApiDelegateImpl implements AccountsApiDelegate {
@@ -27,8 +29,8 @@ public class AccountApiDelegateImpl implements AccountsApiDelegate {
     }
 
     @Override
-    public Flux<FeeReportResponse> generateFeeReportBetweenDateByAccountNumber(String accountNumber, Mono<FeeReportBetweenDatesRequest> feeReportBetweenDatesRequest, ServerWebExchange exchange) {
-        return AccountsApiDelegate.super.generateFeeReportBetweenDateByAccountNumber(accountNumber, feeReportBetweenDatesRequest, exchange);
+    public Flux<FeeReportResponse> generateFeeReportBetweenDateByAccountNumber(String accountNumber, LocalDateTime startDate, LocalDateTime endDate, ServerWebExchange exchange) {
+        return accountService.generateFeeReportBetweenDate(accountNumber, startDate, endDate);
     }
 
     @Override

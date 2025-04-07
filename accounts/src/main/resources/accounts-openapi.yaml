@@ -278,7 +278,7 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
 
   /accounts/account-number/{accountNumber}/fee-report:
-    post:
+    get:
       summary: Genera un reporte de comisiones entre fechas
       tags:
         - Accounts
@@ -290,12 +290,20 @@ paths:
             type: string
           required: true
           description: Número de cuenta
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/FeeReportBetweenDatesRequest'
+        - in: query
+          name: startDate
+          schema:
+            type: string
+            format: date-time
+          required: true
+          description: Fecha y hora de inicio del rango (ISO 8601 format, e.g., 2024-01-01T00:00:00Z)
+        - in: query
+          name: endDate
+          schema:
+            type: string
+            format: date-time
+          required: true
+          description: Fecha y hora de fin del rango (ISO 8601 format, e.g., 2024-01-31T23:59:59Z)
       responses:
         '200':
           description: Reporte generado exitosamente
@@ -879,10 +887,10 @@ components:
     TransferRequest:
       type: object
       required:
-        - recieverAccountNumber
+        - receiverAccountNumber
         - amount
       properties:
-        recieverAccountNumber:
+        receiverAccountNumber:
           type: string
           description: Número de cuenta del receptor
         amount:
@@ -1197,11 +1205,15 @@ components:
     FeeReportResponse:
       type: object
       properties:
-        feeAmount:
+        amount:
           type: number
           format: decimal
           description: Monto de la comisión
-        transactionDate:
+        type:
+          type: string
+          enum: [ MAINTENANCE_FEE, TRANSACTION_FEE ]
+          description: Tipo de comisión
+        date:
           type: string
           format: date-time
-          description: Fecha de la transacción
+          description: Fecha y hora de la comisión

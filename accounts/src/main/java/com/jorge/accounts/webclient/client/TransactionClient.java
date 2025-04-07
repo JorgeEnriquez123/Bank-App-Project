@@ -1,5 +1,6 @@
 package com.jorge.accounts.webclient.client;
 
+import com.jorge.accounts.model.FeeReportResponse;
 import com.jorge.accounts.model.TransactionResponse;
 import com.jorge.accounts.webclient.model.TransactionRequest;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -29,9 +30,9 @@ public class TransactionClient {
                 .bodyToMono(TransactionResponse.class);
     }
 
-    public Flux<TransactionResponse> findByAccountNumberAndCreatedAtBetweenOrderByCreatedAt(String accountNumber,
-                                                                                            LocalDateTime startOfMonth,
-                                                                                            LocalDateTime endOfMonth) {
+    public Flux<TransactionResponse> getTransactionsByAccountNumberAndDateRange(String accountNumber,
+                                                                                LocalDateTime startOfMonth,
+                                                                                LocalDateTime endOfMonth) {
         return webClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path("/account-number/" + accountNumber + "/by-date-range")
@@ -40,5 +41,18 @@ public class TransactionClient {
                         .build())
                 .retrieve()
                 .bodyToFlux(TransactionResponse.class);
+    }
+
+    public Flux<FeeReportResponse> getTransactionsFeesByAccountNumberAndDateRange(String accountNumber,
+                                                                                  LocalDateTime startDate,
+                                                                                  LocalDateTime endDate) {
+        return webClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/account-number/" + accountNumber + "/fees-by-date-range")
+                        .queryParam("startDate", startDate)
+                        .queryParam("endDate", endDate)
+                        .build())
+                .retrieve()
+                .bodyToFlux(FeeReportResponse.class);
     }
 }

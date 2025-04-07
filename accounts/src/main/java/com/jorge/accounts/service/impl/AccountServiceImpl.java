@@ -16,7 +16,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
-import java.math.MathContext;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -208,7 +207,7 @@ public class AccountServiceImpl implements AccountService {
         LocalDateTime endOfMonth = lastDayOfMonth.atTime(23, 59, 59);
 
         // Obtener las transacciones del mes y calcular el saldo promedio
-        return transactionClient.findByAccountNumberAndCreatedAtBetweenOrderByCreatedAt(accountNumber, startOfMonth, endOfMonth)
+        return transactionClient.getTransactionsByAccountNumberAndDateRange(accountNumber, startOfMonth, endOfMonth)
                 .collectList()
                 .flatMap(transactions -> calculateAverageBalance(accountNumber, transactions, firstDayOfMonth, lastDayOfMonth))
                 .map(averageBalance -> { // Construir el objeto de respuesta
@@ -263,7 +262,7 @@ public class AccountServiceImpl implements AccountService {
     // Obtener el saldo inicial de la cuenta al inicio del mes.  Si no hay historial, devuelve 0.
     private Mono<BigDecimal> obtenerSaldoInicial(String accountNumber, LocalDate firstDayOfMonth) {
         LocalDateTime startOfMonth = firstDayOfMonth.atStartOfDay();
-        return transactionClient.findByAccountNumberAndCreatedAtBetweenOrderByCreatedAt(accountNumber,
+        return transactionClient.getTransactionsByAccountNumberAndDateRange(accountNumber,
                         LocalDateTime.of(1970, 1, 1, 0, 0, 0), startOfMonth)
                 .collectList()
                 .map(transactions -> {
@@ -281,8 +280,10 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public Flux<FeeReportResponse> generateFeeReportBetweenDate(String accountNumber, FeeReportBetweenDatesRequest feeReportDatesRequest) {
-        return null;
+    public Flux<FeeReportResponse> generateFeeReportBetweenDate(String accountNumber,
+                                                                LocalDateTime startDate,
+                                                                LocalDateTime endDate) {
+        return transactionClient.getTransactionsFeesByAccountNumberAndDateRange(accountNumber, startDate, endDate);
     }
 
     public BalanceResponse mapToBalanceResponse(Account account){

@@ -1,10 +1,12 @@
 package com.jorge.accounts.service;
 
 import com.jorge.accounts.model.*;
+import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 public interface AccountService {
     Flux<AccountResponse> getAllAccounts();
@@ -20,5 +22,5 @@ public interface AccountService {
 
     Mono<AverageMonthlyDailyBalanceResponse> calculateAverageMonthlyDailyBalance(String accountNumber, AverageMonthlyDailyBalanceRequest averageMonthlyDailyBalanceRequest);
     Mono<TransactionResponse> transfer (String accountNumber, TransferRequest transferRequest);
-    Flux<FeeReportResponse> generateFeeReportBetweenDate(String accountNumber, FeeReportBetweenDatesRequest feeReportDatesRequest);
+    Flux<FeeReportResponse> generateFeeReportBetweenDate(String accountNumber, LocalDateTime startDate, LocalDateTime endDate);
 }

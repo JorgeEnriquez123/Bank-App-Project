@@ -22,7 +22,6 @@ public interface TransactionService {
                                                                          LocalDateTime startDate,
                                                                          LocalDateTime endDate);
     Flux<FeeReportResponse> getTransactionsFeesByAccountNumberAndDateRange(String accountNumber,
-                                                                           BigDecimal feeIsGreaterThan,
                                                                            LocalDateTime createdAtStart,
                                                                            LocalDateTime createdAtEnd);
 }
