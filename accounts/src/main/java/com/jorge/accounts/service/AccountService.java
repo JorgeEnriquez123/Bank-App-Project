@@ -17,4 +17,8 @@ public interface AccountService {
     Mono<AccountResponse> depositByAccountNumber(String accountNumber, DepositRequest depositRequest);
     Mono<AccountResponse> withdrawByAccountNumber(String accountNumber, WithdrawalRequest withdrawalRequest);
     Flux<TransactionResponse> getTransactionsByAccountNumber(String accountNumber);
+
+    Mono<AverageMonthlyDailyBalanceResponse> calculateAverageMonthlyDailyBalance(String accountNumber, AverageMonthlyDailyBalanceRequest averageMonthlyDailyBalanceRequest);
+    Mono<TransactionResponse> transfer (String accountNumber, TransferRequest transferRequest);
+    Flux<FeeReportResponse> generateFeeReportBetweenDate(String accountNumber, FeeReportBetweenDatesRequest feeReportDatesRequest);
 }

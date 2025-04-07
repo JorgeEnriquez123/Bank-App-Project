@@ -21,6 +21,22 @@ public class AccountApiDelegateImpl implements AccountsApiDelegate {
     private final FixedTermAccountService fixedTermAccountService;
 
     @Override
+    public Mono<AverageMonthlyDailyBalanceResponse> calculateAverageMonthlyDailyBalanceByAccountNumber(String accountNumber, Mono<AverageMonthlyDailyBalanceRequest> averageMonthlyDailyBalanceRequest, ServerWebExchange exchange) {
+        return averageMonthlyDailyBalanceRequest.flatMap(
+                request -> accountService.calculateAverageMonthlyDailyBalance(accountNumber, request));
+    }
+
+    @Override
+    public Flux<FeeReportResponse> generateFeeReportBetweenDateByAccountNumber(String accountNumber, Mono<FeeReportBetweenDatesRequest> feeReportBetweenDatesRequest, ServerWebExchange exchange) {
+        return AccountsApiDelegate.super.generateFeeReportBetweenDateByAccountNumber(accountNumber, feeReportBetweenDatesRequest, exchange);
+    }
+
+    @Override
+    public Mono<TransactionResponse> transferByAccountNumber(String accountNumber, Mono<TransferRequest> transferRequest, ServerWebExchange exchange) {
+        return AccountsApiDelegate.super.transferByAccountNumber(accountNumber, transferRequest, exchange);
+    }
+
+    @Override
     public Mono<CheckingAccountResponse> createCheckingAccount(Mono<CheckingAccountRequest> checkingAccountRequest, ServerWebExchange exchange) {
         return checkingAccountRequest.flatMap(checkingAccountService::createCheckingAccount);
     }

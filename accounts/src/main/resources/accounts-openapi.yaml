@@ -187,6 +187,143 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+  /accounts/account-number/{accountNumber}/transfer:
+    post:
+      summary: Realiza una transferencia entre cuentas
+      tags:
+        - Accounts
+      operationId: transferByAccountNumber
+      parameters:
+        - in: path
+          name: accountNumber
+          schema:
+            type: string
+          required: true
+          description: Número de cuenta del remitente
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransferRequest'
+      responses:
+        '200':
+          description: Transferencia realizada exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionResponse'
+        '400':
+          description: Solicitud inválida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Cuenta no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /accounts/account-number/{accountNumber}/average-monthly-balance:
+    post:
+      summary: Calcula el promedio del saldo diario mensual
+      tags:
+        - Accounts
+      operationId: calculateAverageMonthlyDailyBalanceByAccountNumber
+      parameters:
+        - in: path
+          name: accountNumber
+          schema:
+            type: string
+          required: true
+          description: Número de cuenta
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AverageMonthlyDailyBalanceRequest'
+      responses:
+        '200':
+          description: Promedio calculado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AverageMonthlyDailyBalanceResponse'
+        '400':
+          description: Solicitud inválida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Cuenta no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /accounts/account-number/{accountNumber}/fee-report:
+    post:
+      summary: Genera un reporte de comisiones entre fechas
+      tags:
+        - Accounts
+      operationId: generateFeeReportBetweenDateByAccountNumber
+      parameters:
+        - in: path
+          name: accountNumber
+          schema:
+            type: string
+          required: true
+          description: Número de cuenta
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FeeReportBetweenDatesRequest'
+      responses:
+        '200':
+          description: Reporte generado exitosamente
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FeeReportResponse'
+        '400':
+          description: Solicitud inválida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Cuenta no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
   /accounts/savings/account-number/{accountNumber}:
     put:
       summary: Actualiza una cuenta de ahorros existente.
@@ -723,6 +860,51 @@ components:
           format: decimal
           description: Nuevo saldo de la cuenta
 
+    # Nuevos Requests
+    AverageMonthlyDailyBalanceRequest:
+      type: object
+      required:
+        - year
+        - month
+      properties:
+        year:
+          type: integer
+          format: int32
+          description: Año
+        month:
+          type: integer
+          format: int32
+          description: Mes
+
+    TransferRequest:
+      type: object
+      required:
+        - recieverAccountNumber
+        - amount
+      properties:
+        recieverAccountNumber:
+          type: string
+          description: Número de cuenta del receptor
+        amount:
+          type: number
+          format: decimal
+          description: Monto a transferir
+
+    FeeReportBetweenDatesRequest:
+      type: object
+      required:
+        - startDate
+        - endDate
+      properties:
+        startDate:
+          type: string
+          format: date
+          description: Fecha de inicio
+        endDate:
+          type: string
+          format: date
+          description: Fecha de fin
+
     # Responses
     AccountResponse:
       type: object
@@ -991,3 +1173,35 @@ components:
           type: string
           format: date-time
           description: Fecha y hora de la transacción
+
+    # Nuevos Responses
+    AverageMonthlyDailyBalanceResponse:
+      type: object
+      properties:
+        accountNumber:
+          type: string
+          description: Número de cuenta
+        year:
+          type: integer
+          format: int32
+          description: Año
+        month:
+          type: integer
+          format: int32
+          description: Mes
+        averageDailyBalance:
+          type: number
+          format: decimal
+          description: Promedio del saldo diario
+
+    FeeReportResponse:
+      type: object
+      properties:
+        feeAmount:
+          type: number
+          format: decimal
+          description: Monto de la comisión
+        transactionDate:
+          type: string
+          format: date-time
+          description: Fecha de la transacción

@@ -429,6 +429,61 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+  /transactions/account-number/{accountNumber}/by-date-range:
+    get:
+      summary: Obtiene todas las transacciones para un número de cuenta dentro de un rango de fechas
+      tags:
+        - Transactions
+      operationId: getTransactionsByAccountNumberAndDateRange
+      parameters:
+        - in: path
+          name: accountNumber
+          schema:
+            type: string
+          required: true
+          description: Número de cuenta
+        - in: query
+          name: firstDayOfMonth
+          schema:
+            type: string
+            format: date-time
+          required: true
+          description: Fecha y hora de inicio del rango (ISO 8601 format, e.g., 2024-01-01T00:00:00Z)
+        - in: query
+          name: lastDayOfMonth
+          schema:
+            type: string
+            format: date-time
+          required: true
+          description: Fecha y hora de fin del rango (ISO 8601 format, e.g., 2024-01-31T23:59:59Z)
+      responses:
+        '200':
+          description: Lista de transacciones obtenida exitosamente
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TransactionResponse'
+        '400':
+          description: Solicitud inválida.  Asegúrese de que las fechas estén en formato ISO 8601.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Cuenta no encontrada o sin transacciones asociadas en el rango de fechas especificado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
 components:
   schemas:
     TransactionResponse:

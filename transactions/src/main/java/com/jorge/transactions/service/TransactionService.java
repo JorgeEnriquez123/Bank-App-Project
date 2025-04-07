@@ -5,6 +5,8 @@ import com.jorge.transactions.model.TransactionResponse;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.time.LocalDateTime;
+
 public interface TransactionService {
     Flux<TransactionResponse> getAllTransactions();
     Mono<TransactionResponse> createTransaction(TransactionRequest transactionRequest);
@@ -14,4 +16,7 @@ public interface TransactionService {
 
     Flux<TransactionResponse> getTransactionsByAccountNumber(String accountNumber);
     Flux<TransactionResponse> getTransactionsByCreditId(String creditId);
+    Flux<TransactionResponse> getTransactionsByAccountNumberAndCreatedAtBetweenOrderByCreatedAt(String accountNumber,
+                                                                                                LocalDateTime startDate,
+                                                                                                LocalDateTime endDate);
 }

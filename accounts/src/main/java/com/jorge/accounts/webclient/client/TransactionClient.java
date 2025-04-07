@@ -6,6 +6,8 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.time.LocalDateTime;
+
 public class TransactionClient {
     private final WebClient webClient;
 
@@ -25,5 +27,18 @@ public class TransactionClient {
                 .bodyValue(transactionRequest)
                 .retrieve()
                 .bodyToMono(TransactionResponse.class);
+    }
+
+    public Flux<TransactionResponse> findByAccountNumberAndCreatedAtBetweenOrderByCreatedAt(String accountNumber,
+                                                                                            LocalDateTime startOfMonth,
+                                                                                            LocalDateTime endOfMonth) {
+        return webClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/account-number/" + accountNumber + "/by-date-range")
+                        .queryParam("firstDayOfMonth", startOfMonth)
+                        .queryParam("lastDayOfMonth", endOfMonth)
+                        .build())
+                .retrieve()
+                .bodyToFlux(TransactionResponse.class);
     }
 }

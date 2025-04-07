@@ -10,10 +10,18 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.time.LocalDateTime;
+
 @Component
 @RequiredArgsConstructor
 public class TransactionApiDelegateImpl implements TransactionsApiDelegate {
     private final TransactionService transactionService;
+
+    @Override
+    public Flux<TransactionResponse> getTransactionsByAccountNumberAndDateRange(String accountNumber, LocalDateTime firstDayOfMonth, LocalDateTime lastDayOfMonth, ServerWebExchange exchange) {
+        return transactionService.getTransactionsByAccountNumberAndCreatedAtBetweenOrderByCreatedAt(accountNumber,
+                firstDayOfMonth, lastDayOfMonth);
+    }
 
     @Override
     public Flux<TransactionResponse> getAllTransactions(ServerWebExchange exchange) {

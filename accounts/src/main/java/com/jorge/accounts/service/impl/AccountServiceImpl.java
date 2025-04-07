@@ -2,12 +2,10 @@ package com.jorge.accounts.service.impl;
 
 import com.jorge.accounts.webclient.client.CustomerClient;
 import com.jorge.accounts.webclient.client.TransactionClient;
-import com.jorge.accounts.webclient.model.CustomerResponse;
 import com.jorge.accounts.mapper.AccountMapper;
 import com.jorge.accounts.model.*;
 import com.jorge.accounts.repository.AccountRepository;
 import com.jorge.accounts.service.AccountService;
-import com.jorge.accounts.utils.AccountUtils;
 import com.jorge.accounts.webclient.model.TransactionRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,8 +16,11 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.YearMonth;
 import java.util.List;
 
 @Service
@@ -195,6 +196,93 @@ public class AccountServiceImpl implements AccountService {
     public Flux<TransactionResponse> getTransactionsByAccountNumber(String accountNumber) {
         log.info("Fetching transactions for account number {}", accountNumber);
         return transactionClient.getTransactionsByAccountNumber(accountNumber);
+    }
+
+    @Override
+    public Mono<AverageMonthlyDailyBalanceResponse> calculateAverageMonthlyDailyBalance(String accountNumber, AverageMonthlyDailyBalanceRequest averageMonthlyDailyBalanceRequest) {
+        YearMonth yearMonth = YearMonth.of(averageMonthlyDailyBalanceRequest.getYear(), averageMonthlyDailyBalanceRequest.getMonth());
+        LocalDate firstDayOfMonth = yearMonth.atDay(1);
+        LocalDate lastDayOfMonth = yearMonth.atEndOfMonth();
+
+        LocalDateTime startOfMonth = firstDayOfMonth.atStartOfDay();
+        LocalDateTime endOfMonth = lastDayOfMonth.atTime(23, 59, 59);
+
+        // Obtener las transacciones del mes y calcular el saldo promedio
+        return transactionClient.findByAccountNumberAndCreatedAtBetweenOrderByCreatedAt(accountNumber, startOfMonth, endOfMonth)
+                .collectList()
+                .flatMap(transactions -> calculateAverageBalance(accountNumber, transactions, firstDayOfMonth, lastDayOfMonth))
+                .map(averageBalance -> { // Construir el objeto de respuesta
+                    AverageMonthlyDailyBalanceResponse response = new AverageMonthlyDailyBalanceResponse();
+                    response.setAccountNumber(accountNumber);
+                    response.setYear(yearMonth.getYear());
+                    response.setMonth(yearMonth.getMonthValue());
+                    response.setAverageDailyBalance(averageBalance);
+                    return response;
+                });
+    }
+
+
+    private Mono<BigDecimal> calculateAverageBalance(String accountNumber, List<TransactionResponse> transactions, LocalDate firstDayOfMonth, LocalDate lastDayOfMonth) {
+        return obtenerSaldoInicial(accountNumber, firstDayOfMonth)
+                .flatMap(saldoInicial -> {
+                    BigDecimal saldoDiarioTotal = BigDecimal.ZERO;
+                    LocalDate fechaActual = firstDayOfMonth;
+                    BigDecimal saldoActual = saldoInicial;
+
+                    while (!fechaActual.isAfter(lastDayOfMonth)) {
+                        BigDecimal saldoFinalDelDia = saldoActual;
+                        for (TransactionResponse transaction : transactions) {
+                            LocalDateTime transactionCreatedAt = transaction.getCreatedAt();
+                            if (transactionCreatedAt != null && transactionCreatedAt.toLocalDate().isEqual(fechaActual)) {
+                                saldoFinalDelDia = calculateBalanceAfterTransaction(saldoFinalDelDia, transaction); // To know if we sum or subtract
+                            }
+                        }
+                        saldoDiarioTotal = saldoDiarioTotal.add(saldoFinalDelDia);
+                        saldoActual = saldoFinalDelDia;
+                        fechaActual = fechaActual.plusDays(1);
+                    }
+
+                    int numeroDeDiasEnElMes = lastDayOfMonth.getDayOfMonth();
+                    return Mono.just(saldoDiarioTotal.divide(BigDecimal.valueOf(numeroDeDiasEnElMes), 2, RoundingMode.HALF_UP));
+                });
+    }
+
+    private BigDecimal calculateBalanceAfterTransaction(BigDecimal saldoActual, TransactionResponse transaction) {
+        assert transaction.getTransactionType() != null;
+
+        return switch (transaction.getTransactionType()) {
+            case DEBIT, WITHDRAWAL, MAINTENANCE_FEE, CREDIT_PAYMENT, CREDIT_CARD_PAYMENT -> {
+                assert transaction.getAmount() != null;
+                yield saldoActual.subtract(transaction.getAmount().add(transaction.getFee() != null ? transaction.getFee() : BigDecimal.ZERO));
+            }
+            case CREDIT, DEPOSIT, CREDIT_DEPOSIT ->
+                    saldoActual.add(transaction.getAmount());
+        };
+    }
+
+    // Obtener el saldo inicial de la cuenta al inicio del mes.  Si no hay historial, devuelve 0.
+    private Mono<BigDecimal> obtenerSaldoInicial(String accountNumber, LocalDate firstDayOfMonth) {
+        LocalDateTime startOfMonth = firstDayOfMonth.atStartOfDay();
+        return transactionClient.findByAccountNumberAndCreatedAtBetweenOrderByCreatedAt(accountNumber,
+                        LocalDateTime.of(1970, 1, 1, 0, 0, 0), startOfMonth)
+                .collectList()
+                .map(transactions -> {
+                    BigDecimal saldoInicial = BigDecimal.ZERO;
+                    for (TransactionResponse transaction : transactions) {
+                        saldoInicial = calculateBalanceAfterTransaction(saldoInicial, transaction);
+                    }
+                    return saldoInicial;
+                });
+    }
+
+    @Override
+    public Mono<TransactionResponse> transfer(String accountNumber, TransferRequest transferRequest) {
+        return null;
+    }
+
+    @Override
+    public Flux<FeeReportResponse> generateFeeReportBetweenDate(String accountNumber, FeeReportBetweenDatesRequest feeReportDatesRequest) {
+        return null;
     }
 
     public BalanceResponse mapToBalanceResponse(Account account){

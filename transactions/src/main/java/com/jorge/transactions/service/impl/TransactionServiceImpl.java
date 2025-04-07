@@ -82,6 +82,13 @@ public class TransactionServiceImpl implements TransactionService {
                 .map(transactionMapper::mapToTransactionResponse);
     }
 
+    @Override
+    public Flux<TransactionResponse> getTransactionsByAccountNumberAndCreatedAtBetweenOrderByCreatedAt(String accountNumber, LocalDateTime startDate, LocalDateTime endDate) {
+        log.info("Fetching transactions for account number: {} and created at: {}", accountNumber, startDate);
+        return transactionRepository.findByAccountNumberAndCreatedAtBetweenOrderByCreatedAt(accountNumber, startDate, endDate)
+                .map(transactionMapper::mapToTransactionResponse);
+    }
+
     public Transaction updateTransactionFromRequest(Transaction existingTransaction, TransactionRequest transactionRequest) {
         Transaction updatedTransaction = transactionMapper.mapToTransaction(transactionRequest);
         updatedTransaction.setId(existingTransaction.getId());
