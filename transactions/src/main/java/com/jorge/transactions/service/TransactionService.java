@@ -1,10 +1,12 @@
 package com.jorge.transactions.service;
 
+import com.jorge.transactions.model.FeeReportResponse;
 import com.jorge.transactions.model.TransactionRequest;
 import com.jorge.transactions.model.TransactionResponse;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 public interface TransactionService {
@@ -16,7 +18,11 @@ public interface TransactionService {
 
     Flux<TransactionResponse> getTransactionsByAccountNumber(String accountNumber);
     Flux<TransactionResponse> getTransactionsByCreditId(String creditId);
-    Flux<TransactionResponse> getTransactionsByAccountNumberAndCreatedAtBetweenOrderByCreatedAt(String accountNumber,
-                                                                                                LocalDateTime startDate,
-                                                                                                LocalDateTime endDate);
+    Flux<TransactionResponse> getTransactionsByAccountNumberAndDateRange(String accountNumber,
+                                                                         LocalDateTime startDate,
+                                                                         LocalDateTime endDate);
+    Flux<FeeReportResponse> getTransactionsFeesByAccountNumberAndDateRange(String accountNumber,
+                                                                           BigDecimal feeIsGreaterThan,
+                                                                           LocalDateTime createdAtStart,
+                                                                           LocalDateTime createdAtEnd);
 }

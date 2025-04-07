@@ -1,6 +1,7 @@
 package com.jorge.transactions.service.impl;
 
 import com.jorge.transactions.mapper.TransactionMapper;
+import com.jorge.transactions.model.FeeReportResponse;
 import com.jorge.transactions.model.Transaction;
 import com.jorge.transactions.model.TransactionRequest;
 import com.jorge.transactions.model.TransactionResponse;
@@ -14,7 +15,9 @@ import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -83,10 +86,28 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
-    public Flux<TransactionResponse> getTransactionsByAccountNumberAndCreatedAtBetweenOrderByCreatedAt(String accountNumber, LocalDateTime startDate, LocalDateTime endDate) {
+    public Flux<TransactionResponse> getTransactionsByAccountNumberAndDateRange(String accountNumber, LocalDateTime startDate, LocalDateTime endDate) {
         log.info("Fetching transactions for account number: {} and created at: {}", accountNumber, startDate);
         return transactionRepository.findByAccountNumberAndCreatedAtBetweenOrderByCreatedAt(accountNumber, startDate, endDate)
                 .map(transactionMapper::mapToTransactionResponse);
+    }
+
+    @Override
+    public Flux<FeeReportResponse> getTransactionsFeesByAccountNumberAndDateRange(String accountNumber, BigDecimal feeIsGreaterThan, LocalDateTime createdAtStart, LocalDateTime createdAtEnd) {
+        return transactionRepository.findByAccountNumberAndFeeGreaterThanAndCreatedAtBetweenOrderByCreatedAt(accountNumber, feeIsGreaterThan, createdAtStart, createdAtEnd)
+                .map(transaction -> {
+                    FeeReportResponse feeReport = new FeeReportResponse();
+                    feeReport.setAmount(transaction.getFee());
+
+                    if (Objects.requireNonNull(transaction.getTransactionType()) == Transaction.TransactionType.MAINTENANCE_FEE) {
+                        feeReport.setType(FeeReportResponse.TypeEnum.MAINTENANCE_FEE);
+                    } else {
+                        feeReport.setType(FeeReportResponse.TypeEnum.TRANSACTION_FEE);
+                    }
+
+                    feeReport.setDate(transaction.getCreatedAt());
+                    return feeReport;
+                });
     }
 
     public Transaction updateTransactionFromRequest(Transaction existingTransaction, TransactionRequest transactionRequest) {

@@ -1,6 +1,7 @@
 package com.jorge.transactions;
 
 import com.jorge.transactions.api.TransactionsApiDelegate;
+import com.jorge.transactions.model.FeeReportResponse;
 import com.jorge.transactions.model.TransactionRequest;
 import com.jorge.transactions.model.TransactionResponse;
 import com.jorge.transactions.service.TransactionService;
@@ -10,6 +11,7 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Component
@@ -18,8 +20,13 @@ public class TransactionApiDelegateImpl implements TransactionsApiDelegate {
     private final TransactionService transactionService;
 
     @Override
+    public Flux<FeeReportResponse> getTransactionsFeesByAccountNumberAndDateRange(String accountNumber, LocalDateTime startDate, LocalDateTime endDate, ServerWebExchange exchange) {
+        return transactionService.getTransactionsFeesByAccountNumberAndDateRange(accountNumber, BigDecimal.ZERO, startDate, endDate);
+    }
+
+    @Override
     public Flux<TransactionResponse> getTransactionsByAccountNumberAndDateRange(String accountNumber, LocalDateTime firstDayOfMonth, LocalDateTime lastDayOfMonth, ServerWebExchange exchange) {
-        return transactionService.getTransactionsByAccountNumberAndCreatedAtBetweenOrderByCreatedAt(accountNumber,
+        return transactionService.getTransactionsByAccountNumberAndDateRange(accountNumber,
                 firstDayOfMonth, lastDayOfMonth);
     }
 

@@ -484,8 +484,79 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+  /transactions/account-number/{accountNumber}/fees-by-date-range:
+    get:
+      summary: Obtiene las transacciones con comisiones mayores a un valor dado dentro de un rango de fechas para un número de cuenta
+      tags:
+        - Transactions
+      operationId: getTransactionsFeesByAccountNumberAndDateRange
+      parameters:
+        - in: path
+          name: accountNumber
+          schema:
+            type: string
+          required: true
+          description: Número de cuenta
+        - in: query
+          name: startDate
+          schema:
+            type: string
+            format: date-time
+          required: true
+          description: Fecha y hora de inicio del rango (ISO 8601 format, e.g., 2024-01-01T00:00:00Z)
+        - in: query
+          name: endDate
+          schema:
+            type: string
+            format: date-time
+          required: true
+          description: Fecha y hora de fin del rango (ISO 8601 format, e.g., 2024-01-31T23:59:59Z)
+      responses:
+        '200':
+          description: Lista de reportes de comisiones obtenida exitosamente
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FeeReportResponse'
+        '400':
+          description: Solicitud inválida. Asegúrese de que las fechas estén en formato ISO 8601 y que la comisión sea un valor numérico válido.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Cuenta no encontrada o sin transacciones asociadas en el rango de fechas especificado con las condiciones indicadas.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
 components:
   schemas:
+    FeeReportResponse:
+      type: object
+      properties:
+        amount:
+          type: number
+          format: decimal
+          description: Monto de la comisión
+        type:
+          type: string
+          enum: [MAINTENANCE_FEE, TRANSACTION_FEE]
+          description: Tipo de comisión
+        date:
+          type: string
+          format: date-time
+          description: Fecha y hora de la comisión
+
     TransactionResponse:
       type: object
       properties:
