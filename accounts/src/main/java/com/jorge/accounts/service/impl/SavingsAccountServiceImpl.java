@@ -1,5 +1,6 @@
 package com.jorge.accounts.service.impl;
 
+import com.jorge.accounts.mapper.AccountMapper;
 import com.jorge.accounts.mapper.SavingsAccountMapper;
 import com.jorge.accounts.model.Account;
 import com.jorge.accounts.model.SavingsAccount;
@@ -8,9 +9,12 @@ import com.jorge.accounts.model.SavingsAccountResponse;
 import com.jorge.accounts.repository.AccountRepository;
 import com.jorge.accounts.repository.SavingsAccountRepository;
 import com.jorge.accounts.service.SavingsAccountService;
+import com.jorge.accounts.utils.AccountUtils;
 import com.jorge.accounts.utils.CustomerTypeValidation;
 import com.jorge.accounts.webclient.client.CustomerClient;
+import com.jorge.accounts.webclient.client.TransactionClient;
 import com.jorge.accounts.webclient.model.CustomerResponse;
+import com.jorge.accounts.webclient.model.TransactionRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -18,11 +22,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Mono;
 
+import java.math.BigDecimal;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class SavingsAccountServiceImpl implements SavingsAccountService {
     private final CustomerClient customerClient;
+    private final AccountUtils accountUtils;
     private final SavingsAccountRepository savingsAccountRepository;
     private final SavingsAccountMapper savingsAccountMapper;
     private final CustomerTypeValidation customerTypeValidation;
@@ -32,7 +39,7 @@ public class SavingsAccountServiceImpl implements SavingsAccountService {
         log.info("Creating a new account for customer DNI: {}", savingsAccountRequest.getCustomerDni());
         return customerClient.getCustomerByDni(savingsAccountRequest.getCustomerDni())
                 .flatMap(customer -> {
-                    if(customer.getIsVIP() || customer.getIsPYME())
+                    if(customer.getIsVIP() || customer.getIsPYME()) // If Customer is VIP or PYME, perform validations
                         return customerTypeValidation.validateCreditCardExists(customer);  // Validate if customer has Credit Cards
                     else
                         return Mono.just(customer);
@@ -44,8 +51,10 @@ public class SavingsAccountServiceImpl implements SavingsAccountService {
                             .then(Mono.just(customer));
                 })
                 .flatMap(customer ->
-                        savingsAccountRepository.save(savingsAccountMapper.mapToSavingsAccount(savingsAccountRequest))
-                        .map(savingsAccountMapper::mapToSavingsAccountResponse))
+                        savingsAccountRepository.save(savingsAccountMapper.mapToSavingsAccount(savingsAccountRequest)))
+                .flatMap(checkingAccount ->
+                        accountUtils.handleInitialDeposit(checkingAccount, savingsAccountRequest.getBalance()))
+                .map(savingsAccountMapper::mapToSavingsAccountResponse)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "Customer with dni: " + savingsAccountRequest.getCustomerDni() + " not found")));
     }

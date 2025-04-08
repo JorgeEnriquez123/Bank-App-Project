@@ -133,8 +133,8 @@ public class AccountServiceImpl implements AccountService {
                                 transactionRequest.setAmount(depositRequest.getAmount());
                                 transactionRequest.setTransactionType(TransactionRequest.TransactionType.DEPOSIT);
                                 transactionRequest.setDescription("Deposit to account " + accountNumber);
-                                if (savedAccount.getIsCommissionFeeActive()) transactionRequest.setFee(savedAccount.getMovementCommissionFee());
-                                else transactionRequest.setFee(BigDecimal.ZERO);
+                                transactionRequest.setFee(savedAccount.getIsCommissionFeeActive()
+                                        ? savedAccount.getMovementCommissionFee() : BigDecimal.ZERO);
 
                                 return transactionClient.createTransaction(transactionRequest)
                                         .thenReturn(savedAccount);

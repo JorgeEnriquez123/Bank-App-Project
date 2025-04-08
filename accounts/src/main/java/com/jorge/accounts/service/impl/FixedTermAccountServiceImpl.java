@@ -7,6 +7,7 @@ import com.jorge.accounts.model.FixedTermAccountRequest;
 import com.jorge.accounts.model.FixedTermAccountResponse;
 import com.jorge.accounts.repository.FixedTermAccountRepository;
 import com.jorge.accounts.service.FixedTermAccountService;
+import com.jorge.accounts.utils.AccountUtils;
 import com.jorge.accounts.utils.CustomerTypeValidation;
 import com.jorge.accounts.webclient.client.CustomerClient;
 import com.jorge.accounts.webclient.model.CustomerResponse;
@@ -22,6 +23,7 @@ import reactor.core.publisher.Mono;
 @Slf4j
 public class FixedTermAccountServiceImpl implements FixedTermAccountService {
     private final CustomerClient customerClient;
+    private final AccountUtils accountUtils;
     private final FixedTermAccountRepository fixedTermAccountRepository;
     private final FixedTermAccountMapper fixedTermAccountMapper;
     private final CustomerTypeValidation customerTypeValidation;
@@ -43,8 +45,10 @@ public class FixedTermAccountServiceImpl implements FixedTermAccountService {
                             .then(Mono.just(customer));
                 })
                 .flatMap(customer ->
-                        fixedTermAccountRepository.save(fixedTermAccountMapper.mapToFixedTermAccount(fixedTermAccountRequest))
-                                .map(fixedTermAccountMapper::mapToFixedTermAccountResponse))
+                        fixedTermAccountRepository.save(fixedTermAccountMapper.mapToFixedTermAccount(fixedTermAccountRequest)))
+                .flatMap(checkingAccount ->
+                        accountUtils.handleInitialDeposit(checkingAccount, fixedTermAccountRequest.getBalance()))
+                .map(fixedTermAccountMapper::mapToFixedTermAccountResponse)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "Customer with dni: " + fixedTermAccountRequest.getCustomerDni() + " not found")));
     }

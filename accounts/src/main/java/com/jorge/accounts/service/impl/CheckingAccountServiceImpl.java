@@ -7,9 +7,12 @@ import com.jorge.accounts.model.CheckingAccountRequest;
 import com.jorge.accounts.model.CheckingAccountResponse;
 import com.jorge.accounts.repository.CheckingAccountRepository;
 import com.jorge.accounts.service.CheckingAccountService;
+import com.jorge.accounts.utils.AccountUtils;
 import com.jorge.accounts.utils.CustomerTypeValidation;
 import com.jorge.accounts.webclient.client.CustomerClient;
+import com.jorge.accounts.webclient.client.TransactionClient;
 import com.jorge.accounts.webclient.model.CustomerResponse;
+import com.jorge.accounts.webclient.model.TransactionRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -27,6 +30,7 @@ public class CheckingAccountServiceImpl implements CheckingAccountService {
     private final CheckingAccountRepository checkingAccountRepository;
     private final CheckingAccountMapper checkingAccountMapper;
     private final CustomerTypeValidation customerTypeValidation;
+    private final AccountUtils accountUtils;
 
     @Override
     public Mono<CheckingAccountResponse> createCheckingAccount(CheckingAccountRequest checkingAccountRequest) {
@@ -50,6 +54,8 @@ public class CheckingAccountServiceImpl implements CheckingAccountService {
                     if(customer.getIsPYME()) checkingAccount.setMaintenanceFee(BigDecimal.ZERO);
                     return checkingAccountRepository.save(checkingAccount);
                 })
+                .flatMap(checkingAccount ->
+                        accountUtils.handleInitialDeposit(checkingAccount, checkingAccountRequest.getBalance()))
                 .map(checkingAccountMapper::mapToCheckingAccountResponse)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "Customer with dni: " + checkingAccountRequest.getCustomerDni() + " not found")));
