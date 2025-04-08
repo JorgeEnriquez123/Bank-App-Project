@@ -1,28 +1,21 @@
 package com.jorge.accounts.service.impl;
 
-import com.jorge.accounts.mapper.AccountMapper;
 import com.jorge.accounts.mapper.SavingsAccountMapper;
 import com.jorge.accounts.model.Account;
 import com.jorge.accounts.model.SavingsAccount;
 import com.jorge.accounts.model.SavingsAccountRequest;
 import com.jorge.accounts.model.SavingsAccountResponse;
-import com.jorge.accounts.repository.AccountRepository;
 import com.jorge.accounts.repository.SavingsAccountRepository;
 import com.jorge.accounts.service.SavingsAccountService;
 import com.jorge.accounts.utils.AccountUtils;
 import com.jorge.accounts.utils.CustomerTypeValidation;
 import com.jorge.accounts.webclient.client.CustomerClient;
-import com.jorge.accounts.webclient.client.TransactionClient;
-import com.jorge.accounts.webclient.model.CustomerResponse;
-import com.jorge.accounts.webclient.model.TransactionRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Mono;
-
-import java.math.BigDecimal;
 
 @Service
 @RequiredArgsConstructor

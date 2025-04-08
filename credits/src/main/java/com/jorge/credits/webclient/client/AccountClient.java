@@ -2,7 +2,6 @@ package com.jorge.credits.webclient.client;
 
 import com.jorge.credits.webclient.model.AccountBalanceResponse;
 import com.jorge.credits.webclient.model.AccountBalanceUpdateRequest;
-import com.jorge.credits.webclient.model.CustomerResponse;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 

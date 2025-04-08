@@ -6,7 +6,6 @@ import com.jorge.transactions.model.TransactionResponse;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 public interface TransactionService {

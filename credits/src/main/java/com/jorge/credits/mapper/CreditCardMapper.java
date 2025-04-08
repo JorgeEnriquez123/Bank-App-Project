@@ -1,9 +1,9 @@
 package com.jorge.credits.mapper;
 
-import com.jorge.credits.model.*;
+import com.jorge.credits.model.CreditCard;
+import com.jorge.credits.model.CreditCardRequest;
+import com.jorge.credits.model.CreditCardResponse;
 import org.springframework.stereotype.Component;
-
-import java.time.LocalDateTime;
 
 @Component
 public class CreditCardMapper {

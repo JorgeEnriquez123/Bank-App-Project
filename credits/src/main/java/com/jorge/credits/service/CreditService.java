@@ -1,6 +1,9 @@
 package com.jorge.credits.service;
 
-import com.jorge.credits.model.*;
+import com.jorge.credits.model.CreditPaymentRequest;
+import com.jorge.credits.model.CreditRequest;
+import com.jorge.credits.model.CreditResponse;
+import com.jorge.credits.model.TransactionResponse;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 

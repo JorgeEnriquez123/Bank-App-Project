@@ -4,7 +4,6 @@ import com.jorge.transactions.mapper.CreditCardTransactionMapper;
 import com.jorge.transactions.model.CreditCardTransaction;
 import com.jorge.transactions.model.CreditCardTransactionRequest;
 import com.jorge.transactions.model.CreditCardTransactionResponse;
-import com.jorge.transactions.model.TransactionResponse;
 import com.jorge.transactions.repository.CreditCardTransactionRepository;
 import com.jorge.transactions.service.CreditCardTransactionService;
 import lombok.RequiredArgsConstructor;

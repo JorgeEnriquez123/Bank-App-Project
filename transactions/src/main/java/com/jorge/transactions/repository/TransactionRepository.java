@@ -1,8 +1,6 @@
 package com.jorge.transactions.repository;
 
 import com.jorge.transactions.model.Transaction;
-import com.jorge.transactions.model.TransactionResponse;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;

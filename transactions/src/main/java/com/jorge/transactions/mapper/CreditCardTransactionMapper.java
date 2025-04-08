@@ -1,6 +1,8 @@
 package com.jorge.transactions.mapper;
 
-import com.jorge.transactions.model.*;
+import com.jorge.transactions.model.CreditCardTransaction;
+import com.jorge.transactions.model.CreditCardTransactionRequest;
+import com.jorge.transactions.model.CreditCardTransactionResponse;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;

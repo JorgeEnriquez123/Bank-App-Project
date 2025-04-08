@@ -4,7 +4,6 @@ import com.jorge.customers.mapper.CustomerMapper;
 import com.jorge.customers.model.Customer;
 import com.jorge.customers.model.CustomerRequest;
 import com.jorge.customers.model.CustomerResponse;
-import com.jorge.customers.model.CustomerType;
 import com.jorge.customers.repository.CustomerRepository;
 import com.jorge.customers.service.CustomerService;
 import lombok.RequiredArgsConstructor;

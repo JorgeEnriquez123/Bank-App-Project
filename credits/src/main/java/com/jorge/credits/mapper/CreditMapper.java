@@ -1,6 +1,8 @@
 package com.jorge.credits.mapper;
 
-import com.jorge.credits.model.*;
+import com.jorge.credits.model.Credit;
+import com.jorge.credits.model.CreditRequest;
+import com.jorge.credits.model.CreditResponse;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;

@@ -1,11 +1,7 @@
 package com.jorge.accounts.mapper;
 
 import com.jorge.accounts.model.*;
-import com.jorge.accounts.utils.AccountUtils;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-
-import java.util.Optional;
 
 @Component
 public class AccountMapper {

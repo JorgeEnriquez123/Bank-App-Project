@@ -1,17 +1,14 @@
 package com.jorge.accounts.utils;
 
-import com.jorge.accounts.mapper.AccountMapper;
 import com.jorge.accounts.model.Account;
 import com.jorge.accounts.repository.AccountRepository;
 import com.jorge.accounts.webclient.client.CreditClient;
-import com.jorge.accounts.webclient.model.CreditCardResponse;
 import com.jorge.accounts.webclient.model.CustomerResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Component

@@ -10,7 +10,6 @@ import com.jorge.accounts.service.FixedTermAccountService;
 import com.jorge.accounts.utils.AccountUtils;
 import com.jorge.accounts.utils.CustomerTypeValidation;
 import com.jorge.accounts.webclient.client.CustomerClient;
-import com.jorge.accounts.webclient.model.CustomerResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;

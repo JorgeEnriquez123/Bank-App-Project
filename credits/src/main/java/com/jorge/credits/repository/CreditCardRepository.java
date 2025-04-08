@@ -1,6 +1,5 @@
 package com.jorge.credits.repository;
 
-import com.jorge.credits.model.BalanceResponse;
 import com.jorge.credits.model.CreditCard;
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
 import org.springframework.stereotype.Repository;
