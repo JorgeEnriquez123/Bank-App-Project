@@ -11,8 +11,4 @@ import java.util.Collection;
 public interface CreditRepository extends ReactiveMongoRepository<Credit, String> {
     Flux<Credit> findByCreditHolderIdAndCreditTypeIn(String creditHolderId, Collection<Credit.CreditType> creditTypes);
     Flux<Credit> findByCreditHolderId(String creditHolderId);
-
-    /*Mono<Credit> findByCreditCardNumber(String creditCardNumber);
-
-    Flux<Credit> findByCustomerDniAndCreditTypeIn(String customerDni, Collection<Credit.CreditType> creditTypes);*/
 }

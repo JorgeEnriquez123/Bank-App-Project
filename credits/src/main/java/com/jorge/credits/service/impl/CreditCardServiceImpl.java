@@ -1,7 +1,6 @@
 package com.jorge.credits.service.impl;
 
 import com.jorge.credits.mapper.CreditCardMapper;
-import com.jorge.credits.mapper.CreditCardTransactionRequest;
 import com.jorge.credits.mapper.TransactionRequestMapper;
 import com.jorge.credits.model.*;
 import com.jorge.credits.repository.CreditCardRepository;
@@ -10,6 +9,7 @@ import com.jorge.credits.webclient.client.AccountClient;
 import com.jorge.credits.webclient.client.CustomerClient;
 import com.jorge.credits.webclient.client.TransactionClient;
 import com.jorge.credits.webclient.model.AccountBalanceUpdateRequest;
+import com.jorge.credits.webclient.model.CreditCardTransactionRequest;
 import com.jorge.credits.webclient.model.CustomerResponse;
 import com.jorge.credits.webclient.model.TransactionRequest;
 import lombok.RequiredArgsConstructor;

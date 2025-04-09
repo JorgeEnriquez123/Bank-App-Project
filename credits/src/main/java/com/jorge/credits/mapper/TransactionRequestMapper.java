@@ -2,6 +2,7 @@ package com.jorge.credits.mapper;
 
 import com.jorge.credits.model.ConsumptionRequest;
 import com.jorge.credits.model.CreditPaymentRequest;
+import com.jorge.credits.webclient.model.CreditCardTransactionRequest;
 import com.jorge.credits.webclient.model.TransactionRequest;
 import org.springframework.stereotype.Component;
 

@@ -1,4 +1,4 @@
-package com.jorge.credits.mapper;
+package com.jorge.credits.webclient.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

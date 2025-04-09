@@ -1,8 +1,8 @@
 package com.jorge.credits.webclient.client;
 
-import com.jorge.credits.mapper.CreditCardTransactionRequest;
 import com.jorge.credits.model.CreditCardTransactionResponse;
 import com.jorge.credits.model.TransactionResponse;
+import com.jorge.credits.webclient.model.CreditCardTransactionRequest;
 import com.jorge.credits.webclient.model.TransactionRequest;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;

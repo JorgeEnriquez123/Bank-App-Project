@@ -374,33 +374,6 @@ public class AccountServiceImpl implements AccountService {
                 });
     }
 
-    /*@Override
-    public Mono<TransactionResponse> transfer(String accountNumber, TransferRequest transferRequest) {
-        String receiverAccountNumber = transferRequest.getReceiverAccountNumber();
-        BigDecimal transferAmount = transferRequest.getAmount();
-        return accountRepository.findByAccountNumber(accountNumber)
-                .flatMap(account -> {
-                    if(account instanceof SavingsAccount savingsAccount) {
-                        if(savingsAccount.getMovementsThisMonth() > savingsAccount.getMonthlyMovementsLimit()) {
-                            return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                                    "Savings account with number: " + accountNumber + " has reached max movements this month"));
-                        }
-                    } else if (account instanceof FixedTermAccount fixedAccount) {
-                        return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                                "Fixed Term accounts can't make transfers"));
-                    }
-                    return Mono.just(account);
-                })
-                .flatMap(account -> accountRepository.findByAccountNumber(receiverAccountNumber).flatMap(recieverAccount -> {
-                    if(recieverAccount.getAccountType() == Account.AccountType.FIXED_TERM){
-                        return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                                "Can't transfer to a Fixed Term account"));
-                    }
-                    return Mono.just(account);
-                }))
-                .map()
-    }*/
-
     @Override
     public Flux<FeeReportResponse> generateFeeReportBetweenDate(String accountNumber,
                                                                 LocalDateTime startDate,
@@ -435,85 +408,4 @@ public class AccountServiceImpl implements AccountService {
         }
         return Mono.just(account);
     }
-
-    /*
-    @Override
-    public Mono<AccountResponse> getAccountByAccountNumber(String accountNumber) {
-        log.info("Fetching account by account number: {}", accountNumber);
-        return accountRepository.findByAccountNumber(accountNumber)
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
-                        "Account with account number: " + accountNumber + " not found")))
-                .map(accountMapper::mapToAccountResponse);
-    }
-
-    @Override
-    public Mono<AccountResponse> createAccount(AccountRequest accountRequest) {
-        log.info("Creating a new account for customer DNI: {}", accountRequest.getCustomerDni());
-        Mono<CustomerResponse> customerResponse = customerClient.getCustomerByDni(accountRequest.getCustomerDni());
-        return customerResponse.flatMap(customer ->
-                switch (customer.getCustomerType()) {
-                    case PERSONAL -> personalCustomerValidation(customer, accountRequest);
-                    case BUSINESS -> businessCustomerValidation(accountRequest);
-                    default -> Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unsupported customer type"));
-                }).map(accountMapper::mapToAccountResponse);
-    }
-
-    private Mono<Account> personalCustomerValidation(CustomerResponse customer, AccountRequest accountRequest) {
-        log.info("Validating personal customer account creation for DNI: {}, Account Type: {}", customer.getDni(), accountRequest.getAccountType());
-        return accountRepository.findByCustomerDniAndAccountType(customer.getDni(),
-                        Account.AccountType.valueOf(accountRequest.getAccountType().name()))
-                .flatMap(account -> {
-                    log.warn("Conflict: Customer with DNI {} already has a {} account", customer.getDni(), accountRequest.getAccountType());
-                    return Mono.<Account>error(new ResponseStatusException(HttpStatus.CONFLICT,
-                        "Customer with dni: " + customer.getDni() + " already has a " + accountRequest.getAccountType().name() + " account"));
-                    })
-                .switchIfEmpty(Mono.defer(() -> {
-                    Account newAccount = accountCreationSetUp(accountRequest);
-                    log.info("Saving new personal account");
-                    return accountRepository.save(newAccount);
-                }));
-    }
-
-    private Mono<Account> businessCustomerValidation(AccountRequest accountRequest) {
-        log.info("Validating business customer account creation. Account Type: {}", accountRequest.getAccountType());
-        if (accountRequest.getAccountType() != AccountRequest.AccountTypeEnum.CHECKING) {
-            log.warn("Business customer attempted to create a non-CHECKING account: {}", accountRequest.getAccountType());
-            return Mono.error(
-                    new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                            "Business customer can't create a " + accountRequest.getAccountType().name() + " account"));
-        }
-        log.info("Saving new business account");
-        return accountRepository.save(accountCreationSetUp(accountRequest));
-    }
-
-    @Override
-    public Mono<Void> deleteAccountByAccountNumber(String accountNumber) {
-        log.info("Deleting account with account number: {}", accountNumber);
-        return accountRepository.deleteByAccountNumber(accountNumber);
-    }
-
-    @Override
-    public Mono<AccountResponse> updateAccountByAccountNumber(String accountNumber, AccountRequest accountRequest) {
-        log.info("Updating account with account number: {}", accountNumber);
-        return accountRepository.findByAccountNumber(accountNumber)
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
-                        "Account with account number: " + accountNumber + " not found")))
-                .flatMap(existingAccount -> {
-                    Account account = accountMapper.mapToAccount(accountRequest);
-                    account.setId(existingAccount.getId());
-                    account.setAccountNumber(existingAccount.getAccountNumber());
-                    account.setCreatedAt(existingAccount.getCreatedAt());
-                    log.info("Saving updated account with account number: {}", accountNumber);
-                    return accountRepository.save(account);
-                    })
-                .map(accountMapper::mapToAccountResponse);
-    }
-
-    public Account accountCreationSetUp(AccountRequest accountRequest) {
-        Account account = accountMapper.mapToAccount(accountRequest);
-        account.setAccountNumber(accountUtils.generateAccountNumber());
-        account.setCreatedAt(LocalDateTime.now());
-        log.info("Setting up new account with generated account number: {}", account.getAccountNumber());
-        return account;
-    }*/
 }
