@@ -647,6 +647,10 @@ components:
           type: string
           format: date-time
           description: Fecha y hora de la creación del crédito
+        dueDate:
+            type: string
+            format: date
+            description: Fecha de vencimiento del crédito
 
     CreditRequest:
       type: object
@@ -655,6 +659,7 @@ components:
         - creditType
         - status
         - creditAmount
+        - dueDate
       properties:
         creditHolderId:
           type: string
@@ -671,6 +676,10 @@ components:
           type: number
           format: decimal
           description: Monto del crédito
+        dueDate:
+          type: string
+          format: date
+          description: Fecha de vencimiento del crédito
 
     CreditCardResponse:
       type: object

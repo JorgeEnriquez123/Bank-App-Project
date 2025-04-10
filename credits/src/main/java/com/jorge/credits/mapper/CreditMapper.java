@@ -16,6 +16,7 @@ public class CreditMapper {
         credit.setStatus(Credit.Status.valueOf(creditRequest.getStatus().name()));
         credit.setCreditAmount(creditRequest.getCreditAmount());
         credit.setCreatedAt(LocalDateTime.now());
+        credit.setDueDate(creditRequest.getDueDate());
         return credit;
     }
 
@@ -27,6 +28,7 @@ public class CreditMapper {
         creditResponse.setStatus(CreditResponse.StatusEnum.valueOf(credit.getStatus().name()));
         creditResponse.setCreditAmount(credit.getCreditAmount());
         creditResponse.setCreatedAt(credit.getCreatedAt());
+        creditResponse.setDueDate(credit.getDueDate());
         return creditResponse;
     }
 }

@@ -5,6 +5,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Builder
@@ -21,6 +22,7 @@ public class Credit {
     private Status status;
     private BigDecimal creditAmount;
     private LocalDateTime createdAt;
+    private LocalDate dueDate;
 
     public enum CreditType {
         PERSONAL,
