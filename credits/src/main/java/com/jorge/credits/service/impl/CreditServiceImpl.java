@@ -20,6 +20,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -63,7 +64,16 @@ public class CreditServiceImpl implements CreditService {
                                 });
                     } else {
                         log.info("Customer is of type BUSINESS. Unlimited Credits");
-                        return creditRepository.save(credit);
+                        return creditRepository.findByCreditHolderId(customerResponse.getId())
+                                .any(creditAvailable -> creditAvailable.getDueDate().isBefore(LocalDate.now()))
+                                .flatMap(hasOverdueDebt -> {
+                                    if (hasOverdueDebt) {
+                                        return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                                                "Customer with dni: " + customerResponse.getDni() + " has overdue debts"));
+                                    } else {
+                                        return creditRepository.save(credit);
+                                    }
+                                });
                     }
                 })
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
