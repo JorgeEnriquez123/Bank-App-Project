@@ -8,7 +8,7 @@ import com.jorge.accounts.model.FixedTermAccountResponse;
 import com.jorge.accounts.repository.FixedTermAccountRepository;
 import com.jorge.accounts.service.FixedTermAccountService;
 import com.jorge.accounts.utils.AccountUtils;
-import com.jorge.accounts.utils.CustomerTypeValidation;
+import com.jorge.accounts.utils.CustomerValidation;
 import com.jorge.accounts.webclient.client.CustomerClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,7 +25,7 @@ public class FixedTermAccountServiceImpl implements FixedTermAccountService {
     private final AccountUtils accountUtils;
     private final FixedTermAccountRepository fixedTermAccountRepository;
     private final FixedTermAccountMapper fixedTermAccountMapper;
-    private final CustomerTypeValidation customerTypeValidation;
+    private final CustomerValidation customerValidation;
 
     @Override
     public Mono<FixedTermAccountResponse> createFixedTermAccount(FixedTermAccountRequest fixedTermAccountRequest) {
@@ -33,14 +33,14 @@ public class FixedTermAccountServiceImpl implements FixedTermAccountService {
         return customerClient.getCustomerByDni(fixedTermAccountRequest.getCustomerDni())
                 .flatMap(customer -> {
                     if(customer.getIsVIP() || customer.getIsPYME())
-                        return customerTypeValidation.validateCreditCardExists(customer);  // Validate if customer has Credit Cards
+                        return customerValidation.validateCreditCardExists(customer);  // Validate if customer has Credit Cards
                     else
-                        return Mono.just(customer);
+                        return customerValidation.validateIfCustomerHasOverDueDebt(customer);   // Validate if Customer has over due debts
                 })
                 .flatMap(customer -> switch (customer.getCustomerType()) {
-                    case PERSONAL -> customerTypeValidation.personalCustomerValidation(customer, Account.AccountType.FIXED_TERM)
+                    case PERSONAL -> customerValidation.personalCustomerValidation(customer, Account.AccountType.FIXED_TERM)
                             .then(Mono.just(customer));
-                    case BUSINESS -> customerTypeValidation.businessCustomerValidation(Account.AccountType.FIXED_TERM)
+                    case BUSINESS -> customerValidation.businessCustomerValidation(Account.AccountType.FIXED_TERM)
                             .then(Mono.just(customer));
                 })
                 .flatMap(customer ->

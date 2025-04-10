@@ -8,7 +8,7 @@ import com.jorge.accounts.model.SavingsAccountResponse;
 import com.jorge.accounts.repository.SavingsAccountRepository;
 import com.jorge.accounts.service.SavingsAccountService;
 import com.jorge.accounts.utils.AccountUtils;
-import com.jorge.accounts.utils.CustomerTypeValidation;
+import com.jorge.accounts.utils.CustomerValidation;
 import com.jorge.accounts.webclient.client.CustomerClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,7 +25,7 @@ public class SavingsAccountServiceImpl implements SavingsAccountService {
     private final AccountUtils accountUtils;
     private final SavingsAccountRepository savingsAccountRepository;
     private final SavingsAccountMapper savingsAccountMapper;
-    private final CustomerTypeValidation customerTypeValidation;
+    private final CustomerValidation customerValidation;
 
     @Override
     public Mono<SavingsAccountResponse> createSavingsAccount(SavingsAccountRequest savingsAccountRequest) {
@@ -33,14 +33,14 @@ public class SavingsAccountServiceImpl implements SavingsAccountService {
         return customerClient.getCustomerByDni(savingsAccountRequest.getCustomerDni())
                 .flatMap(customer -> {
                     if(customer.getIsVIP() || customer.getIsPYME()) // If Customer is VIP or PYME, perform validations
-                        return customerTypeValidation.validateCreditCardExists(customer);  // Validate if customer has Credit Cards
+                        return customerValidation.validateCreditCardExists(customer);  // Validate if customer has Credit Cards
                     else
-                        return Mono.just(customer);
+                        return customerValidation.validateIfCustomerHasOverDueDebt(customer);   // Validate if Customer has over due debts
                 })
                 .flatMap(customer -> switch (customer.getCustomerType()) {
-                    case PERSONAL -> customerTypeValidation.personalCustomerValidation(customer, Account.AccountType.SAVINGS)
+                    case PERSONAL -> customerValidation.personalCustomerValidation(customer, Account.AccountType.SAVINGS)
                             .then(Mono.just(customer));
-                    case BUSINESS -> customerTypeValidation.businessCustomerValidation(Account.AccountType.SAVINGS)
+                    case BUSINESS -> customerValidation.businessCustomerValidation(Account.AccountType.SAVINGS)
                             .then(Mono.just(customer));
                 })
                 .flatMap(customer ->

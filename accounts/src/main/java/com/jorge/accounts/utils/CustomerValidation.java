@@ -11,10 +11,12 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Mono;
 
+import java.time.LocalDate;
+
 @Component
 @Slf4j
 @RequiredArgsConstructor
-public class CustomerTypeValidation {
+public class CustomerValidation {
     private final AccountRepository accountRepository;
     private final CreditClient creditClient;
 
@@ -51,5 +53,18 @@ public class CustomerTypeValidation {
                     }
                 });
     }
-    
+
+    public Mono<CustomerResponse> validateIfCustomerHasOverDueDebt(CustomerResponse customerResponse) {
+        return creditClient.getCreditsByCreditHolderId(customerResponse.getId())
+                .any(credit -> credit.getDueDate().isBefore(LocalDate.now()))
+                .flatMap(hasOverdueDebt -> {
+                    if (hasOverdueDebt) {
+                        return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                                "Customer with dni: " + customerResponse.getDni() + " has overdue debts"));
+                    } else {
+                        return Mono.just(customerResponse);
+                    }
+                });
+    }
+
 }
