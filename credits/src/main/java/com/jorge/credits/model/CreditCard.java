@@ -6,6 +6,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Builder
 @Getter
@@ -23,9 +24,10 @@ public class CreditCard {
     private LocalDate expiryDate;
     private CreditCardStatus status;
     private String creditLimit;
+    private LocalDateTime createdAt;
 
-    private BigDecimal availableBalance; // What you have left in your credit card
-    private BigDecimal outstandingBalance; // What you have consumed on your credit card
+    private BigDecimal availableBalance;    // What you have left in your credit card
+    private BigDecimal outstandingBalance;  // What you have consumed on your credit card
 
     public enum CreditCardType {
         PERSONAL_CREDIT_CARD,

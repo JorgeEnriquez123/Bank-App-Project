@@ -5,6 +5,8 @@ import com.jorge.credits.model.CreditCardRequest;
 import com.jorge.credits.model.CreditCardResponse;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
+
 @Component
 public class CreditCardMapper {
     public CreditCard mapToCreditCard(CreditCardRequest creditCardRequest) {
@@ -18,6 +20,7 @@ public class CreditCardMapper {
         creditCard.setCreditLimit(creditCardRequest.getCreditLimit());
         creditCard.setAvailableBalance(creditCardRequest.getAvailableBalance());
         creditCard.setOutstandingBalance(creditCardRequest.getOutstandingBalance());
+        creditCard.setCreatedAt(LocalDateTime.now());
         return creditCard;
     }
 
@@ -33,6 +36,7 @@ public class CreditCardMapper {
         creditCardResponse.setCreditLimit(creditCard.getCreditLimit());
         creditCardResponse.setAvailableBalance(creditCard.getAvailableBalance());
         creditCardResponse.setOutstandingBalance(creditCard.getOutstandingBalance());
+        creditCardResponse.setCreatedAt(creditCard.getCreatedAt());
         return creditCardResponse;
     }
 }

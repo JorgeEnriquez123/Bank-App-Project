@@ -195,9 +195,15 @@ public class CreditCardServiceImpl implements CreditCardService {
                 .map(creditCardMapper::mapToCreditCardResponse);
     }
 
+    @Override
+    public Flux<CreditCardTransactionResponse> getCreditCardTransactionsByCreditCardNumber(String creditCardNumber) {
+        return transactionClient.getCreditCardTransactionsByCreditCardNumber(creditCardNumber);
+    }
+
     private CreditCard updateCreditCardFromRequest(CreditCard existingCreditCard, CreditCardRequest creditCardRequest) {
         CreditCard updatedCreditCard = creditCardMapper.mapToCreditCard(creditCardRequest);
         updatedCreditCard.setId(existingCreditCard.getId());
+        updatedCreditCard.setCreatedAt(existingCreditCard.getCreatedAt());
         return updatedCreditCard;
     }
 }
