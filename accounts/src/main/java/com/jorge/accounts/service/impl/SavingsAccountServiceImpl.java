@@ -45,8 +45,8 @@ public class SavingsAccountServiceImpl implements SavingsAccountService {
                 })
                 .flatMap(customer ->
                         savingsAccountRepository.save(savingsAccountMapper.mapToSavingsAccount(savingsAccountRequest)))
-                .flatMap(checkingAccount ->
-                        accountUtils.handleInitialDeposit(checkingAccount, savingsAccountRequest.getBalance()))
+                .flatMap(savingsAccount ->
+                        accountUtils.handleInitialDeposit(savingsAccount, savingsAccountRequest.getBalance()))
                 .map(savingsAccountMapper::mapToSavingsAccountResponse)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "Customer with dni: " + savingsAccountRequest.getCustomerDni() + " not found")));

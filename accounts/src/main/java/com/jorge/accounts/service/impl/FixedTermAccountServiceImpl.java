@@ -45,8 +45,8 @@ public class FixedTermAccountServiceImpl implements FixedTermAccountService {
                 })
                 .flatMap(customer ->
                         fixedTermAccountRepository.save(fixedTermAccountMapper.mapToFixedTermAccount(fixedTermAccountRequest)))
-                .flatMap(checkingAccount ->
-                        accountUtils.handleInitialDeposit(checkingAccount, fixedTermAccountRequest.getBalance()))
+                .flatMap(fixedTermAccount ->
+                        accountUtils.handleInitialDeposit(fixedTermAccount, fixedTermAccountRequest.getBalance()))
                 .map(fixedTermAccountMapper::mapToFixedTermAccountResponse)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "Customer with dni: " + fixedTermAccountRequest.getCustomerDni() + " not found")));
