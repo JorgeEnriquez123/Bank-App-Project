@@ -12,14 +12,9 @@ import java.math.BigDecimal;
 public class AccountBalanceResponse {
     private String accountNumber;
     private AccountType accountType;
-    private CurrencyType currencyType;
     private BigDecimal balance;
 
     public enum AccountType{
         SAVINGS, CHECKING, FIXED_TERM
-    }
-
-    public enum CurrencyType{
-        PEN, USD
     }
 }
