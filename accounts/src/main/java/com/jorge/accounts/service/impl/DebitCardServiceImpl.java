@@ -1,0 +1,115 @@
+package com.jorge.accounts.service.impl;
+
+import com.jorge.accounts.mapper.AccountMapper;
+import com.jorge.accounts.mapper.DebitCardMapper;
+import com.jorge.accounts.model.*;
+import com.jorge.accounts.repository.AccountRepository;
+import com.jorge.accounts.repository.DebitCardRepository;
+import com.jorge.accounts.service.DebitCardService;
+import com.jorge.accounts.webclient.client.TransactionClient;
+import com.jorge.accounts.webclient.model.TransactionRequest;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
+import java.math.BigDecimal;
+
+@Service
+@RequiredArgsConstructor
+public class DebitCardServiceImpl implements DebitCardService {
+    private final DebitCardRepository debitCardRepository;
+    private final AccountRepository accountRepository;
+    private final DebitCardMapper debitCardMapper;
+    private final TransactionClient transactionClient;
+    private final AccountMapper accountMapper;
+
+    @Override
+    public Flux<DebitCardResponse> getAllDebitCards() {
+        return debitCardRepository.findAll()
+                .map(debitCardMapper::mapToDebitCardResponse);
+    }
+
+    @Override
+    public Mono<DebitCardResponse> getDebitCardById(String id) {
+        return debitCardRepository.findById(id)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Debit Card with id: " + id + " not found")))
+                .map(debitCardMapper::mapToDebitCardResponse);
+    }
+
+    @Override
+    public Mono<DebitCardResponse> createDebitCard(DebitCardRequest debitCardRequest) {
+        return debitCardRepository.save(debitCardMapper.mapToDebitCard(debitCardRequest))
+                .map(debitCardMapper::mapToDebitCardResponse);
+    }
+
+    @Override
+    public Mono<DebitCardResponse> updateDebitCardByDebitCardNumber(String debitCardNumber, DebitCardRequest debitCardRequest) {
+        return debitCardRepository.findByDebitCardNumber(debitCardNumber)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Debit Card with debit card number: " + debitCardNumber + " not found")))
+                .flatMap(existingDebitCard -> debitCardRepository.save(updateDebitCardFromRequest(existingDebitCard, debitCardRequest)))
+                .map(debitCardMapper::mapToDebitCardResponse);
+    }
+
+    @Override
+    public Mono<Void> deleteDebitCardByDebitCardNumber(String debitCardNumber) {
+        return debitCardRepository.deleteByDebitCardNumber(debitCardNumber);
+    }
+
+    @Override
+    public Mono<BalanceResponse> withdrawByDebitCardNumber(String debitCardNumber, WithdrawalRequest withdrawalRequest) {
+        return debitCardRepository.findByDebitCardNumber(debitCardNumber)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Debit Card with debit card number: " + debitCardNumber + " not found")))
+                .flatMap(debitCard -> accountRepository.findByAccountNumber(debitCard.getMainLinkedAccountNumber())
+                        .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Account with account number: " + debitCard.getMainLinkedAccountNumber() + " not found")))
+                        .flatMap(mainAccount -> {
+                            System.out.println(mainAccount);
+                            if (mainAccount.getBalance().compareTo(withdrawalRequest.getAmount()) > 0) {
+                                return withdrawFromAccount(mainAccount, withdrawalRequest);
+                            } else {
+                                return Flux.fromIterable(debitCard.getLinkedAccountsNumber())
+                                        .filter(accountNumber -> !accountNumber.equals(debitCard.getMainLinkedAccountNumber()))
+                                        .flatMap(accountRepository::findByAccountNumber)
+                                        .filter(account -> account.getBalance().compareTo(withdrawalRequest.getAmount()) >= 0)
+                                        .next()
+                                        .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Debit Card does not have enough balance in any of its linked accounts")))
+                                        .flatMap(accountWithSufficientBalance -> withdrawFromAccount(accountWithSufficientBalance, withdrawalRequest));
+                            }
+                        })
+                        .map(accountDebited -> {
+                            BalanceResponse balanceResponse = new BalanceResponse();
+                            balanceResponse.setAccountNumber(accountDebited.getAccountNumber());
+                            balanceResponse.setAccountType(BalanceResponse.AccountTypeEnum.valueOf(accountDebited.getAccountType().name()));
+                            balanceResponse.setBalance(accountDebited.getBalance());
+                            return balanceResponse;
+                        }));
+    }
+
+    private Mono<Account> withdrawFromAccount(Account account, WithdrawalRequest withdrawalRequest) {
+        account.setBalance(account.getBalance().subtract(withdrawalRequest.getAmount()));
+        return accountRepository.save(account)
+                .flatMap(savedAccount -> {
+                    TransactionRequest transactionRequest = new TransactionRequest();
+                    transactionRequest.setAccountNumber(savedAccount.getAccountNumber());
+                    transactionRequest.setAmount(withdrawalRequest.getAmount());
+                    transactionRequest.setTransactionType(TransactionRequest.TransactionType.WITHDRAWAL);
+                    transactionRequest.setDescription("Withdrawal from debit card");
+                    if (savedAccount.getIsCommissionFeeActive()) {
+                        transactionRequest.setFee(savedAccount.getMovementCommissionFee());
+                    } else {
+                        transactionRequest.setFee(BigDecimal.ZERO);
+                    }
+                    return transactionClient.createTransaction(transactionRequest)
+                            .thenReturn(savedAccount);
+                });
+    }
+
+    private DebitCard updateDebitCardFromRequest(DebitCard existingCreditCard, DebitCardRequest debitCardRequest) {
+        DebitCard updatedDebitCard = debitCardMapper.mapToDebitCard(debitCardRequest);
+        updatedDebitCard.setId(existingCreditCard.getId());
+        updatedDebitCard.setCreatedAt(existingCreditCard.getCreatedAt());
+        return updatedDebitCard;
+    }
+}

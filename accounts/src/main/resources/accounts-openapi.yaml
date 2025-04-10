@@ -715,6 +715,210 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+  /debit-cards:
+    get:
+      summary: Obtiene todas las tarjetas de débito
+      tags:
+        - DebitCards
+      operationId: getAllDebitCards
+      responses:
+        '200':
+          description: Lista de tarjetas de débito obtenida exitosamente
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DebitCardResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    post:
+      summary: Crea una nueva tarjeta de débito
+      tags:
+        - DebitCards
+      operationId: createDebitCard
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DebitCardRequest'
+      responses:
+        '201':
+          description: Tarjeta de débito creada exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DebitCardResponse'
+        '400':
+          description: Solicitud inválida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /debit-cards/{id}:
+    get:
+      summary: Obtiene una tarjeta de débito por su ID
+      tags:
+        - DebitCards
+      operationId: getDebitCardById
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID de la tarjeta de débito
+      responses:
+        '200':
+          description: Tarjeta de débito obtenida exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DebitCardResponse'
+        '404':
+          description: Tarjeta de débito no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /debit-cards/card-number/{debitCardNumber}:
+    put:
+      summary: Actualiza una tarjeta de débito por su número de tarjeta
+      tags:
+        - DebitCards
+      operationId: updateDebitCardByDebitCardNumber
+      parameters:
+        - in: path
+          name: debitCardNumber
+          schema:
+            type: string
+          required: true
+          description: Número de tarjeta de débito
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DebitCardRequest'
+      responses:
+        '200':
+          description: Tarjeta de débito actualizada exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DebitCardResponse'
+        '400':
+          description: Solicitud inválida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Tarjeta de débito no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      summary: Elimina una tarjeta de débito por su número de tarjeta
+      tags:
+        - DebitCards
+      operationId: deleteDebitCardByDebitCardNumber
+      parameters:
+        - in: path
+          name: debitCardNumber
+          schema:
+            type: string
+          required: true
+          description: Número de tarjeta de débito
+      responses:
+        '204':
+          description: Tarjeta de débito eliminada exitosamente (No Content)
+        '404':
+          description: Tarjeta de débito no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /debit-cards/card-number/{debitCardNumber}/withdrawal:
+    post:
+      summary: Retira dinero usando una tarjeta de débito
+      tags:
+        - DebitCards
+      operationId: withdrawByDebitCardNumber
+      parameters:
+        - in: path
+          name: debitCardNumber
+          schema:
+            type: string
+          required: true
+          description: Número de la tarjeta de débito
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WithdrawalRequest'
+      responses:
+        '200':
+          description: Retiro realizado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BalanceResponse'
+        '400':
+          description: Solicitud inválida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Tarjeta de débito no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
 components:
   schemas:
     # Requests
@@ -912,6 +1116,44 @@ components:
           type: string
           format: date
           description: Fecha de fin
+
+    # Debit Card Request
+    DebitCardRequest:
+      type: object
+      required:
+        - cardHolderId
+        - linkedAccountsNumber
+        - mainLinkedAccountNumber
+        - debitCardNumber
+        - cvv
+        - expiryDate
+        - status
+      properties:
+        cardHolderId:
+          type: string
+          description: ID del titular de la tarjeta
+        linkedAccountsNumber:
+          type: array
+          items:
+            type: string
+          description: Lista de números de cuenta enlazadas a la tarjeta
+        mainLinkedAccountNumber:
+          type: string
+          description: Número de cuenta principal enlazada a la tarjeta
+        debitCardNumber:
+          type: string
+          description: Número de la tarjeta de débito
+        cvv:
+          type: string
+          description: CVV de la tarjeta de débito
+        expiryDate:
+          type: string
+          format: date
+          description: Fecha de expiración de la tarjeta de débito
+        status:
+          type: string
+          enum: [ACTIVE, BLOCKED]
+          description: Estado de la tarjeta de débito
 
     # Responses
     AccountResponse:
@@ -1217,3 +1459,40 @@ components:
           type: string
           format: date-time
           description: Fecha y hora de la comisión
+
+    # Debit Card Response
+    DebitCardResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ID de la tarjeta de débito
+        cardHolderId:
+          type: string
+          description: ID del titular de la tarjeta
+        linkedAccountsNumber:
+          type: array
+          items:
+            type: string
+          description: Lista de números de cuenta enlazadas a la tarjeta
+        mainLinkedAccountNumber:
+          type: string
+          description: Número de cuenta principal enlazada a la tarjeta
+        debitCardNumber:
+          type: string
+          description: Número de la tarjeta de débito
+        cvv:
+          type: string
+          description: CVV de la tarjeta de débito
+        expiryDate:
+          type: string
+          format: date
+          description: Fecha de expiración de la tarjeta de débito
+        status:
+          type: string
+          enum: [ACTIVE, BLOCKED]
+          description: Estado de la tarjeta de débito
+        createdAt:
+          type: string
+          format: date-time
+          description: Fecha y hora de creación de la tarjeta de débito
