@@ -18,6 +18,11 @@ public class DebitCardApiDelegateImpl implements DebitCardsApiDelegate {
     private final DebitCardService debitCardService;
 
     @Override
+    public Mono<DebitCardResponse> getDebitCardByDebitCardNumber(String debitCardNumber, ServerWebExchange exchange) {
+        return debitCardService.getDebitCardByDebitCardNumber(debitCardNumber);
+    }
+
+    @Override
     public Mono<DebitCardResponse> createDebitCard(Mono<DebitCardRequest> debitCardRequest, ServerWebExchange exchange) {
         return debitCardRequest.flatMap(debitCardService::createDebitCard);
     }

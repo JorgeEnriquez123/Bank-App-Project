@@ -40,6 +40,13 @@ public class DebitCardServiceImpl implements DebitCardService {
     }
 
     @Override
+    public Mono<DebitCardResponse> getDebitCardByDebitCardNumber(String debitCardNumber) {
+        return debitCardRepository.findByDebitCardNumber(debitCardNumber)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Debit Card with debit card number: " + debitCardNumber + " not found")))
+                .map(debitCardMapper::mapToDebitCardResponse);
+    }
+
+    @Override
     public Mono<DebitCardResponse> createDebitCard(DebitCardRequest debitCardRequest) {
         return debitCardRepository.save(debitCardMapper.mapToDebitCard(debitCardRequest))
                 .map(debitCardMapper::mapToDebitCardResponse);

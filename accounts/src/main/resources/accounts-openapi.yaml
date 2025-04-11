@@ -802,6 +802,38 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
 
   /debit-cards/card-number/{debitCardNumber}:
+    get:
+      summary: Obtiene una tarjeta de débito por su número de tarjeta
+      tags:
+        - DebitCards
+      operationId: getDebitCardByDebitCardNumber
+      parameters:
+        - in: path
+          name: debitCardNumber
+          schema:
+            type: string
+          required: true
+          description: Número de tarjeta de débito
+      responses:
+        '200':
+          description: Tarjeta de débito obtenida exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DebitCardResponse'
+        '404':
+          description: Tarjeta de débito no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
     put:
       summary: Actualiza una tarjeta de débito por su número de tarjeta
       tags:

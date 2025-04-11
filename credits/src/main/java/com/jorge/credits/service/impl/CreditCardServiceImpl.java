@@ -8,10 +8,7 @@ import com.jorge.credits.service.CreditCardService;
 import com.jorge.credits.webclient.client.AccountClient;
 import com.jorge.credits.webclient.client.CustomerClient;
 import com.jorge.credits.webclient.client.TransactionClient;
-import com.jorge.credits.webclient.model.AccountBalanceUpdateRequest;
-import com.jorge.credits.webclient.model.CreditCardTransactionRequest;
-import com.jorge.credits.webclient.model.CustomerResponse;
-import com.jorge.credits.webclient.model.TransactionRequest;
+import com.jorge.credits.webclient.model.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -124,6 +121,8 @@ public class CreditCardServiceImpl implements CreditCardService {
     @Override
     public Mono<CreditCardResponse> payCreditCardByCreditCardNumber(String creditCardNumber, CreditPaymentRequest creditPaymentRequest) {
         log.info("Paying credit card with number: {} using account number: {}, amount: {}", creditCardNumber, creditPaymentRequest.getAccountNumber(), creditPaymentRequest.getAmount());
+        if(creditPaymentRequest.getCreditType() != CreditPaymentRequest.CreditTypeEnum.CREDIT_CARD_PAYMENT)
+            return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid credit type. Only CREDIT_CARD_PAYMENT is allowed"));
         return creditCardRepository.findByCreditCardNumber(creditCardNumber)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Credit card with number " + creditCardNumber + " not found")))
                 .flatMap(creditCard -> {
@@ -161,6 +160,78 @@ public class CreditCardServiceImpl implements CreditCardService {
                             });
                 })
                 .map(creditCardMapper::mapToCreditCardResponse);
+    }
+
+    @Override
+    public Mono<CreditCardResponse> payCreditCardWithDebitCard(String creditCardNumber, CreditPaymentByDebitCardRequest creditCardPaymentRequest) {
+        log.info("Paying credit card with number: {} using debit card number: {}, amount: {}", creditCardNumber, creditCardPaymentRequest.getDebitCardNumber(), creditCardPaymentRequest.getAmount());
+        if(creditCardPaymentRequest.getCreditType() != CreditPaymentByDebitCardRequest.CreditTypeEnum.CREDIT_CARD_PAYMENT)
+            return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid credit type. Only CREDIT_CARD_PAYMENT is allowed"));
+        return creditCardRepository.findByCreditCardNumber(creditCardNumber)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Credit card with number " + creditCardNumber + " not found")))
+                .flatMap(creditCard -> validateAndUpdateCreditCard(creditCard, creditCardPaymentRequest.getAmount())
+                        .flatMap(validatedCreditCard -> accountClient.getDebitCardByDebitCardNumber(creditCardPaymentRequest.getDebitCardNumber())
+                                .flatMap(debitCard -> accountClient.getAccountByAccountNumber(debitCard.getMainLinkedAccountNumber())
+                                        .flatMap(mainAccount -> {
+                                            if (mainAccount.getBalance().compareTo(creditCardPaymentRequest.getAmount()) >= 0) {
+                                                return startCreditCardPaymentWithDebitCard(validatedCreditCard, mainAccount, creditCardPaymentRequest);
+                                            } else {
+                                                return Flux.fromIterable(debitCard.getLinkedAccountsNumber())
+                                                        .filter(accountNumber -> !accountNumber.equals(debitCard.getMainLinkedAccountNumber()))
+                                                        .flatMap(accountClient::getAccountByAccountNumber)
+                                                        .filter(account -> account.getBalance().compareTo(creditCardPaymentRequest.getAmount()) >= 0)
+                                                        .next()
+                                                        .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Debit Card does not have enough balance in any of its linked accounts")))
+                                                        .flatMap(accountWithSufficientBalance -> startCreditCardPaymentWithDebitCard(validatedCreditCard, accountWithSufficientBalance, creditCardPaymentRequest));
+                                            }
+                                        })
+                                )
+                        )
+                )
+                .map(creditCardMapper::mapToCreditCardResponse);
+    }
+
+    private Mono<CreditCard> startCreditCardPaymentWithDebitCard(CreditCard creditCard, AccountResponse account, CreditPaymentByDebitCardRequest creditPaymentByDebitCardRequest) {
+
+        BigDecimal paymentAmount = creditPaymentByDebitCardRequest.getAmount();
+        AccountBalanceUpdateRequest accountBalanceUpdateRequest =
+                AccountBalanceUpdateRequest.builder().balance(paymentAmount).build();
+
+        return accountClient.reduceBalanceByAccountNumber(account.getAccountNumber(), accountBalanceUpdateRequest)
+                .flatMap(accountBalanceResponse -> {
+                    //Update credit Card Balance
+                    BigDecimal newOutstandingBalance = creditCard.getOutstandingBalance().subtract(paymentAmount);
+                    creditCard.setOutstandingBalance(newOutstandingBalance);
+                    creditCard.setAvailableBalance(creditCard.getAvailableBalance().add(paymentAmount));
+                    return creditCardRepository.save(creditCard);
+                })
+                .flatMap(savedCreditCard -> {
+                    log.info("Creating Payment Transaction made by Account number: {}", account.getAccountNumber());
+                    TransactionRequest transactionRequest = transactionRequestMapper.mapDebitCardPaymentRequestToTransactionRequest(
+                            account.getAccountNumber(),
+                            creditPaymentByDebitCardRequest,
+                            savedCreditCard.getId(),
+                            "Credit card payment for credit card: " + savedCreditCard.getCreditCardNumber() + " using debit card.",
+                            BigDecimal.ZERO);
+                    return transactionClient.createTransaction(transactionRequest)
+                            .thenReturn(savedCreditCard);
+                })
+                .flatMap(savedCreditCard -> {
+                    log.info("Creating Credit Card Transaction for Credit Card with number: {}", savedCreditCard.getCreditCardNumber());
+                    CreditCardTransactionRequest creditCardTransactionRequest =
+                            transactionRequestMapper.mapPaymentDebitCardRequestToCreditCardTransactionRequest(
+                                    creditPaymentByDebitCardRequest, savedCreditCard.getCreditCardNumber());
+                    return transactionClient.createCreditCardTransaction(creditCardTransactionRequest)
+                            .thenReturn(savedCreditCard);
+                });
+    }
+
+    private Mono<CreditCard> validateAndUpdateCreditCard(CreditCard creditCard, BigDecimal paymentAmount) {
+        BigDecimal newOutstandingBalance = creditCard.getOutstandingBalance().subtract(paymentAmount);
+        if (newOutstandingBalance.compareTo(BigDecimal.ZERO) < 0) {
+            return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Payment exceeds outstanding balance"));
+        }
+        return Mono.just(creditCard);
     }
 
     @Override

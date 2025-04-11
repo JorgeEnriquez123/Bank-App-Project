@@ -66,4 +66,11 @@ public class CreditCardApiDelegateImpl implements CreditCardsApiDelegate {
         return creditCardRequest.flatMap(creditCardRequest1 ->
                 creditCardService.updateCreditCardById(id, creditCardRequest1));
     }
+
+    @Override
+    public Mono<CreditCardResponse> payCreditCardWithDebitCard(String creditCardNumber, Mono<CreditPaymentByDebitCardRequest> creditPaymentByDebitCardRequest, ServerWebExchange exchange) {
+        return creditPaymentByDebitCardRequest.flatMap(
+                request -> creditCardService.payCreditCardWithDebitCard(creditCardNumber, request)
+        );
+    }
 }

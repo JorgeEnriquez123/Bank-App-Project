@@ -1,9 +1,6 @@
 package com.jorge.credits.service;
 
-import com.jorge.credits.model.CreditPaymentRequest;
-import com.jorge.credits.model.CreditRequest;
-import com.jorge.credits.model.CreditResponse;
-import com.jorge.credits.model.TransactionResponse;
+import com.jorge.credits.model.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -17,4 +14,6 @@ public interface CreditService {
     Flux<CreditResponse> getCreditsByCreditHolderId(String creditHolderId);
     Mono<CreditResponse> payCreditById(String id, CreditPaymentRequest creditPaymentRequest);
     Flux<TransactionResponse> getTransactionsByCreditId(String id);
+
+    Mono<CreditResponse> payCreditByIdWithDebitCard(String id, CreditPaymentByDebitCardRequest creditPaymentRequest);
 }

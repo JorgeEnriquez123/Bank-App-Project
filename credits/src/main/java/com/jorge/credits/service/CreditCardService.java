@@ -17,4 +17,6 @@ public interface CreditCardService {
     Mono<CreditCardResponse> consumeCreditCardByCreditCardNumber(String creditCardNumber, ConsumptionRequest consumptionRequest);
 
     Flux<CreditCardTransactionResponse> getCreditCardTransactionsByCreditCardNumber(String creditCardNumber);
+
+    Mono<CreditCardResponse> payCreditCardWithDebitCard(String creditCardNumber, CreditPaymentByDebitCardRequest creditPaymentRequest);
 }

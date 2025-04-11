@@ -9,6 +9,7 @@ import com.jorge.credits.webclient.client.AccountClient;
 import com.jorge.credits.webclient.client.CustomerClient;
 import com.jorge.credits.webclient.client.TransactionClient;
 import com.jorge.credits.webclient.model.AccountBalanceUpdateRequest;
+import com.jorge.credits.webclient.model.AccountResponse;
 import com.jorge.credits.webclient.model.CustomerResponse;
 import com.jorge.credits.webclient.model.TransactionRequest;
 import lombok.RequiredArgsConstructor;
@@ -23,9 +24,10 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
-@Service
+
 @RequiredArgsConstructor
 @Slf4j
+@Service
 public class CreditServiceImpl implements CreditService {
     private final AccountClient accountClient;
     private final CustomerClient customerClient;
@@ -119,39 +121,106 @@ public class CreditServiceImpl implements CreditService {
     @Override
     public Mono<CreditResponse> payCreditById(String id, CreditPaymentRequest creditPaymentRequest) {
         log.info("Paying credit with id: {} using account number: {}, amount: {}", id, creditPaymentRequest.getAccountNumber(), creditPaymentRequest.getAmount());
+        if(creditPaymentRequest.getCreditType() != CreditPaymentRequest.CreditTypeEnum.CREDIT_PAYMENT)
+            return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid credit type. Only CREDIT_PAYMENT is allowed"));
         return creditRepository.findById(id)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Credit with id " + id + " not found")))
-                .flatMap(credit -> {
-                    if (credit.getStatus() == Credit.Status.PAID) {
-                        return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Credit is already PAID"));
-                    }
-                    BigDecimal remainingAmount = credit.getCreditAmount().subtract(creditPaymentRequest.getAmount());
+                .flatMap(credit -> validateAndUpdateCredit(credit, creditPaymentRequest.getAmount()).flatMap(
+                        updateCredit -> {
+                            if (credit.getStatus() == Credit.Status.PAID) {
+                                return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Credit is already PAID"));
+                            }
+                            BigDecimal remainingAmount = credit.getCreditAmount().subtract(creditPaymentRequest.getAmount());
 
-                    if (remainingAmount.compareTo(BigDecimal.ZERO) < 0) {
-                        return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Payment exceeds credit amount"));
-                    } else if (remainingAmount.compareTo(BigDecimal.ZERO) == 0) {
-                        credit.setStatus(Credit.Status.PAID);
-                    }
+                            if (remainingAmount.compareTo(BigDecimal.ZERO) < 0) {
+                                return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Payment exceeds credit amount"));
+                            } else if (remainingAmount.compareTo(BigDecimal.ZERO) == 0) {
+                                credit.setStatus(Credit.Status.PAID);
+                            }
 
-                    credit.setCreditAmount(remainingAmount);
+                            credit.setCreditAmount(remainingAmount);
 
-                    AccountBalanceUpdateRequest accountBalanceUpdateRequest =
-                            AccountBalanceUpdateRequest.builder().balance(creditPaymentRequest.getAmount()).build();
+                            AccountBalanceUpdateRequest accountBalanceUpdateRequest =
+                                    AccountBalanceUpdateRequest.builder().balance(creditPaymentRequest.getAmount()).build();
 
-                    return accountClient.reduceBalanceByAccountNumber(
-                            creditPaymentRequest.getAccountNumber(), accountBalanceUpdateRequest)
-                            .flatMap(accountBalanceResponse -> creditRepository.save(credit))
-                            .flatMap(savedCredit -> {
-                                TransactionRequest transactionRequest = transactionRequestMapper.mapPaymentRequestToTransactionRequest(
-                                        creditPaymentRequest,
-                                        savedCredit.getId(),
-                                        "Credit payment for credit id: " + savedCredit.getId(),
-                                        BigDecimal.ZERO);
-                                return transactionClient.createTransaction(transactionRequest)
-                                        .thenReturn(savedCredit);
-                            });
-                })
+                            return accountClient.reduceBalanceByAccountNumber(
+                                            creditPaymentRequest.getAccountNumber(), accountBalanceUpdateRequest)
+                                    .flatMap(accountBalanceResponse -> creditRepository.save(credit))
+                                    .flatMap(savedCredit -> {
+                                        TransactionRequest transactionRequest = transactionRequestMapper.mapPaymentRequestToTransactionRequest(
+                                                creditPaymentRequest,
+                                                savedCredit.getId(),
+                                                "Credit payment for credit id: " + savedCredit.getId(),
+                                                BigDecimal.ZERO);
+                                        return transactionClient.createTransaction(transactionRequest)
+                                                .thenReturn(savedCredit);
+                                    });
+                        })
+                )
                 .map(creditMapper::mapToCreditResponse);
+    }
+
+    @Override
+    public Mono<CreditResponse> payCreditByIdWithDebitCard(String id, CreditPaymentByDebitCardRequest creditPaymentRequest) {
+        log.info("Paying credit with id: {} using debit card number: {}, amount: {}", id, creditPaymentRequest.getDebitCardNumber(), creditPaymentRequest.getAmount());
+        if(creditPaymentRequest.getCreditType() != CreditPaymentByDebitCardRequest.CreditTypeEnum.CREDIT_PAYMENT)
+            return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid credit type. Only CREDIT_PAYMENT is allowed"));
+        return creditRepository.findById(id)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Credit with id " + id + " not found")))
+                .flatMap(credit -> validateAndUpdateCredit(credit, creditPaymentRequest.getAmount())
+                        .flatMap(validatedCredit -> accountClient.getDebitCardByDebitCardNumber(creditPaymentRequest.getDebitCardNumber())
+                                .flatMap(debitCard -> accountClient.getAccountByAccountNumber(debitCard.getMainLinkedAccountNumber())
+                                        .flatMap(mainAccount -> {
+                                            if (mainAccount.getBalance().compareTo(creditPaymentRequest.getAmount()) > 0) {
+                                                return startCreditPaymentWithDebitCard(validatedCredit, mainAccount, creditPaymentRequest);
+                                            } else {
+                                                return Flux.fromIterable(debitCard.getLinkedAccountsNumber())
+                                                        .filter(accountNumber -> !accountNumber.equals(debitCard.getMainLinkedAccountNumber()))
+                                                        .flatMap(accountClient::getAccountByAccountNumber)
+                                                        .filter(account -> account.getBalance().compareTo(creditPaymentRequest.getAmount()) >= 0)
+                                                        .next()
+                                                        .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Debit Card does not have enough balance in any of its linked accounts")))
+                                                        .flatMap(accountWithSufficientBalance -> startCreditPaymentWithDebitCard(validatedCredit, accountWithSufficientBalance, creditPaymentRequest));
+                                            }
+                                        })
+                                )
+                        )
+                )
+                .map(creditMapper::mapToCreditResponse);
+    }
+
+    private Mono<Credit> startCreditPaymentWithDebitCard(Credit credit, AccountResponse mainAccount, CreditPaymentByDebitCardRequest creditPaymentRequest) {
+        AccountBalanceUpdateRequest accountBalanceUpdateRequest =
+                AccountBalanceUpdateRequest.builder().balance(creditPaymentRequest.getAmount()).build();
+        return accountClient.reduceBalanceByAccountNumber(
+                        mainAccount.getAccountNumber(), accountBalanceUpdateRequest)
+                .flatMap(accountBalanceResponse -> creditRepository.save(credit))
+                .flatMap(savedCredit -> {
+                    TransactionRequest transactionRequest = transactionRequestMapper.mapDebitCardPaymentRequestToTransactionRequest(
+                            mainAccount.getAccountNumber(),
+                            creditPaymentRequest,
+                            savedCredit.getId(),
+                            "Credit payment for credit id: " + savedCredit.getId(),
+                            BigDecimal.ZERO);
+                    return transactionClient.createTransaction(transactionRequest)
+                            .thenReturn(savedCredit);
+                });
+    }
+
+    private Mono<Credit> validateAndUpdateCredit(Credit credit, BigDecimal paymentAmount) {
+        if (credit.getStatus() == Credit.Status.PAID) {
+            return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Credit is already PAID"));
+        }
+        BigDecimal remainingAmount = credit.getCreditAmount().subtract(paymentAmount);
+
+        if (remainingAmount.compareTo(BigDecimal.ZERO) < 0) {
+            return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Payment exceeds credit amount"));
+        } else if (remainingAmount.compareTo(BigDecimal.ZERO) == 0) {
+            credit.setStatus(Credit.Status.PAID);
+        }
+
+        credit.setCreditAmount(remainingAmount);
+        return Mono.just(credit);
     }
 
     @Override

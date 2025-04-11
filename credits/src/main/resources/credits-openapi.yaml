@@ -388,7 +388,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /credit-cards/credit-card/{creditCardNumber}/available-balance:
+  /credit-cards/credit-card-number/{creditCardNumber}/available-balance:
     get:
       summary: Obtiene el saldo disponible de una tarjeta de crédito por su número.
       tags:
@@ -501,7 +501,52 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /credit-cards/credit-card/{creditCardNumber}/pay:
+  /credits/{id}/pay-with-debit-card:
+    patch:
+      summary: Paga un crédito por su ID usando una tarjeta de débito.
+      tags:
+        - Credits
+      operationId: payCreditByIdWithDebitCard
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID del crédito a pagar
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreditPaymentByDebitCardRequest'
+      responses:
+        '200':
+          description: Pago de crédito realizado exitosamente con tarjeta de débito.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreditResponse'
+        '400':
+          description: Solicitud inválida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Crédito no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /credit-cards/credit-card-number/{creditCardNumber}/pay:
     patch:
       summary: Paga una tarjeta de crédito por su número de tarjeta.
       tags:
@@ -546,7 +591,52 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /credit-cards/credit-card/{creditCardNumber}/consume:
+  /credit-cards/credit-card-number/{creditCardNumber}/pay-with-debit-card:
+    patch:
+      summary: Paga una tarjeta de crédito por su número de tarjeta usando una tarjeta de débito.
+      tags:
+        - CreditCards
+      operationId: payCreditCardWithDebitCard
+      parameters:
+        - in: path
+          name: creditCardNumber
+          schema:
+            type: string
+          required: true
+          description: Número de la tarjeta de crédito a pagar
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreditPaymentByDebitCardRequest'
+      responses:
+        '200':
+          description: Pago de tarjeta de crédito realizado exitosamente con tarjeta de débito.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreditCardResponse'
+        '400':
+          description: Solicitud inválida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Tarjeta de crédito no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /credit-cards/credit-card-number/{creditCardNumber}/consume:
     patch:
       summary: Consume saldo de una tarjeta de crédito por su número de tarjeta.
       tags:
@@ -591,7 +681,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /credit-cards/credit-card/{creditCardNumber}/transactions:
+  /credit-cards/credit-card-number/{creditCardNumber}/transactions:
     get:
       summary: Obtiene todas las transacciones de una tarjeta de crédito por su número de tarjeta.
       tags:
@@ -648,9 +738,9 @@ components:
           format: date-time
           description: Fecha y hora de la creación del crédito
         dueDate:
-            type: string
-            format: date
-            description: Fecha de vencimiento del crédito
+          type: string
+          format: date
+          description: Fecha de vencimiento del crédito
 
     CreditRequest:
       type: object
@@ -827,7 +917,7 @@ components:
       required:
         - amount
         - accountNumber
-        - creditTypeEnum
+        - creditType
       properties:
         amount:
           type: number
@@ -836,10 +926,29 @@ components:
         accountNumber:
           type: string
           description: Número de cuenta del cliente
-        creditTypeEnum:
+        creditType:
           type: string
           enum: [CREDIT_PAYMENT, CREDIT_CARD_PAYMENT]
           description: tipo de pago
+
+    CreditPaymentByDebitCardRequest:
+      type: object
+      required:
+        - debitCardNumber
+        - amount
+        - creditType
+      properties:
+        debitCardNumber:
+          type: string
+          description: Número de la tarjeta de débito
+        amount:
+          type: number
+          format: decimal
+          description: Monto del pago
+        creditType:
+          type: string
+          enum: [CREDIT_PAYMENT, CREDIT_CARD_PAYMENT]
+          description: Tipo de pago (credit or credit card)
 
     ConsumptionRequest:
       type: object

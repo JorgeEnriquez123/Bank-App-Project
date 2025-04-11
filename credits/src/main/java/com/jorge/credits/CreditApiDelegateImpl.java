@@ -1,10 +1,7 @@
 package com.jorge.credits;
 
 import com.jorge.credits.api.CreditsApiDelegate;
-import com.jorge.credits.model.CreditPaymentRequest;
-import com.jorge.credits.model.CreditRequest;
-import com.jorge.credits.model.CreditResponse;
-import com.jorge.credits.model.TransactionResponse;
+import com.jorge.credits.model.*;
 import com.jorge.credits.service.CreditService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -57,5 +54,12 @@ public class CreditApiDelegateImpl implements CreditsApiDelegate {
     public Mono<CreditResponse> updateCreditById(String id, Mono<CreditRequest> creditRequest, ServerWebExchange exchange) {
         return creditRequest.flatMap(
                 creditRequest1 -> creditService.updateCreditById(id, creditRequest1));
+    }
+
+    @Override
+    public Mono<CreditResponse> payCreditByIdWithDebitCard(String id, Mono<CreditPaymentByDebitCardRequest> creditPaymentByDebitCardRequest, ServerWebExchange exchange) {
+        return creditPaymentByDebitCardRequest.flatMap(
+                request -> creditService.payCreditByIdWithDebitCard(id, request)
+        );
     }
 }
