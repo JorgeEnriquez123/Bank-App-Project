@@ -429,6 +429,41 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+  /credit-card-transactions/credit-card-number/{creditCardNumber}/last-transactions:
+    get:
+      summary: Obtiene las ultimas 10 transacciones asociadas a un número de tarjeta de crédito
+      tags:
+        - CreditCardTransactions
+      operationId: getCreditCardTransactionsByCreditCardNumberLast10
+      parameters:
+        - in: path
+          name: creditCardNumber
+          schema:
+            type: string
+          required: true
+          description: Número de la tarjeta de crédito
+      responses:
+        '200':
+          description: Lista de transacciones obtenida exitosamente
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CreditCardTransactionResponse'
+        '404':
+          description: Tarjeta de crédito no encontrada o sin transacciones asociadas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
   /transactions/account-number/{accountNumber}/by-date-range:
     get:
       summary: Obtiene todas las transacciones para un número de cuenta dentro de un rango de fechas

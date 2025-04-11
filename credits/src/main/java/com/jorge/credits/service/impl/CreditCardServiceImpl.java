@@ -18,6 +18,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
+import java.util.Comparator;
 
 @Service
 @RequiredArgsConstructor
@@ -268,7 +269,18 @@ public class CreditCardServiceImpl implements CreditCardService {
 
     @Override
     public Flux<CreditCardTransactionResponse> getCreditCardTransactionsByCreditCardNumber(String creditCardNumber) {
-        return transactionClient.getCreditCardTransactionsByCreditCardNumber(creditCardNumber);
+        return creditCardRepository.findByCreditCardNumber(creditCardNumber)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Credit card with number : " + creditCardNumber + " not found")))
+                .flatMapMany(creditCard -> transactionClient.getCreditCardTransactionsByCreditCardNumber(creditCard.getCreditCardNumber()));
+    }
+
+    @Override
+    public Flux<CreditCardTransactionResponse> getCreditCardTransactionsByCreditCardNumberLast10(String creditCardNumber) {
+        return creditCardRepository.findByCreditCardNumber(creditCardNumber)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Credit card with number : " + creditCardNumber + " not found")))
+                .flatMapMany(creditCard -> transactionClient.getCreditCardTransactionsByCreditCardNumberLast10(creditCard.getCreditCardNumber()));
     }
 
     private CreditCard updateCreditCardFromRequest(CreditCard existingCreditCard, CreditCardRequest creditCardRequest) {

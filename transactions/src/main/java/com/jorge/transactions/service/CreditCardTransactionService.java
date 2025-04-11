@@ -13,4 +13,5 @@ public interface CreditCardTransactionService {
     Mono<Void> deleteCreditCardTransactionById(String id);
 
     Flux<CreditCardTransactionResponse> getCreditCardTransactionsByCreditCardNumber(String creditCardNumber);
+    Flux<CreditCardTransactionResponse> getCreditCardTransactionsByCreditCardNumberLast10(String creditCardNumber);
 }

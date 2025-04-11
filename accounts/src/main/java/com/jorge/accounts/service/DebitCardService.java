@@ -13,4 +13,8 @@ public interface DebitCardService {
     Mono<Void> deleteDebitCardByDebitCardNumber(String debitCardNumber);
 
     Mono<BalanceResponse> withdrawByDebitCardNumber(String debitCardNumber, WithdrawalRequest withdrawalRequest);
+
+    Mono<BalanceResponse> getBalanceByDebitCardNumber(String debitCardNumber);
+
+    Flux<TransactionResponse> getTransactionsByDebitCardNumberLast10(String debitCardNumber);
 }

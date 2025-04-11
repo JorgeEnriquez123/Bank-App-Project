@@ -14,6 +14,8 @@ import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.Comparator;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -66,8 +68,16 @@ public class CreditCardTransactionServiceImpl implements CreditCardTransactionSe
     public Flux<CreditCardTransactionResponse> getCreditCardTransactionsByCreditCardNumber(String creditCardNumber) {
         log.info("Fetching credit card transactions for credit card number: {}", creditCardNumber);
         return creditCardTransactionRepository.findByCreditCardNumber(creditCardNumber)
-                .switchIfEmpty(Mono.error(
-                        new ResponseStatusException(HttpStatus.NOT_FOUND, "Credit card transactions not found for credit card number: " + creditCardNumber)))
+                .sort(Comparator.comparing(CreditCardTransaction::getCreatedAt).reversed())
+                .map(creditCardTransactionMapper::mapToCreditCardTransactionResponse);
+    }
+
+    @Override
+    public Flux<CreditCardTransactionResponse> getCreditCardTransactionsByCreditCardNumberLast10(String creditCardNumber) {
+        log.info("Fetching last 10 credit card transactions for credit card number: {}", creditCardNumber);
+        return creditCardTransactionRepository.findByCreditCardNumber(creditCardNumber)
+                .sort(Comparator.comparing(CreditCardTransaction::getCreatedAt).reversed())
+                .take(10)
                 .map(creditCardTransactionMapper::mapToCreditCardTransactionResponse);
     }
 

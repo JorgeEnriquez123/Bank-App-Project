@@ -16,6 +16,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
+import java.util.Comparator;
 
 @Service
 @RequiredArgsConstructor
@@ -72,7 +73,6 @@ public class DebitCardServiceImpl implements DebitCardService {
                 .flatMap(debitCard -> accountRepository.findByAccountNumber(debitCard.getMainLinkedAccountNumber())
                         .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Account with account number: " + debitCard.getMainLinkedAccountNumber() + " not found")))
                         .flatMap(mainAccount -> {
-                            System.out.println(mainAccount);
                             if (mainAccount.getBalance().compareTo(withdrawalRequest.getAmount()) > 0) {
                                 return withdrawFromAccount(mainAccount, withdrawalRequest);
                             } else {
@@ -92,6 +92,32 @@ public class DebitCardServiceImpl implements DebitCardService {
                             balanceResponse.setBalance(accountDebited.getBalance());
                             return balanceResponse;
                         }));
+    }
+
+    @Override
+    public Mono<BalanceResponse> getBalanceByDebitCardNumber(String debitCardNumber) {
+        return debitCardRepository.findByDebitCardNumber(debitCardNumber)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Debit Card with debit card number: " + debitCardNumber + " not found")))
+                .flatMap(debitCard -> accountRepository.findByAccountNumber(debitCard.getMainLinkedAccountNumber())
+                        .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Account with account number: " + debitCard.getMainLinkedAccountNumber() + " not found")))
+                        .map(account -> {
+                            BalanceResponse balanceResponse = new BalanceResponse();
+                            balanceResponse.setAccountNumber(account.getAccountNumber());
+                            balanceResponse.setAccountType(BalanceResponse.AccountTypeEnum.valueOf(account.getAccountType().name()));
+                            balanceResponse.setBalance(account.getBalance());
+                            return balanceResponse;
+                        }));
+    }
+
+    @Override
+    public Flux<TransactionResponse> getTransactionsByDebitCardNumberLast10(String debitCardNumber) {
+        return debitCardRepository.findByDebitCardNumber(debitCardNumber)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Debit Card with debit card number: " + debitCardNumber + " not found")))
+                .flatMapMany(debitCard -> accountRepository.findByAccountNumber(debitCard.getMainLinkedAccountNumber())
+                        .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Account with account number: " + debitCard.getMainLinkedAccountNumber() + " not found")))
+                        .flatMapMany(account -> transactionClient.getTransactionsByAccountNumber(account.getAccountNumber()))
+                        .sort(Comparator.comparing(TransactionResponse::getCreatedAt).reversed())
+                        .take(10));
     }
 
     private Mono<Account> withdrawFromAccount(Account account, WithdrawalRequest withdrawalRequest) {

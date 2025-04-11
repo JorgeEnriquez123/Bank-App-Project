@@ -127,19 +127,6 @@ public class CreditServiceImpl implements CreditService {
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Credit with id " + id + " not found")))
                 .flatMap(credit -> validateAndUpdateCredit(credit, creditPaymentRequest.getAmount()).flatMap(
                         updateCredit -> {
-                            if (credit.getStatus() == Credit.Status.PAID) {
-                                return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Credit is already PAID"));
-                            }
-                            BigDecimal remainingAmount = credit.getCreditAmount().subtract(creditPaymentRequest.getAmount());
-
-                            if (remainingAmount.compareTo(BigDecimal.ZERO) < 0) {
-                                return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Payment exceeds credit amount"));
-                            } else if (remainingAmount.compareTo(BigDecimal.ZERO) == 0) {
-                                credit.setStatus(Credit.Status.PAID);
-                            }
-
-                            credit.setCreditAmount(remainingAmount);
-
                             AccountBalanceUpdateRequest accountBalanceUpdateRequest =
                                     AccountBalanceUpdateRequest.builder().balance(creditPaymentRequest.getAmount()).build();
 

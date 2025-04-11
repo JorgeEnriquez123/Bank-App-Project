@@ -36,6 +36,14 @@ public class TransactionClient {
                 throwable -> Flux.error(new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Transaction service unavailable", throwable)));
     }
 
+    public Flux<CreditCardTransactionResponse> getCreditCardTransactionsByCreditCardNumberLast10(String creditCardNumber){
+        return circuitBreakerFactory.create("transactionClient").run(webClient.get()
+                        .uri("/credit-card-transactions/credit-card-number/" + creditCardNumber + "/last-transactions")
+                        .retrieve()
+                        .bodyToFlux(CreditCardTransactionResponse.class),
+                throwable -> Flux.error(new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Transaction service unavailable", throwable)));
+    }
+
     public Mono<TransactionResponse> createTransaction(TransactionRequest transactionRequest){
         return circuitBreakerFactory.create("transactionClient")
                 .run(webClient.post()

@@ -710,6 +710,35 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+  /credit-cards/credit-card-number/{creditCardNumber}/transactions/last-transactions:
+    get:
+      summary: Obtiene las ultimas 10 transacciones de una tarjeta de crédito por su número de tarjeta.
+      tags:
+        - CreditCards
+      operationId: getCreditCardTransactionsByCreditCardNumberLast10
+      parameters:
+        - in: path
+          name: creditCardNumber
+          schema:
+            type: string
+          required: true
+          description: Número de la tarjeta de crédito
+      responses:
+        '200':
+          description: Lista de transacciones de la tarjeta de crédito obtenida exitosamente
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CreditCardTransactionResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
 components:
   schemas:
     CreditResponse:

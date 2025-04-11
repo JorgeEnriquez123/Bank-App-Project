@@ -1,10 +1,7 @@
 package com.jorge.accounts;
 
 import com.jorge.accounts.api.DebitCardsApiDelegate;
-import com.jorge.accounts.model.BalanceResponse;
-import com.jorge.accounts.model.DebitCardRequest;
-import com.jorge.accounts.model.DebitCardResponse;
-import com.jorge.accounts.model.WithdrawalRequest;
+import com.jorge.accounts.model.*;
 import com.jorge.accounts.service.DebitCardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -16,6 +13,16 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class DebitCardApiDelegateImpl implements DebitCardsApiDelegate {
     private final DebitCardService debitCardService;
+
+    @Override
+    public Flux<TransactionResponse> getTransactionsByDebitCardNumberLast10(String debitCardNumber, ServerWebExchange exchange) {
+        return debitCardService.getTransactionsByDebitCardNumberLast10(debitCardNumber);
+    }
+
+    @Override
+    public Mono<BalanceResponse> getBalanceByDebitCardNumber(String debitCardNumber, ServerWebExchange exchange) {
+        return debitCardService.getBalanceByDebitCardNumber(debitCardNumber);
+    }
 
     @Override
     public Mono<DebitCardResponse> getDebitCardByDebitCardNumber(String debitCardNumber, ServerWebExchange exchange) {

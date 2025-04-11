@@ -951,6 +951,74 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+  /debit-cards/card-number/{debitCardNumber}/balance:
+    get:
+      summary: Obtiene el balance de la cuenta principal asociada a la tarjeta de débito por su número de tarjeta
+      tags:
+        - DebitCards
+      operationId: getBalanceByDebitCardNumber
+      parameters:
+        - in: path
+          name: debitCardNumber
+          schema:
+            type: string
+          required: true
+          description: Número de tarjeta de débito
+      responses:
+        '200':
+          description: Balance obtenido con éxito
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BalanceResponse'
+        '404':
+          description: Tarjeta de débito no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /debit-cards/card-number/{debitCardNumber}/last-transactions:
+    get:
+      summary: Obtiene las ultimas 10 transacciones de la cuenta principal de la tarjeta de débito por su número de tarjeta
+      tags:
+        - DebitCards
+      operationId: getTransactionsByDebitCardNumberLast10
+      parameters:
+        - in: path
+          name: debitCardNumber
+          schema:
+            type: string
+          required: true
+          description: Número de tarjeta de débito
+      responses:
+        '200':
+          description: Tarjeta de débito obtenida exitosamente
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TransactionResponse'
+        '404':
+          description: Tarjeta de débito no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
 components:
   schemas:
     # Requests

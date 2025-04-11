@@ -41,6 +41,11 @@ public class CreditCardTransactionApiDelegateImpl implements CreditCardTransacti
     }
 
     @Override
+    public Flux<CreditCardTransactionResponse> getCreditCardTransactionsByCreditCardNumberLast10(String creditCardNumber, ServerWebExchange exchange) {
+        return creditCardTransactionService.getCreditCardTransactionsByCreditCardNumberLast10(creditCardNumber);
+    }
+
+    @Override
     public Mono<CreditCardTransactionResponse> updateCreditCardTransaction(String id, Mono<CreditCardTransactionRequest> creditCardTransactionRequest, ServerWebExchange exchange) {
         return creditCardTransactionRequest.flatMap(creditCardTransactionRequest1 ->
                 creditCardTransactionService.updateCreditCardTransaction(id, creditCardTransactionRequest1));
