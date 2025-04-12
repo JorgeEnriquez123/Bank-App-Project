@@ -23,7 +23,7 @@ public class CreditCard {
     private String cvv;
     private LocalDate expiryDate;
     private CreditCardStatus status;
-    private String creditLimit;
+    private BigDecimal creditLimit;
     private LocalDateTime createdAt;
 
     private BigDecimal availableBalance;    // What you have left in your credit card

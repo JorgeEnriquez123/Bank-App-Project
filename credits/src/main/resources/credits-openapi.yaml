@@ -828,7 +828,8 @@ components:
           enum: [ACTIVE, BLOCKED]
           description: Estado de la tarjeta de crédito
         creditLimit:
-          type: string
+          type: number
+          format: decimal
           description: Límite de crédito de la tarjeta
         availableBalance:
           type: number
@@ -876,7 +877,8 @@ components:
           enum: [ACTIVE, BLOCKED]
           description: Estado de la tarjeta de crédito
         creditLimit:
-          type: string
+          type: number
+          format: decimal
           description: Límite de crédito de la tarjeta
         availableBalance:
           type: number

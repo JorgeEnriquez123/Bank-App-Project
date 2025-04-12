@@ -177,6 +177,7 @@ public class CreditCardServiceImpl implements CreditCardService {
                                             if (mainAccount.getBalance().compareTo(creditCardPaymentRequest.getAmount()) >= 0) {
                                                 return startCreditCardPaymentWithDebitCard(validatedCreditCard, mainAccount, creditCardPaymentRequest);
                                             } else {
+                                                log.info("Main Account does not have enough balance. Checking other accounts...");
                                                 return Flux.fromIterable(debitCard.getLinkedAccountsNumber())
                                                         .filter(accountNumber -> !accountNumber.equals(debitCard.getMainLinkedAccountNumber()))
                                                         .flatMap(accountClient::getAccountByAccountNumber)

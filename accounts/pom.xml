@@ -194,7 +194,7 @@
 				<version>0.8.11</version>
 				<configuration>
 					<includes>
-						<include>com/jorge/customers/service/impl/*</include>
+						<include>com/jorge/accounts/service/impl/*</include>
 					</includes>
 				</configuration>
 				<executions>

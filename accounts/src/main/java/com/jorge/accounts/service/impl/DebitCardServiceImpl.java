@@ -25,7 +25,6 @@ public class DebitCardServiceImpl implements DebitCardService {
     private final AccountRepository accountRepository;
     private final DebitCardMapper debitCardMapper;
     private final TransactionClient transactionClient;
-    private final AccountMapper accountMapper;
 
     @Override
     public Flux<DebitCardResponse> getAllDebitCards() {
@@ -127,7 +126,16 @@ public class DebitCardServiceImpl implements DebitCardService {
     }
 
     private Mono<Account> withdrawFromAccount(Account account, WithdrawalRequest withdrawalRequest) {
-        account.setBalance(account.getBalance().subtract(withdrawalRequest.getAmount()));
+        BigDecimal withdrawalAmount = withdrawalRequest.getAmount();
+        if(account.getIsCommissionFeeActive()) {
+            withdrawalAmount = withdrawalAmount.add(account.getMovementCommissionFee());
+        }
+
+        if(account.getBalance().compareTo(withdrawalAmount) < 0) {
+            return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Account does not have enough balance"));
+        }
+
+        account.setBalance(account.getBalance().subtract(withdrawalAmount));
         return accountRepository.save(account)
                 .flatMap(savedAccount -> {
                     TransactionRequest transactionRequest = new TransactionRequest();

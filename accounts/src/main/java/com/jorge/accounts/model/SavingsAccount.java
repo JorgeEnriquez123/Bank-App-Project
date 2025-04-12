@@ -1,6 +1,7 @@
 package com.jorge.accounts.model;
 
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
