@@ -15,5 +15,5 @@ public interface CustomerService {
 
     Mono<CustomerResponse> getCustomerByDni(String dni);
 
-    Flux<ProductSummaryResponse> getProductSummaryByCustomerId(String customerId);
+    Mono<ProductSummaryResponse> getProductSummaryByCustomerId(String customerId);
 }

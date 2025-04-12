@@ -9,13 +9,6 @@ servers:
 
 components:
   schemas:
-    CustomerTypeEnum:
-      type: string
-      description: Tipo de cliente (PERSONAL o EMPRESA)
-      enum:
-        - PERSONAL
-        - BUSINESS
-
     CustomerRequest:
       type: object
       required:
@@ -29,8 +22,9 @@ components:
         - isPYME
       properties:
         customerType:
-          $ref: '#/components/schemas/CustomerTypeEnum'
-          description: Tipo de cliente (PERSONAL o EMPRESA). Debe ser 'PERSONAL' o 'BUSINESS'.
+          type: string
+          enum: [PERSONAL, BUSINESS]
+          description: Tipo de cliente (PERSONAL o BUSINESS).
         email:
           type: string
           format: email
@@ -43,14 +37,14 @@ components:
           description: Dirección del cliente
         dni:
           type: string
-          description: DNI del cliente (solo para tipo PERSONAL)
+          description: DNI del cliente
           pattern: "^[0-9]{8}[A-Z]$"
         firstName:
           type: string
-          description: Nombre del cliente (solo para tipo PERSONAL)
+          description: Nombre del cliente
         lastName:
           type: string
-          description: Apellido del cliente (solo para tipo PERSONAL)
+          description: Apellido del cliente
         isVIP:
           type: boolean
           description: Si es cliente VIP
@@ -65,8 +59,9 @@ components:
           type: string
           description: ID del cliente
         customerType:
-          $ref: '#/components/schemas/CustomerTypeEnum'
-          description: Tipo de cliente (PERSONAL o EMPRESA).
+          type: string
+          enum: [PERSONAL, BUSINESS]
+          description: Tipo de cliente (PERSONAL o BUSINESS).
         email:
           type: string
           format: email
@@ -79,13 +74,13 @@ components:
           description: Dirección del cliente
         dni:
           type: string
-          description: DNI del cliente (solo para tipo PERSONAL)
+          description: DNI del cliente
         firstName:
           type: string
-          description: Nombre del cliente (solo para tipo PERSONAL)
+          description: Nombre del cliente
         lastName:
           type: string
-          description: Apellido del cliente (solo para tipo PERSONAL)
+          description: Apellido del cliente
         isVIP:
           type: boolean
           description: Si es cliente VIP
@@ -93,7 +88,7 @@ components:
           type: boolean
           description: Si es cliente PYME
 
-    ProductSummaryResponse:
+    ProductsAvailable:
       type: object
       properties:
         productType:
@@ -106,6 +101,34 @@ components:
           type: string
           format: date-time
           description: Fecha de creación del producto
+
+    ProductSummaryResponse:
+      type: object
+      properties:
+        customerId:
+          type: string
+          description: ID del cliente
+        customerType:
+          type: string
+          enum: [PERSONAL, BUSINESS]
+          description: Tipo de cliente (PERSONAL o BUSINESS).
+        firstName:
+          type: string
+          description: Nombre del cliente
+        lastName:
+          type: string
+          description: Apellido del cliente
+        isVIP:
+          type: boolean
+          description: Si es cliente VIP
+        isPYME:
+          type: boolean
+          description: Si es cliente PYME
+        products:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductsAvailable'
+          description: Lista de productos del cliente
 
     ErrorResponse:
       type: object
@@ -313,9 +336,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/ProductSummaryResponse'
+                $ref: '#/components/schemas/ProductSummaryResponse'
         '500':
           description: Error interno del servidor.
           content:

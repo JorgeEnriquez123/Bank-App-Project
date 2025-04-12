@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 public class CustomerMapper {
     public Customer mapToCustomer(CustomerRequest customerRequest) {
         return Customer.builder()
-                .customerType(CustomerType.valueOf(customerRequest.getCustomerType().getValue()))
+                .customerType(Customer.CustomerType.valueOf(customerRequest.getCustomerType().getValue()))
                 .email(customerRequest.getEmail())
                 .phoneNumber(customerRequest.getPhoneNumber())
                 .address(customerRequest.getAddress())
@@ -22,7 +22,7 @@ public class CustomerMapper {
     public CustomerResponse mapToCustomerResponse(Customer customer) {
         CustomerResponse customerResponse = new CustomerResponse();
         customerResponse.setId(customer.getId());
-        customerResponse.setCustomerType(CustomerTypeEnum.valueOf(customer.getCustomerType().name()));
+        customerResponse.setCustomerType(CustomerResponse.CustomerTypeEnum.valueOf(customer.getCustomerType().name()));
         customerResponse.setEmail(customer.getEmail());
         customerResponse.setPhoneNumber(customer.getPhoneNumber());
         customerResponse.setAddress(customer.getAddress());

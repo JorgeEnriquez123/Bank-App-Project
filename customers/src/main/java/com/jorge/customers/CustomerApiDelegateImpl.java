@@ -48,7 +48,7 @@ public class CustomerApiDelegateImpl implements CustomersApiDelegate{
     }
 
     @Override
-    public Flux<ProductSummaryResponse> getCustomerProductSummaryById(String id, ServerWebExchange exchange) {
+    public Mono<ProductSummaryResponse> getCustomerProductSummaryById(String id, ServerWebExchange exchange) {
         return customerService.getProductSummaryByCustomerId(id);
     }
 }

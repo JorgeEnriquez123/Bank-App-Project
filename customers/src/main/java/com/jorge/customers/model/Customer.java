@@ -25,4 +25,9 @@ public class Customer {
 
     private Boolean isVIP;
     private Boolean isPYME;
+
+    public enum CustomerType {
+        PERSONAL,
+        BUSINESS
+    }
 }
