@@ -8,6 +8,7 @@ public interface DebitCardService {
     Flux<DebitCardResponse> getAllDebitCards();
     Mono<DebitCardResponse> getDebitCardById(String id);
     Mono<DebitCardResponse> getDebitCardByDebitCardNumber(String debitCardNumber);
+    Flux<DebitCardResponse> getDebitCardsByCardHolderId(String cardHolderId);
     Mono<DebitCardResponse> createDebitCard(DebitCardRequest debitCardRequest);
     Mono<DebitCardResponse> updateDebitCardByDebitCardNumber(String debitCardNumber, DebitCardRequest debitCardRequest);
     Mono<Void> deleteDebitCardByDebitCardNumber(String debitCardNumber);

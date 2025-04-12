@@ -15,6 +15,11 @@ public class DebitCardApiDelegateImpl implements DebitCardsApiDelegate {
     private final DebitCardService debitCardService;
 
     @Override
+    public Flux<DebitCardResponse> getDebitCardsByCardHolderId(String cardHolderId, ServerWebExchange exchange) {
+        return debitCardService.getDebitCardsByCardHolderId(cardHolderId);
+    }
+
+    @Override
     public Flux<TransactionResponse> getTransactionsByDebitCardNumberLast10(String debitCardNumber, ServerWebExchange exchange) {
         return debitCardService.getTransactionsByDebitCardNumberLast10(debitCardNumber);
     }

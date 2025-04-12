@@ -106,6 +106,11 @@
 			<version>2.2.10</version>
 		</dependency>
 
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-circuitbreaker-reactor-resilience4j</artifactId>
+		</dependency>
+
 	</dependencies>
 	<dependencyManagement>
 		<dependencies>
@@ -165,7 +170,17 @@
 								<reactive>true</reactive>
 								<delegatePattern>true</delegatePattern>
 								<useResponseEntity>false</useResponseEntity>
+								<java8>true</java8>
+								<dateLibrary>custom</dateLibrary>
 							</configOptions>
+							<typeMappings>
+								<typeMapping>DateTime=LocalDateTime</typeMapping>
+								<typeMapping>date=LocalDate</typeMapping>
+							</typeMappings>
+							<importMappings>
+								<importMapping>LocalDateTime=java.time.LocalDateTime</importMapping>
+								<importMapping>LocalDate=java.time.LocalDate</importMapping>
+							</importMappings>
 						</configuration>
 					</execution>
 				</executions>

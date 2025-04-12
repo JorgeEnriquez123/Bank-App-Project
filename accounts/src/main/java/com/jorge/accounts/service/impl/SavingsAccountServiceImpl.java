@@ -29,8 +29,8 @@ public class SavingsAccountServiceImpl implements SavingsAccountService {
 
     @Override
     public Mono<SavingsAccountResponse> createSavingsAccount(SavingsAccountRequest savingsAccountRequest) {
-        log.info("Creating a new account for customer DNI: {}", savingsAccountRequest.getCustomerDni());
-        return customerClient.getCustomerByDni(savingsAccountRequest.getCustomerDni())
+        log.info("Creating a new account for customer Id: {}", savingsAccountRequest.getCustomerId());
+        return customerClient.getCustomerById(savingsAccountRequest.getCustomerId())
                 .flatMap(customer -> {
                     if(customer.getIsVIP() || customer.getIsPYME()) // If Customer is VIP or PYME, perform validations
                         return customerValidation.validateCreditCardExists(customer);  // Validate if customer has Credit Cards
@@ -49,7 +49,7 @@ public class SavingsAccountServiceImpl implements SavingsAccountService {
                         accountUtils.handleInitialDeposit(savingsAccount, savingsAccountRequest.getBalance()))
                 .map(savingsAccountMapper::mapToSavingsAccountResponse)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
-                        "Customer with dni: " + savingsAccountRequest.getCustomerDni() + " not found")));
+                        "Customer with dni: " + savingsAccountRequest.getCustomerId() + " not found")));
     }
 
     @Override

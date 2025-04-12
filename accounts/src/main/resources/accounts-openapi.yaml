@@ -30,6 +30,42 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+  /accounts/customer/{customerId}:
+    get:
+      summary: Obtiene cuentas por ID de cliente.
+      tags:
+        - Accounts
+      operationId: getAccountsByCustomerId
+      parameters:
+        - in: path
+          name: customerId
+          schema:
+            type: string
+          required: true
+          description: ID del cliente.
+      responses:
+        '200':
+          description: Lista de cuentas obtenida exitosamente.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AccountResponse'
+        '404':
+          description: Cliente no encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+
   /accounts/savings:
     post:
       summary: Crea una nueva cuenta de ahorros
@@ -1019,13 +1055,48 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+  /debit-cards/card-holder/{cardHolderId}:
+    get:
+      summary: Obtiene las tarjetas de débito por Id del titular de la tarjeta
+      tags:
+        - DebitCards
+      operationId: getDebitCardsByCardHolderId
+      parameters:
+        - in: path
+          name: cardHolderId
+          schema:
+            type: string
+          required: true
+          description: ID del titular de la tarjeta de débito
+      responses:
+        '200':
+          description: Tarjetas de débito obtenidas exitosamente
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DebitCardResponse'
+        '404':
+          description: Titular de la tarjeta de débito no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
 components:
   schemas:
     # Requests
     SavingsAccountRequest:
       type: object
       required:
-        - customerDni
+        - customerId
         - balance
         - movementsThisMonth
         - maxMovementsFeeFreeThisMonth
@@ -1033,9 +1104,9 @@ components:
         - movementCommissionFee
         - monthlyMovementsLimit
       properties:
-        customerDni:
+        customerId:
           type: string
-          description: DNI del cliente
+          description: Id del cliente
         balance:
           type: number
           format: decimal
@@ -1060,7 +1131,7 @@ components:
     CheckingAccountRequest:
       type: object
       required:
-        - customerDni
+        - customerId
         - balance
         - movementsThisMonth
         - maxMovementsFeeFreeThisMonth
@@ -1070,9 +1141,9 @@ components:
         - holders
         - authorizedSigners
       properties:
-        customerDni:
+        customerId:
           type: string
-          description: DNI del cliente
+          description: Id del cliente
         balance:
           type: number
           format: decimal
@@ -1108,7 +1179,7 @@ components:
     FixedTermAccountRequest:
       type: object
       required:
-        - customerDni
+        - customerId
         - balance
         - movementsThisMonth
         - maxMovementsFeeFreeThisMonth
@@ -1116,9 +1187,9 @@ components:
         - movementCommissionFee
         - allowedWithdrawal
       properties:
-        customerDni:
+        customerId:
           type: string
-          description: DNI del cliente
+          description: Id del cliente
         balance:
           type: number
           format: decimal
@@ -1126,7 +1197,7 @@ components:
         movementsThisMonth:
           type: integer
           description: Movimientos del mes
-        maxMovementsFeeFreeThisMonth:
+        maxMoveementsFeeFreeThisMonth:
           type: integer
           description: Máximo de movimientos libres de comisión del mes
         isCommissionFeeActive:
@@ -1269,9 +1340,9 @@ components:
           type: number
           format: decimal
           description: Saldo de la cuenta
-        customerDni:
+        customerId:
           type: string
-          description: DNI del cliente
+          description: Id del cliente
         accountType:
           type: string
           enum: [SAVINGS, CHECKING, FIXED_TERM]
@@ -1331,9 +1402,9 @@ components:
           type: number
           format: decimal
           description: Saldo de la cuenta
-        customerDni:
+        customerId:
           type: string
-          description: DNI del cliente
+          description: Id del cliente
         accountType:
           type: string
           enum: [SAVINGS, CHECKING, FIXED_TERM]
@@ -1372,9 +1443,9 @@ components:
           type: number
           format: decimal
           description: Saldo de la cuenta
-        customerDni:
+        customerId:
           type: string
-          description: DNI del cliente
+          description: Id del cliente
         accountType:
           type: string
           enum: [SAVINGS, CHECKING, FIXED_TERM]
@@ -1424,9 +1495,9 @@ components:
           type: number
           format: decimal
           description: Saldo de la cuenta
-        customerDni:
+        customerId:
           type: string
-          description: DNI del cliente
+          description: Id del cliente
         accountType:
           type: string
           enum: [SAVINGS, CHECKING, FIXED_TERM]

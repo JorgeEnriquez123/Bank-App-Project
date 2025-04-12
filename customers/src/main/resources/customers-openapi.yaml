@@ -93,6 +93,20 @@ components:
           type: boolean
           description: Si es cliente PYME
 
+    ProductSummaryResponse:
+      type: object
+      properties:
+        productType:
+          type: string
+          description: tipo de producto
+        productId:
+          type: string
+          description: ID del producto
+        createdAt:
+          type: string
+          format: date-time
+          description: Fecha de creación del producto
+
     ErrorResponse:
       type: object
       properties:
@@ -272,6 +286,36 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /customers/{id}/product-summary:
+    get:
+      summary: Obtener resumen de productos de un cliente por ID.
+      tags:
+        - Clientes
+      description: Devuelve un único cliente basado en el ID proporcionado.
+      operationId: getCustomerProductSummaryById
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: El ID del cliente a obtener.
+      responses:
+        '200':
+          description: Resumen de productos obtenido exitosamente.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProductSummaryResponse'
         '500':
           description: Error interno del servidor.
           content:

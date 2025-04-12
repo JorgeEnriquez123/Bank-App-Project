@@ -1,26 +1,18 @@
-package com.jorge.accounts.model;
+package com.jorge.customers.webclient.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
+import lombok.Data;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Document(collection = "accounts")
-public abstract class Account {
-    @Id
+@Data
+public class AccountResponse {
     private String id;
     private String accountNumber;
     private BigDecimal balance;
-    private String customerId;
+    private String customerDni;
     private AccountType accountType;
     private LocalDateTime createdAt;
 
@@ -28,6 +20,14 @@ public abstract class Account {
     private Integer maxMovementsFeeFreeThisMonth;
     private Boolean isCommissionFeeActive;
     private BigDecimal movementCommissionFee;
+
+    private Integer monthlyMovementsLimit;
+
+    private BigDecimal maintenanceFee;
+    private List<String> holders;
+    private List<String> authorizedSigners;
+
+    private LocalDate allowedWithdrawal;
 
     public enum AccountType{
         SAVINGS, CHECKING, FIXED_TERM

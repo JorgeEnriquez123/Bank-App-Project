@@ -31,8 +31,8 @@ public class CheckingAccountServiceImpl implements CheckingAccountService {
 
     @Override
     public Mono<CheckingAccountResponse> createCheckingAccount(CheckingAccountRequest checkingAccountRequest) {
-        log.info("Creating a new account for customer DNI: {}", checkingAccountRequest.getCustomerDni());
-        return customerClient.getCustomerByDni(checkingAccountRequest.getCustomerDni())
+        log.info("Creating a new account for customer Id: {}", checkingAccountRequest.getCustomerId());
+        return customerClient.getCustomerById(checkingAccountRequest.getCustomerId())
                 .flatMap(customer -> {
                     if(customer.getIsVIP() || customer.getIsPYME())
                         return customerValidation.validateCreditCardExists(customer);  // Validate if customer has Credit Cards
@@ -55,7 +55,7 @@ public class CheckingAccountServiceImpl implements CheckingAccountService {
                         accountUtils.handleInitialDeposit(checkingAccount, checkingAccountRequest.getBalance()))
                 .map(checkingAccountMapper::mapToCheckingAccountResponse)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
-                        "Customer with dni: " + checkingAccountRequest.getCustomerDni() + " not found")));
+                        "Customer with dni: " + checkingAccountRequest.getCustomerId() + " not found")));
     }
 
     @Override

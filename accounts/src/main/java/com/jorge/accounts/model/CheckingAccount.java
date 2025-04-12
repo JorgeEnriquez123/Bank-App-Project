@@ -18,8 +18,8 @@ public class CheckingAccount extends Account{
     private List<String> holders;
     private List<String> authorizedSigners;
 
-    public CheckingAccount(String id, String accountNumber, BigDecimal balance, String customerDni, AccountType accountType, LocalDateTime createdAt, Integer movementsThisMonth, Integer maxMovementsFeeFreeThisMonth, Boolean isCommissionFeeActive, BigDecimal movementCommissionFee, BigDecimal maintenanceFee) {
-        super(id, accountNumber, balance, customerDni, accountType, createdAt, movementsThisMonth, maxMovementsFeeFreeThisMonth, isCommissionFeeActive, movementCommissionFee);
+    public CheckingAccount(String id, String accountNumber, BigDecimal balance, String customerId, AccountType accountType, LocalDateTime createdAt, Integer movementsThisMonth, Integer maxMovementsFeeFreeThisMonth, Boolean isCommissionFeeActive, BigDecimal movementCommissionFee, BigDecimal maintenanceFee) {
+        super(id, accountNumber, balance, customerId, accountType, createdAt, movementsThisMonth, maxMovementsFeeFreeThisMonth, isCommissionFeeActive, movementCommissionFee);
         this.maintenanceFee = maintenanceFee;
     }
 }

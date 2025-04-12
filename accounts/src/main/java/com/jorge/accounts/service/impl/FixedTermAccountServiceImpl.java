@@ -29,8 +29,8 @@ public class FixedTermAccountServiceImpl implements FixedTermAccountService {
 
     @Override
     public Mono<FixedTermAccountResponse> createFixedTermAccount(FixedTermAccountRequest fixedTermAccountRequest) {
-        log.info("Creating a new account for customer DNI: {}", fixedTermAccountRequest.getCustomerDni());
-        return customerClient.getCustomerByDni(fixedTermAccountRequest.getCustomerDni())
+        log.info("Creating a new account for customer Id: {}", fixedTermAccountRequest.getCustomerId());
+        return customerClient.getCustomerById(fixedTermAccountRequest.getCustomerId())
                 .flatMap(customer -> {
                     if(customer.getIsVIP() || customer.getIsPYME())
                         return customerValidation.validateCreditCardExists(customer);  // Validate if customer has Credit Cards
@@ -49,7 +49,7 @@ public class FixedTermAccountServiceImpl implements FixedTermAccountService {
                         accountUtils.handleInitialDeposit(fixedTermAccount, fixedTermAccountRequest.getBalance()))
                 .map(fixedTermAccountMapper::mapToFixedTermAccountResponse)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
-                        "Customer with dni: " + fixedTermAccountRequest.getCustomerDni() + " not found")));
+                        "Customer with dni: " + fixedTermAccountRequest.getCustomerId() + " not found")));
     }
 
     @Override

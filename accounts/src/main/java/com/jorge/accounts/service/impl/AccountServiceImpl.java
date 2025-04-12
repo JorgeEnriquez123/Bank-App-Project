@@ -71,6 +71,13 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
+    public Flux<AccountResponse> getAccountsByCustomerId(String customerId) {
+        log.info("Fetching accounts for customer id: {}", customerId);
+        return accountRepository.findByCustomerId(customerId)
+                .map(accountMapper::mapToAccountResponse);
+    }
+
+    @Override
     public Mono<BalanceResponse> increaseBalanceByAccountNumber(String accountNumber, BigDecimal balance) {
         log.info("Increasing balance by {} for account number: {}", balance, accountNumber);
         return accountRepository.findByAccountNumber(accountNumber)

@@ -21,12 +21,12 @@ public class CustomerValidation {
     private final CreditClient creditClient;
 
     public Mono<Account> personalCustomerValidation(CustomerResponse customer, Account.AccountType accountType) {
-        log.info("Validating personal customer account creation for DNI: {}, Account Type: {}", customer.getDni(), accountType);
-        return accountRepository.findByCustomerDniAndAccountType(customer.getDni(), accountType)
+        log.info("Validating personal customer account creation for Id: {}, Account Type: {}", customer.getId(), accountType);
+        return accountRepository.findByCustomerIdAndAccountType(customer.getId(), accountType)
                 .flatMap(account -> {
-                    log.warn("Conflict: Customer with dni: {} already has a {} account", customer.getDni(), accountType);
+                    log.warn("Conflict: Customer with Id: {} already has a {} account", customer.getId(), accountType);
                     return Mono.<Account>error(new ResponseStatusException(HttpStatus.CONFLICT,
-                            "Customer with dni: " + customer.getDni() + " already has a " + accountType.name() + " account"));
+                            "Customer with dni: " + customer.getId() + " already has a " + accountType.name() + " account"));
                 })
                 .switchIfEmpty(Mono.empty());
     }

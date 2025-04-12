@@ -19,7 +19,7 @@ public class SavingsAccountMapper {
         SavingsAccount account = new SavingsAccount();
         account.setAccountNumber(accountUtils.generateAccountNumber()); // Generate AccountNumber
         account.setBalance(savingsAccountRequest.getBalance());
-        account.setCustomerDni(savingsAccountRequest.getCustomerDni());
+        account.setCustomerId(savingsAccountRequest.getCustomerId());
         account.setAccountType(Account.AccountType.SAVINGS); // Set the account type
         account.setCreatedAt(LocalDateTime.now());           // Set the creation timestamp
         account.setMovementsThisMonth(savingsAccountRequest.getMovementsThisMonth());
@@ -36,7 +36,7 @@ public class SavingsAccountMapper {
         response.setId(savingsAccount.getId());
         response.setAccountNumber(savingsAccount.getAccountNumber());
         response.setBalance(savingsAccount.getBalance());
-        response.setCustomerDni(savingsAccount.getCustomerDni());
+        response.setCustomerId(savingsAccount.getCustomerId());
         response.setAccountType(SavingsAccountResponse.AccountTypeEnum.valueOf(savingsAccount.getAccountType().name()));
         response.setCreatedAt(savingsAccount.getCreatedAt());
         response.setMovementsThisMonth(savingsAccount.getMovementsThisMonth());

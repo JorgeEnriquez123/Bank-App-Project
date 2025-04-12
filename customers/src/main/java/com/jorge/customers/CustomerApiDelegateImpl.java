@@ -3,6 +3,7 @@ package com.jorge.customers;
 import com.jorge.customers.api.CustomersApiDelegate;
 import com.jorge.customers.model.CustomerRequest;
 import com.jorge.customers.model.CustomerResponse;
+import com.jorge.customers.model.ProductSummaryResponse;
 import com.jorge.customers.service.CustomerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -44,5 +45,10 @@ public class CustomerApiDelegateImpl implements CustomersApiDelegate{
     public Mono<CustomerResponse> updateCustomerById(String id, Mono<CustomerRequest> customerRequest, ServerWebExchange exchange) {
         return customerRequest
                 .flatMap(customerReq -> customerService.updateCustomerById(id, customerReq));
+    }
+
+    @Override
+    public Flux<ProductSummaryResponse> getCustomerProductSummaryById(String id, ServerWebExchange exchange) {
+        return customerService.getProductSummaryByCustomerId(id);
     }
 }

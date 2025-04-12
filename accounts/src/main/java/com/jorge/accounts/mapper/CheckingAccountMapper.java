@@ -19,7 +19,7 @@ public class CheckingAccountMapper {
         CheckingAccount checkingAccount = new CheckingAccount();
         checkingAccount.setAccountNumber(accountUtils.generateAccountNumber());
         checkingAccount.setBalance(checkingAccountRequest.getBalance());
-        checkingAccount.setCustomerDni(checkingAccountRequest.getCustomerDni());
+        checkingAccount.setCustomerId(checkingAccountRequest.getCustomerId());
         checkingAccount.setAccountType(Account.AccountType.CHECKING);
         checkingAccount.setCreatedAt(LocalDateTime.now());
         checkingAccount.setMovementsThisMonth(checkingAccountRequest.getMovementsThisMonth());
@@ -39,7 +39,7 @@ public class CheckingAccountMapper {
         checkingAccountResponse.setId(checkingAccount.getId());
         checkingAccountResponse.setAccountNumber(checkingAccount.getAccountNumber());
         checkingAccountResponse.setBalance(checkingAccount.getBalance());
-        checkingAccountResponse.setCustomerDni(checkingAccount.getCustomerDni());
+        checkingAccountResponse.setCustomerId(checkingAccount.getCustomerId());
         checkingAccountResponse.setAccountType(CheckingAccountResponse.AccountTypeEnum.valueOf(checkingAccount.getAccountType().name()));
         checkingAccountResponse.setCreatedAt(checkingAccount.getCreatedAt());
         checkingAccountResponse.setMovementsThisMonth(checkingAccount.getMovementsThisMonth());

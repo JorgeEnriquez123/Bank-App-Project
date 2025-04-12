@@ -23,6 +23,11 @@ public class AccountApiDelegateImpl implements AccountsApiDelegate {
     private final FixedTermAccountService fixedTermAccountService;
 
     @Override
+    public Flux<AccountResponse> getAccountsByCustomerId(String customerId, ServerWebExchange exchange) {
+        return accountService.getAccountsByCustomerId(customerId);
+    }
+
+    @Override
     public Mono<AverageMonthlyDailyBalanceResponse> calculateAverageMonthlyDailyBalanceByAccountNumber(String accountNumber, Mono<AverageMonthlyDailyBalanceRequest> averageMonthlyDailyBalanceRequest, ServerWebExchange exchange) {
         return averageMonthlyDailyBalanceRequest.flatMap(
                 request -> accountService.calculateAverageMonthlyDailyBalance(accountNumber, request));

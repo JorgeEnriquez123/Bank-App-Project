@@ -5,7 +5,6 @@ import org.springframework.cloud.client.circuitbreaker.ReactiveCircuitBreakerFac
 import org.springframework.http.HttpStatus;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.server.ResponseStatusException;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public class CustomerClient {
@@ -17,9 +16,9 @@ public class CustomerClient {
         this.circuitBreakerFactory = circuitBreakerFactory;
     }
 
-    public Mono<CustomerResponse> getCustomerByDni(String dni) {
+    public Mono<CustomerResponse> getCustomerById(String id) {
         return circuitBreakerFactory.create("customerClient").run(webClient.get()
-                .uri("/dni/" + dni)
+                .uri("/" + id)
                 .retrieve()
                 .bodyToMono(CustomerResponse.class),
                 throwable -> Mono.error(new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Customer service unavailable", throwable)));

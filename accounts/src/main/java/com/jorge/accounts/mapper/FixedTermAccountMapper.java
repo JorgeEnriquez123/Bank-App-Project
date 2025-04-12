@@ -19,11 +19,11 @@ public class FixedTermAccountMapper {
         FixedTermAccount fixedTermAccount = new FixedTermAccount();
         fixedTermAccount.setAccountNumber(accountUtils.generateAccountNumber());
         fixedTermAccount.setBalance(fixedTermAccountRequest.getBalance());
-        fixedTermAccount.setCustomerDni(fixedTermAccountRequest.getCustomerDni());
+        fixedTermAccount.setCustomerId(fixedTermAccountRequest.getCustomerId());
         fixedTermAccount.setAccountType(Account.AccountType.FIXED_TERM);
         fixedTermAccount.setCreatedAt(LocalDateTime.now());
         fixedTermAccount.setMovementsThisMonth(fixedTermAccountRequest.getMovementsThisMonth());
-        fixedTermAccount.setMaxMovementsFeeFreeThisMonth(fixedTermAccountRequest.getMaxMovementsFeeFreeThisMonth());
+        fixedTermAccount.setMaxMovementsFeeFreeThisMonth(fixedTermAccountRequest.getMaxMoveementsFeeFreeThisMonth());
         fixedTermAccount.setIsCommissionFeeActive(fixedTermAccountRequest.getIsCommissionFeeActive());
         fixedTermAccount.setMovementCommissionFee(fixedTermAccountRequest.getMovementCommissionFee());
 
@@ -37,7 +37,7 @@ public class FixedTermAccountMapper {
         fixedTermAccountResponse.setId(fixedTermAccount.getId());
         fixedTermAccountResponse.setAccountNumber(fixedTermAccount.getAccountNumber());
         fixedTermAccountResponse.setBalance(fixedTermAccount.getBalance());
-        fixedTermAccountResponse.setCustomerDni(fixedTermAccount.getCustomerDni());
+        fixedTermAccountResponse.setCustomerId(fixedTermAccount.getCustomerId());
         fixedTermAccountResponse.setAccountType(FixedTermAccountResponse.AccountTypeEnum.valueOf(fixedTermAccount.getAccountType().name()));
         fixedTermAccountResponse.setCreatedAt(fixedTermAccount.getCreatedAt());
         fixedTermAccountResponse.setMovementsThisMonth(fixedTermAccount.getMovementsThisMonth());

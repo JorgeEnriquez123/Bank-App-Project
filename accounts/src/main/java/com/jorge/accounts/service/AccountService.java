@@ -13,6 +13,8 @@ public interface AccountService {
     Mono<Void> deleteAccountByAccountNumber(String accountNumber);
     Mono<BalanceResponse> getBalanceByAccountNumber(String accountNumber);
 
+    Flux<AccountResponse> getAccountsByCustomerId(String customerId);
+
     Mono<BalanceResponse> increaseBalanceByAccountNumber(String accountNumber, BigDecimal balance);
     Mono<BalanceResponse> decreaseBalanceByAccountNumber(String accountNumber, BigDecimal balance);
     Mono<AccountResponse> depositByAccountNumber(String accountNumber, DepositRequest depositRequest);

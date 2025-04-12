@@ -11,7 +11,7 @@ public class AccountMapper {
         accountResponse.setId(account.getId());
         accountResponse.setAccountNumber(account.getAccountNumber());
         accountResponse.setBalance(account.getBalance());
-        accountResponse.setCustomerDni(account.getCustomerDni());
+        accountResponse.setCustomerId(account.getCustomerId());
         accountResponse.setAccountType(AccountResponse.AccountTypeEnum.valueOf(account.getAccountType().name()));
         accountResponse.setCreatedAt(account.getCreatedAt());
         accountResponse.setMovementsThisMonth(account.getMovementsThisMonth());

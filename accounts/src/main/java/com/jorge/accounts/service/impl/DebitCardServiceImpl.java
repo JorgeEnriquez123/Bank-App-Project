@@ -48,6 +48,12 @@ public class DebitCardServiceImpl implements DebitCardService {
     }
 
     @Override
+    public Flux<DebitCardResponse> getDebitCardsByCardHolderId(String cardHolderId) {
+        return debitCardRepository.findByCardHolderId(cardHolderId)
+                .map(debitCardMapper::mapToDebitCardResponse);
+    }
+
+    @Override
     public Mono<DebitCardResponse> createDebitCard(DebitCardRequest debitCardRequest) {
         return debitCardRepository.save(debitCardMapper.mapToDebitCard(debitCardRequest))
                 .map(debitCardMapper::mapToDebitCardResponse);
