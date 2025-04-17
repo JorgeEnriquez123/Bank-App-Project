@@ -8,6 +8,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 public interface AccountService {
+    // CRUD
     Flux<AccountResponse> getAllAccounts();
     Mono<AccountResponse> getAccountByAccountNumber(String accountNumber);
     Mono<Void> deleteAccountByAccountNumber(String accountNumber);
@@ -15,6 +16,7 @@ public interface AccountService {
 
     Flux<AccountResponse> getAccountsByCustomerId(String customerId);
 
+    // BUSINESS LOGIC
     Mono<BalanceResponse> increaseBalanceByAccountNumber(String accountNumber, BigDecimal balance);
     Mono<BalanceResponse> decreaseBalanceByAccountNumber(String accountNumber, BigDecimal balance);
     Mono<AccountResponse> depositByAccountNumber(String accountNumber, DepositRequest depositRequest);
@@ -25,3 +27,4 @@ public interface AccountService {
     Mono<TransactionResponse> transfer (String accountNumber, TransferRequest transferRequest);
     Flux<FeeReportResponse> generateFeeReportBetweenDate(String accountNumber, LocalDateTime startDate, LocalDateTime endDate);
 }
+

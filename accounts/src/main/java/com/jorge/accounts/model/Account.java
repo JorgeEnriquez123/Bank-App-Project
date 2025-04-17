@@ -30,3 +30,4 @@ public abstract class Account {
         SAVINGS, CHECKING, FIXED_TERM
     }
 }
+

@@ -4,7 +4,7 @@ import com.jorge.accounts.mapper.AccountMapper;
 import com.jorge.accounts.model.*;
 import com.jorge.accounts.repository.AccountRepository;
 import com.jorge.accounts.service.AccountService;
-import com.jorge.accounts.webclient.client.CustomerClient;
+import com.jorge.accounts.service.strategy.business.AccountMovementProcessStrategy;
 import com.jorge.accounts.webclient.client.TransactionClient;
 import com.jorge.accounts.webclient.model.TransactionRequest;
 import lombok.RequiredArgsConstructor;
@@ -23,15 +23,16 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class AccountServiceImpl implements AccountService {
-    private final CustomerClient customerClient;
     private final AccountMapper accountMapper;
     private final AccountRepository accountRepository;
     private final TransactionClient transactionClient;
+    private final Map<Account.AccountType, AccountMovementProcessStrategy> movementProcessStrategies;
 
     @Override
     public Flux<AccountResponse> getAllAccounts() {
@@ -113,19 +114,14 @@ public class AccountServiceImpl implements AccountService {
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "Account with account number: " + accountNumber + " not found")))
                 .flatMap(this::processAccountMovement)  // Check movement limits and fee
+                .flatMap(this::validateFixedAccountDeposit)
                 .flatMap(account -> {
                     BigDecimal depositAmount = depositRequest.getAmount();
-
-                    // If there is a balance, it means there was a deposit already. This means no more deposits are allowed
-                    if(account.getAccountType() == Account.AccountType.FIXED_TERM && account.getBalance().compareTo(BigDecimal.ZERO) > 0) {
-                        return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                                "One deposit has already been performed for this Fixed Term account"));
-                    }
 
                     // Apply commission fee if active
                     if (account.getIsCommissionFeeActive()) {
                         depositAmount = depositAmount.subtract(account.getMovementCommissionFee());
-                        if(depositAmount.compareTo(BigDecimal.ZERO) < 0){
+                        if (depositAmount.compareTo(BigDecimal.ZERO) < 0) {
                             return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
                                     "Commission fee is higher than deposit amount"));
                         }
@@ -135,13 +131,10 @@ public class AccountServiceImpl implements AccountService {
 
                     return accountRepository.save(account)
                             .flatMap(savedAccount -> {
-                                TransactionRequest transactionRequest = new TransactionRequest();
-                                transactionRequest.setAccountNumber(accountNumber);
-                                transactionRequest.setAmount(depositRequest.getAmount());
-                                transactionRequest.setTransactionType(TransactionRequest.TransactionType.DEPOSIT);
-                                transactionRequest.setDescription("Deposit to account " + accountNumber);
-                                transactionRequest.setFee(savedAccount.getIsCommissionFeeActive()
-                                        ? savedAccount.getMovementCommissionFee() : BigDecimal.ZERO);
+                                TransactionRequest transactionRequest = createTransactionRequest(savedAccount,
+                                        depositRequest.getAmount(),
+                                        TransactionRequest.TransactionType.DEPOSIT,
+                                        "Deposit to Account " + accountNumber);
 
                                 return transactionClient.createTransaction(transactionRequest)
                                         .thenReturn(savedAccount);
@@ -158,41 +151,29 @@ public class AccountServiceImpl implements AccountService {
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "Account with account number: " + accountNumber + " not found")))
                 .flatMap(this::processAccountMovement) // Check movement limits and fee
+                .flatMap(this::validateFixedAccountWithdraw)
                 .flatMap(account -> {
                     BigDecimal withdrawalAmount = withdrawalRequest.getAmount();
 
                     // Apply commission fee if active
                     if (account.getIsCommissionFeeActive()) {
-                        withdrawalAmount = withdrawalAmount.add(account.getMovementCommissionFee()); // Add to withdrawal, since it's taken from balance
+                        // Add to withdrawal, since it's taken from balance
+                        withdrawalAmount = withdrawalAmount.add(account.getMovementCommissionFee());
                     }
-
                     // Check if balance is less than the withdrawal
                     if(account.getBalance().compareTo(withdrawalAmount) < 0){
                         return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
                                 "Insufficient balance for the withdrawal"));
-                    }
-
-                    // If the withdrawal is made on a FIXED_TERM account
-                    if (account.getAccountType() == Account.AccountType.FIXED_TERM) {
-                        FixedTermAccount fixedTermAccount = (FixedTermAccount) account;
-                        if (fixedTermAccount.getAllowedWithdrawal().isAfter(LocalDate.now())) {
-                            return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                                    "Withdrawal not allowed until " + fixedTermAccount.getAllowedWithdrawal()));
-                        }
                     }
                     // Update balance
                     account.setBalance(account.getBalance().subtract(withdrawalAmount));
 
                     return accountRepository.save(account)
                             .flatMap(savedAccount -> {
-                                TransactionRequest transactionRequest = new TransactionRequest();
-                                transactionRequest.setAccountNumber(accountNumber);
-                                transactionRequest.setAmount(withdrawalRequest.getAmount());
-                                transactionRequest.setTransactionType(TransactionRequest.TransactionType.WITHDRAWAL);
-                                transactionRequest.setDescription("Withdrawal from account " + accountNumber);
-                                if(savedAccount.getIsCommissionFeeActive()) transactionRequest.setFee(savedAccount.getMovementCommissionFee());
-                                else transactionRequest.setFee(BigDecimal.ZERO);
-
+                                TransactionRequest transactionRequest = createTransactionRequest(savedAccount,
+                                        withdrawalRequest.getAmount(),
+                                        TransactionRequest.TransactionType.WITHDRAWAL,
+                                        "Withdrawal from Account " + accountNumber);
                                 return transactionClient.createTransaction(transactionRequest)
                                         .thenReturn(savedAccount);
                             });
@@ -312,66 +293,39 @@ public class AccountServiceImpl implements AccountService {
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Receiver account not found: " + receiverAccountNumber)))
                 .flatMap(account -> {
                     // Receiver Type Validation
-                    if (account.getAccountType() == Account.AccountType.FIXED_TERM) { // Assuming getAccountType() exists
+                    if (account.getAccountType() == Account.AccountType.FIXED_TERM) {
                         return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
                                 "Cannot transfer to a Fixed Term account."));
                     }
                     return Mono.just(account);
                 });
+
         return Mono.zip(validatedSender, validatedReceiver)
-                .flatMap(accountsTuple -> {
-                    Account senderAccount = accountsTuple.getT1();
-                    Account receiverAccount = accountsTuple.getT2();
-
-                    // Calculate potential fee
-                    BigDecimal fee;
-                    // Check if Commission Fee is applicable
-                    if (senderAccount.getIsCommissionFeeActive()) {
-                        fee = senderAccount.getMovementCommissionFee();
-                    } else {
-                        fee = BigDecimal.ZERO;
-                    }
-                    BigDecimal totalDeduction = transferAmount.add(fee);
-
-                    if (senderAccount.getBalance().compareTo(totalDeduction) < 0) {
-                        return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                                "Insufficient funds in sender account " + accountNumber + " (Required: " + totalDeduction + ")"));
-                    }
-
-                    //  Update Accounts Balances
-                    senderAccount.setBalance(senderAccount.getBalance().subtract(totalDeduction));
-                    receiverAccount.setBalance(receiverAccount.getBalance().add(transferAmount));
-
-                    // Update movements for Savings Account
-                    if (senderAccount instanceof SavingsAccount savingsAccount) {
-                        savingsAccount.setMovementsThisMonth(savingsAccount.getMovementsThisMonth() + 1);
-                    }
-
-                    return accountRepository.save(senderAccount)
-                            .flatMap(savedSender -> accountRepository.save(receiverAccount)
-                                            .map(savedReceiver -> Tuples.of(savedSender, fee))
-                            );
-                })
+                .flatMap(accountsTuple ->
+                        processTransferBetweenAccounts(accountsTuple, transferRequest.getAmount()))
                 .flatMap(savedSenderAndFeeTuple -> {
+                    Account senderAccount = savedSenderAndFeeTuple.getT1();
                     BigDecimal fee = savedSenderAndFeeTuple.getT2(); // Retrieve the fee calculated earlier
 
                     // Create Sender Transaction
-                    TransactionRequest debitRequest = new TransactionRequest();
-                    debitRequest.setAccountNumber(accountNumber);
-                    debitRequest.setAmount(transferAmount); // Amount being transferred
-                    debitRequest.setTransactionType(TransactionRequest.TransactionType.DEBIT);
-                    debitRequest.setDescription("Transfer to account " + receiverAccountNumber);
-                    debitRequest.setFee(fee); // Include the calculated fee
+                    TransactionRequest debitRequest = createTransferTransactionRequest(
+                            senderAccount.getAccountNumber(), // Sender account
+                            transferRequest.getAmount(),
+                            TransactionRequest.TransactionType.DEBIT,
+                            "Transfer to account " + receiverAccountNumber,
+                            fee
+                    );
 
                     // Create Receiver Transaction
-                    TransactionRequest creditRequest = new TransactionRequest();
-                    creditRequest.setAccountNumber(receiverAccountNumber);
-                    creditRequest.setAmount(transferAmount);
-                    creditRequest.setTransactionType(TransactionRequest.TransactionType.CREDIT);
-                    creditRequest.setDescription("Transfer from account " + accountNumber);
-                    creditRequest.setFee(BigDecimal.ZERO); // Receiver does not get a fee
+                    TransactionRequest creditRequest = createTransferTransactionRequest(
+                            accountNumber, // Receiver account
+                            transferRequest.getAmount(),
+                            TransactionRequest.TransactionType.CREDIT,
+                            "Transfer from account " + accountNumber,
+                            BigDecimal.ZERO // Receiver does not get a fee
+                    );
 
-                    // --- Call Transaction Client for Both ---
+                    // Call Transaction Client for Both
                     Mono<TransactionResponse> debitTransactionMono = transactionClient.createTransaction(debitRequest);
                     Mono<TransactionResponse> creditTransactionMono = transactionClient.createTransaction(creditRequest);
 
@@ -388,6 +342,42 @@ public class AccountServiceImpl implements AccountService {
         return transactionClient.getTransactionsFeesByAccountNumberAndDateRange(accountNumber, startDate, endDate);
     }
 
+    public Mono<Tuple2<Account, BigDecimal>> processTransferBetweenAccounts(Tuple2<Account, Account> accountsTuple, BigDecimal transferAmount) {
+        Account senderAccount = accountsTuple.getT1();
+        Account receiverAccount = accountsTuple.getT2();
+
+        BigDecimal fee;
+        // Check if Commission Fee for Sender is applicable
+        if (senderAccount.getIsCommissionFeeActive()) {
+            fee = senderAccount.getMovementCommissionFee();
+        } else {
+            fee = BigDecimal.ZERO;
+        }
+
+        BigDecimal totalDeduction = transferAmount.add(fee);
+
+        if (senderAccount.getBalance().compareTo(totalDeduction) < 0) {
+            return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Insufficient funds in sender account " +
+                            senderAccount.getAccountNumber() +
+                            " (Required: " + totalDeduction + ")"));
+        }
+
+        //  Update Account Balances
+        senderAccount.setBalance(senderAccount.getBalance().subtract(totalDeduction));
+        receiverAccount.setBalance(receiverAccount.getBalance().add(transferAmount));
+
+        // Update movements for Savings Account
+        if (senderAccount instanceof SavingsAccount savingsAccount) {
+            savingsAccount.setMovementsThisMonth(savingsAccount.getMovementsThisMonth() + 1);
+        }
+
+        return accountRepository.save(senderAccount)
+                .flatMap(savedSender -> accountRepository.save(receiverAccount)
+                        .map(savedReceiver -> Tuples.of(savedSender, fee))
+                );
+    }
+
     public BalanceResponse mapToBalanceResponse(Account account){
         BalanceResponse balanceResponse = new BalanceResponse();
         balanceResponse.setAccountNumber(account.getAccountNumber());
@@ -399,20 +389,74 @@ public class AccountServiceImpl implements AccountService {
     private Mono<Account> processAccountMovement(Account account) {
         log.info("Processing account movement for account number: {}", account.getAccountNumber());
         // Specific validations based on account type
-        if (account.getAccountType() == Account.AccountType.SAVINGS) {
-            SavingsAccount savingsAccount = (SavingsAccount) account;
-            if (savingsAccount.getMovementsThisMonth() > savingsAccount.getMonthlyMovementsLimit()) {
-                return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "Monthly movement limit reached for savings account"));
-            }
+        AccountMovementProcessStrategy movementProcessStrategy = movementProcessStrategies.get(account.getAccountType());
+        if (movementProcessStrategy == null) {
+            log.error("No movement process strategy found for account type: {}", account.getAccountType());
+            return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "No movement process strategy found for account type: " + account.getAccountType()));
         }
-        // Increase movement count
-        account.setMovementsThisMonth(account.getMovementsThisMonth() + 1);
 
-        // Check if commission fee should be activated
-        if (!account.getIsCommissionFeeActive() && account.getMovementsThisMonth().equals(account.getMaxMovementsFeeFreeThisMonth())) {
-            account.setIsCommissionFeeActive(true);
+        return movementProcessStrategy.processMovement(account)
+                .flatMap(processedAccount -> {
+                    log.info("Increasing movement count for account number: {}", processedAccount.getAccountNumber());
+                    // Increase movement count
+                    account.setMovementsThisMonth(account.getMovementsThisMonth() + 1);
+
+                    // Check if commission fee should be activated
+                    if (!account.getIsCommissionFeeActive() &&
+                            account.getMovementsThisMonth().equals(account.getMaxMovementsFeeFreeThisMonth())) {
+                        account.setIsCommissionFeeActive(true);
+                    }
+                    return Mono.just(account);
+                });
+    }
+
+    private Mono<Account> validateFixedAccountDeposit(Account account) {
+        // This account is special regarding deposits and withdrawals
+        if(account.getAccountType() == Account.AccountType.FIXED_TERM && account.getBalance().compareTo(BigDecimal.ZERO) > 0) {
+            return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "One deposit has already been performed for this Fixed Term account"));
         }
         return Mono.just(account);
     }
+
+    private Mono<Account> validateFixedAccountWithdraw(Account account) {
+        // If the withdrawal is made on a FIXED_TERM account
+        if (account.getAccountType() == Account.AccountType.FIXED_TERM) {
+            FixedTermAccount fixedTermAccount = (FixedTermAccount) account;
+            if (fixedTermAccount.getAllowedWithdrawal().isAfter(LocalDate.now())) {
+                return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Withdrawal not allowed until " + fixedTermAccount.getAllowedWithdrawal()));
+            }
+        }
+        return Mono.just(account);
+    }
+
+    private TransactionRequest createTransactionRequest(Account savedAccount,
+                                                        BigDecimal amount,
+                                                        TransactionRequest.TransactionType transactionType,
+                                                        String description) {
+        TransactionRequest transactionRequest = new TransactionRequest();
+        transactionRequest.setAccountNumber(savedAccount.getAccountNumber());
+        transactionRequest.setAmount(amount);
+        transactionRequest.setTransactionType(transactionType);
+        transactionRequest.setDescription(description);
+        transactionRequest.setFee(savedAccount.getIsCommissionFeeActive()
+                ? savedAccount.getMovementCommissionFee() : BigDecimal.ZERO);
+        return transactionRequest;
+    }
+
+    private TransactionRequest createTransferTransactionRequest(String accountNumber,
+                                                        BigDecimal amount,
+                                                        TransactionRequest.TransactionType transactionType,
+                                                        String description, BigDecimal fee) {
+        TransactionRequest transactionRequest = new TransactionRequest();
+        transactionRequest.setAccountNumber(accountNumber);
+        transactionRequest.setAmount(amount);
+        transactionRequest.setTransactionType(transactionType);
+        transactionRequest.setDescription(description);
+        transactionRequest.setFee(fee);
+        return transactionRequest;
+    }
+
 }

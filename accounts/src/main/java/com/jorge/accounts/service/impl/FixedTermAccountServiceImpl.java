@@ -33,9 +33,8 @@ public class FixedTermAccountServiceImpl implements FixedTermAccountService {
         return customerClient.getCustomerById(fixedTermAccountRequest.getCustomerId())
                 .flatMap(customer -> {
                     if(customer.getIsVIP() || customer.getIsPYME())
-                        return customerValidation.validateCreditCardExists(customer);  // Validate if customer has Credit Cards
-                    else
-                        return customerValidation.validateIfCustomerHasOverDueDebt(customer);   // Validate if Customer has over due debts
+                        return customerValidation.validateCreditCardExists(customer);       // Validate if customer has Credit Cards
+                    return customerValidation.validateIfCustomerHasOverDueDebt(customer);   // Validate if Customer has overdue debts
                 })
                 .flatMap(customer -> switch (customer.getCustomerType()) {
                     case PERSONAL -> customerValidation.personalCustomerValidation(customer, Account.AccountType.FIXED_TERM)
@@ -44,7 +43,8 @@ public class FixedTermAccountServiceImpl implements FixedTermAccountService {
                             .then(Mono.just(customer));
                 })
                 .flatMap(customer ->
-                        fixedTermAccountRepository.save(fixedTermAccountMapper.mapToFixedTermAccount(fixedTermAccountRequest)))
+                        fixedTermAccountRepository.save(fixedTermAccountMapper.
+                                mapToFixedTermAccount(fixedTermAccountRequest)))
                 .flatMap(fixedTermAccount ->
                         accountUtils.handleInitialDeposit(fixedTermAccount, fixedTermAccountRequest.getBalance()))
                 .map(fixedTermAccountMapper::mapToFixedTermAccountResponse)
@@ -53,7 +53,8 @@ public class FixedTermAccountServiceImpl implements FixedTermAccountService {
     }
 
     @Override
-    public Mono<FixedTermAccountResponse> updateFixedTermAccountByAccountNumber(String accountNumber, FixedTermAccountRequest fixedTermAccountRequest) {
+    public Mono<FixedTermAccountResponse> updateFixedTermAccountByAccountNumber(String accountNumber,
+                                                                                FixedTermAccountRequest fixedTermAccountRequest) {
         log.info("Updating FixedTerm account with account number: {}", accountNumber);
         return fixedTermAccountRepository.findByAccountNumber(accountNumber)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
@@ -63,7 +64,8 @@ public class FixedTermAccountServiceImpl implements FixedTermAccountService {
                 .map(fixedTermAccountMapper::mapToFixedTermAccountResponse);
     }
 
-    private FixedTermAccount updateFixedTermAccountFromRequest(FixedTermAccount existingFixedTermAccount, FixedTermAccountRequest fixedTermAccountRequest) {
+    private FixedTermAccount updateFixedTermAccountFromRequest(FixedTermAccount existingFixedTermAccount,
+                                                               FixedTermAccountRequest fixedTermAccountRequest) {
         FixedTermAccount fixedTermAccount = fixedTermAccountMapper.mapToFixedTermAccount(fixedTermAccountRequest);
         fixedTermAccount.setAccountNumber(existingFixedTermAccount.getAccountNumber());
         fixedTermAccount.setId(existingFixedTermAccount.getId());
