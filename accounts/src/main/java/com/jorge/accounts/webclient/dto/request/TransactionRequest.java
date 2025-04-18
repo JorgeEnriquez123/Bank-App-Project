@@ -1,4 +1,4 @@
-package com.jorge.accounts.webclient.model;
+package com.jorge.accounts.webclient.dto.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

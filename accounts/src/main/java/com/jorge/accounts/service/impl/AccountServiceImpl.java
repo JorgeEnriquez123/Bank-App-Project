@@ -6,7 +6,7 @@ import com.jorge.accounts.repository.AccountRepository;
 import com.jorge.accounts.service.AccountService;
 import com.jorge.accounts.service.strategy.business.AccountMovementProcessStrategy;
 import com.jorge.accounts.webclient.client.TransactionClient;
-import com.jorge.accounts.webclient.model.TransactionRequest;
+import com.jorge.accounts.webclient.dto.request.TransactionRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;

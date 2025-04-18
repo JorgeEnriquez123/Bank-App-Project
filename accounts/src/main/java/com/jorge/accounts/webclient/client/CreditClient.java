@@ -1,7 +1,7 @@
 package com.jorge.accounts.webclient.client;
 
-import com.jorge.accounts.webclient.model.CreditCardResponse;
-import com.jorge.accounts.webclient.model.CreditResponse;
+import com.jorge.accounts.webclient.dto.response.CreditCardResponse;
+import com.jorge.accounts.webclient.dto.response.CreditResponse;
 import org.springframework.cloud.client.circuitbreaker.ReactiveCircuitBreakerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.reactive.function.client.WebClient;

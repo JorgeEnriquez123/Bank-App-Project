@@ -1,13 +1,12 @@
 package com.jorge.accounts.service.impl;
 
-import com.jorge.accounts.mapper.AccountMapper;
 import com.jorge.accounts.mapper.DebitCardMapper;
 import com.jorge.accounts.model.*;
 import com.jorge.accounts.repository.AccountRepository;
 import com.jorge.accounts.repository.DebitCardRepository;
 import com.jorge.accounts.service.DebitCardService;
 import com.jorge.accounts.webclient.client.TransactionClient;
-import com.jorge.accounts.webclient.model.TransactionRequest;
+import com.jorge.accounts.webclient.dto.request.TransactionRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -35,14 +34,16 @@ public class DebitCardServiceImpl implements DebitCardService {
     @Override
     public Mono<DebitCardResponse> getDebitCardById(String id) {
         return debitCardRepository.findById(id)
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Debit Card with id: " + id + " not found")))
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Debit Card with id: " + id + " not found")))
                 .map(debitCardMapper::mapToDebitCardResponse);
     }
 
     @Override
     public Mono<DebitCardResponse> getDebitCardByDebitCardNumber(String debitCardNumber) {
         return debitCardRepository.findByDebitCardNumber(debitCardNumber)
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Debit Card with debit card number: " + debitCardNumber + " not found")))
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Debit Card with debit card number: " + debitCardNumber + " not found")))
                 .map(debitCardMapper::mapToDebitCardResponse);
     }
 
@@ -61,8 +62,10 @@ public class DebitCardServiceImpl implements DebitCardService {
     @Override
     public Mono<DebitCardResponse> updateDebitCardByDebitCardNumber(String debitCardNumber, DebitCardRequest debitCardRequest) {
         return debitCardRepository.findByDebitCardNumber(debitCardNumber)
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Debit Card with debit card number: " + debitCardNumber + " not found")))
-                .flatMap(existingDebitCard -> debitCardRepository.save(updateDebitCardFromRequest(existingDebitCard, debitCardRequest)))
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Debit Card with debit card number: " + debitCardNumber + " not found")))
+                .flatMap(existingDebitCard ->
+                        debitCardRepository.save(updateDebitCardFromRequest(existingDebitCard, debitCardRequest)))
                 .map(debitCardMapper::mapToDebitCardResponse);
     }
 
@@ -74,9 +77,11 @@ public class DebitCardServiceImpl implements DebitCardService {
     @Override
     public Mono<BalanceResponse> withdrawByDebitCardNumber(String debitCardNumber, WithdrawalRequest withdrawalRequest) {
         return debitCardRepository.findByDebitCardNumber(debitCardNumber)
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Debit Card with debit card number: " + debitCardNumber + " not found")))
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Debit Card with debit card number: " + debitCardNumber + " not found")))
                 .flatMap(debitCard -> accountRepository.findByAccountNumber(debitCard.getMainLinkedAccountNumber())
-                        .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Account with account number: " + debitCard.getMainLinkedAccountNumber() + " not found")))
+                        .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
+                                "Account with account number: " + debitCard.getMainLinkedAccountNumber() + " not found")))
                         .flatMap(mainAccount -> {
                             if (mainAccount.getBalance().compareTo(withdrawalRequest.getAmount()) > 0) {
                                 return withdrawFromAccount(mainAccount, withdrawalRequest);
@@ -86,8 +91,10 @@ public class DebitCardServiceImpl implements DebitCardService {
                                         .flatMap(accountRepository::findByAccountNumber)
                                         .filter(account -> account.getBalance().compareTo(withdrawalRequest.getAmount()) >= 0)
                                         .next()
-                                        .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Debit Card does not have enough balance in any of its linked accounts")))
-                                        .flatMap(accountWithSufficientBalance -> withdrawFromAccount(accountWithSufficientBalance, withdrawalRequest));
+                                        .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                                                "Debit Card does not have enough balance in any of its linked accounts")))
+                                        .flatMap(accountWithSufficientBalance ->
+                                                withdrawFromAccount(accountWithSufficientBalance, withdrawalRequest));
                             }
                         })
                         .map(accountDebited -> {
@@ -102,9 +109,11 @@ public class DebitCardServiceImpl implements DebitCardService {
     @Override
     public Mono<BalanceResponse> getBalanceByDebitCardNumber(String debitCardNumber) {
         return debitCardRepository.findByDebitCardNumber(debitCardNumber)
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Debit Card with debit card number: " + debitCardNumber + " not found")))
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Debit Card with debit card number: " + debitCardNumber + " not found")))
                 .flatMap(debitCard -> accountRepository.findByAccountNumber(debitCard.getMainLinkedAccountNumber())
-                        .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Account with account number: " + debitCard.getMainLinkedAccountNumber() + " not found")))
+                        .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
+                                "Account with account number: " + debitCard.getMainLinkedAccountNumber() + " not found")))
                         .map(account -> {
                             BalanceResponse balanceResponse = new BalanceResponse();
                             balanceResponse.setAccountNumber(account.getAccountNumber());
@@ -117,9 +126,11 @@ public class DebitCardServiceImpl implements DebitCardService {
     @Override
     public Flux<TransactionResponse> getTransactionsByDebitCardNumberLast10(String debitCardNumber) {
         return debitCardRepository.findByDebitCardNumber(debitCardNumber)
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Debit Card with debit card number: " + debitCardNumber + " not found")))
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Debit Card with debit card number: " + debitCardNumber + " not found")))
                 .flatMapMany(debitCard -> accountRepository.findByAccountNumber(debitCard.getMainLinkedAccountNumber())
-                        .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Account with account number: " + debitCard.getMainLinkedAccountNumber() + " not found")))
+                        .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
+                                "Account with account number: " + debitCard.getMainLinkedAccountNumber() + " not found")))
                         .flatMapMany(account -> transactionClient.getTransactionsByAccountNumber(account.getAccountNumber()))
                         .sort(Comparator.comparing(TransactionResponse::getCreatedAt).reversed())
                         .take(10));

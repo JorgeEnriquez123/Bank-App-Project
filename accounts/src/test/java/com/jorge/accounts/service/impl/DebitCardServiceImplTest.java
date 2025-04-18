@@ -5,7 +5,7 @@ import com.jorge.accounts.model.*;
 import com.jorge.accounts.repository.AccountRepository;
 import com.jorge.accounts.repository.DebitCardRepository;
 import com.jorge.accounts.webclient.client.TransactionClient;
-import com.jorge.accounts.webclient.model.TransactionRequest;
+import com.jorge.accounts.webclient.dto.request.TransactionRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

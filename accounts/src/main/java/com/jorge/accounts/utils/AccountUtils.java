@@ -2,7 +2,7 @@ package com.jorge.accounts.utils;
 
 import com.jorge.accounts.model.Account;
 import com.jorge.accounts.webclient.client.TransactionClient;
-import com.jorge.accounts.webclient.model.TransactionRequest;
+import com.jorge.accounts.webclient.dto.request.TransactionRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;

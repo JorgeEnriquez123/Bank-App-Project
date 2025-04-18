@@ -13,7 +13,6 @@ public interface AccountService {
     Mono<AccountResponse> getAccountByAccountNumber(String accountNumber);
     Mono<Void> deleteAccountByAccountNumber(String accountNumber);
     Mono<BalanceResponse> getBalanceByAccountNumber(String accountNumber);
-
     Flux<AccountResponse> getAccountsByCustomerId(String customerId);
 
     // BUSINESS LOGIC

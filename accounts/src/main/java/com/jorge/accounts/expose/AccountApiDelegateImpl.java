@@ -1,4 +1,4 @@
-package com.jorge.accounts;
+package com.jorge.accounts.expose;
 
 import com.jorge.accounts.api.AccountsApiDelegate;
 import com.jorge.accounts.model.*;

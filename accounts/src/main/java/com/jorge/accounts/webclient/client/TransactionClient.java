@@ -2,7 +2,7 @@ package com.jorge.accounts.webclient.client;
 
 import com.jorge.accounts.model.FeeReportResponse;
 import com.jorge.accounts.model.TransactionResponse;
-import com.jorge.accounts.webclient.model.TransactionRequest;
+import com.jorge.accounts.webclient.dto.request.TransactionRequest;
 import org.springframework.cloud.client.circuitbreaker.ReactiveCircuitBreakerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.reactive.function.client.WebClient;

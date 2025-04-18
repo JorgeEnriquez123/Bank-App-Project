@@ -3,7 +3,7 @@ package com.jorge.accounts.utils;
 import com.jorge.accounts.model.Account;
 import com.jorge.accounts.repository.AccountRepository;
 import com.jorge.accounts.webclient.client.CreditClient;
-import com.jorge.accounts.webclient.model.CustomerResponse;
+import com.jorge.accounts.webclient.dto.response.CustomerResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;

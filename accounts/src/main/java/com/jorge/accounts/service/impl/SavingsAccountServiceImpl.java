@@ -31,11 +31,13 @@ public class SavingsAccountServiceImpl implements SavingsAccountService {
     public Mono<SavingsAccountResponse> createSavingsAccount(SavingsAccountRequest savingsAccountRequest) {
         log.info("Creating a new account for customer Id: {}", savingsAccountRequest.getCustomerId());
         return customerClient.getCustomerById(savingsAccountRequest.getCustomerId())
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Customer with dni: " + savingsAccountRequest.getCustomerId() + " not found")))
                 .flatMap(customer -> {
                     if(customer.getIsVIP() || customer.getIsPYME()) // If Customer is VIP or PYME, perform validations
                         return customerValidation.validateCreditCardExists(customer);  // Validate if customer has Credit Cards
                     else
-                        return customerValidation.validateIfCustomerHasOverDueDebt(customer);   // Validate if Customer has over due debts
+                        return customerValidation.validateIfCustomerHasOverDueDebt(customer);   // Validate if Customer has overdue debts
                 })
                 .flatMap(customer -> switch (customer.getCustomerType()) {
                     case PERSONAL -> customerValidation.personalCustomerValidation(customer, Account.AccountType.SAVINGS)
@@ -47,9 +49,7 @@ public class SavingsAccountServiceImpl implements SavingsAccountService {
                         savingsAccountRepository.save(savingsAccountMapper.mapToSavingsAccount(savingsAccountRequest)))
                 .flatMap(savingsAccount ->
                         accountUtils.handleInitialDeposit(savingsAccount, savingsAccountRequest.getBalance()))
-                .map(savingsAccountMapper::mapToSavingsAccountResponse)
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
-                        "Customer with dni: " + savingsAccountRequest.getCustomerId() + " not found")));
+                .map(savingsAccountMapper::mapToSavingsAccountResponse);
     }
 
     @Override
