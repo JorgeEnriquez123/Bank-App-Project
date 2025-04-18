@@ -180,7 +180,7 @@ public class DebitCardServiceImpl implements DebitCardService {
                     }
                     return transactionClient.createTransaction(transactionRequest)
                             .doOnSuccess(transactionResponse ->
-                                    log.info("Transaction created successfully with account number: {}", transactionResponse.getAccountNumber()))
+                                    log.info("Withdrawal transaction created successfully for account number: {}", savedAccount.getAccountNumber()))
                             .doOnError(throwable -> log.error("Error creating transaction: {}", throwable.getMessage()))
                             .thenReturn(savedAccount);
                 });

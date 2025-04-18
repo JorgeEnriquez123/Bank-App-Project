@@ -146,8 +146,8 @@ public class AccountServiceImpl implements AccountService {
 
                                 return transactionClient.createTransaction(transactionRequest)
                                         .doOnSuccess(transactionResponse ->
-                                                log.info("Successfully created transaction for " +
-                                                        "deposit to account number: {}, transaction ID: {}", accountNumber, transactionResponse.getId()))
+                                                log.info("Deposit Transaction created for account number: {}, transaction ID: {}",
+                                                        accountNumber, transactionResponse.getId()))
                                         .doOnError(e ->
                                                 log.error("Error creating transaction for " +
                                                         "deposit to account number: {}", accountNumber, e))
@@ -195,9 +195,8 @@ public class AccountServiceImpl implements AccountService {
                                         "Withdrawal from Account " + accountNumber);
                                 return transactionClient.createTransaction(transactionRequest)
                                         .doOnSuccess(transactionResponse ->
-                                                log.info("Successfully created transaction " +
-                                                        "for withdrawal from account number: " +
-                                                        "{}, transaction ID: {}", accountNumber, transactionResponse.getId()))
+                                                log.info("Withdrawl Transaction created for account number: {}, transaction ID: {}",
+                                                        accountNumber, transactionResponse.getId()))
                                         .doOnError(e -> log.error("Error creating transaction for " +
                                                 "withdrawal from account number: {}", accountNumber, e))
                                         .thenReturn(savedAccount);
@@ -246,7 +245,8 @@ public class AccountServiceImpl implements AccountService {
     }
 
 
-    private Mono<BigDecimal> calculateAverageBalance(String accountNumber, List<TransactionResponse> transactions, LocalDate firstDayOfMonth, LocalDate lastDayOfMonth) {
+    private Mono<BigDecimal> calculateAverageBalance(String accountNumber, List<TransactionResponse> transactions,
+                                                     LocalDate firstDayOfMonth, LocalDate lastDayOfMonth) {
         return getInitialBalance(accountNumber, firstDayOfMonth)
                 .flatMap(saldoInicial -> {
                     BigDecimal saldoDiarioTotal = BigDecimal.ZERO;
@@ -400,7 +400,8 @@ public class AccountServiceImpl implements AccountService {
         return transactionClient.getTransactionsFeesByAccountNumberAndDateRange(accountNumber, startDate, endDate);
     }
 
-    public Mono<Tuple2<Account, BigDecimal>> processTransferBetweenAccounts(Tuple2<Account, Account> accountsTuple, BigDecimal transferAmount) {
+    public Mono<Tuple2<Account, BigDecimal>> processTransferBetweenAccounts(Tuple2<Account, Account> accountsTuple,
+                                                                            BigDecimal transferAmount) {
         Account senderAccount = accountsTuple.getT1();
         Account receiverAccount = accountsTuple.getT2();
 
@@ -436,7 +437,8 @@ public class AccountServiceImpl implements AccountService {
         return accountRepository.save(senderAccount)
                 .flatMap(savedSender -> accountRepository.save(receiverAccount)
                         .map(savedReceiver -> {
-                            log.info("Successfully transferred {} from account {} to account {}", transferAmount, senderAccount.getAccountNumber(), receiverAccount.getAccountNumber());
+                            log.info("Successfully transferred {} from account {} to account {}",
+                                    transferAmount, senderAccount.getAccountNumber(), receiverAccount.getAccountNumber());
                             return Tuples.of(savedSender, fee);
                         })
                 )
@@ -479,6 +481,7 @@ public class AccountServiceImpl implements AccountService {
 
     private Mono<Account> validateFixedAccountDeposit(Account account) {
         log.info("Validating Fixed Term account deposit for account number: {}", account.getAccountNumber());
+
         if(account.getAccountType() == Account.AccountType.FIXED_TERM && account.getBalance().compareTo(BigDecimal.ZERO) > 0) {
             log.warn("One deposit has already been performed for Fixed Term account number: {}", account.getAccountNumber());
             return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
