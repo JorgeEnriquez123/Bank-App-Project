@@ -1,6 +1,7 @@
 package com.jorge.accounts.webclient.client;
 
 import com.jorge.accounts.webclient.dto.response.CustomerResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.client.circuitbreaker.ReactiveCircuitBreakerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -8,6 +9,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Mono;
 
+@Slf4j
 public class CustomerClient {
     private final WebClient webClient;
     private final ReactiveCircuitBreakerFactory circuitBreakerFactory;
@@ -27,7 +29,7 @@ public class CustomerClient {
 
         return circuitBreakerFactory.create("customerClient").run(customerResponseMono,
                 throwable ->{
-                    System.out.println("Error occurred: " + throwable.getMessage());
+                    log.error(throwable.getMessage());
                         return Mono.error(new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,
                                 "Customer service unavailable", throwable));
         });

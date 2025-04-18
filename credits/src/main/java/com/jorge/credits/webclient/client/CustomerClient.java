@@ -1,9 +1,8 @@
 package com.jorge.credits.webclient.client;
 
-import com.jorge.credits.webclient.model.CustomerResponse;
+import com.jorge.credits.webclient.dto.response.CustomerResponse;
 import org.springframework.cloud.client.circuitbreaker.ReactiveCircuitBreakerFactory;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Mono;

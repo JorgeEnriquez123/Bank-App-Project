@@ -8,7 +8,11 @@ import com.jorge.credits.service.CreditCardService;
 import com.jorge.credits.webclient.client.AccountClient;
 import com.jorge.credits.webclient.client.CustomerClient;
 import com.jorge.credits.webclient.client.TransactionClient;
-import com.jorge.credits.webclient.model.*;
+import com.jorge.credits.webclient.dto.request.AccountBalanceUpdateRequest;
+import com.jorge.credits.webclient.dto.request.CreditCardTransactionRequest;
+import com.jorge.credits.webclient.dto.request.TransactionRequest;
+import com.jorge.credits.webclient.dto.response.AccountResponse;
+import com.jorge.credits.webclient.dto.response.CustomerResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -18,7 +22,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
-import java.util.Comparator;
 
 @Service
 @RequiredArgsConstructor
@@ -142,7 +145,7 @@ public class CreditCardServiceImpl implements CreditCardService {
                     return accountClient.reduceBalanceByAccountNumber(creditPaymentRequest.getAccountNumber(), accountBalanceUpdateRequest)
                             .flatMap(accountBalanceResponse -> creditCardRepository.save(creditCard))
                             .flatMap(savedCreditCard -> {
-                                log.info("Creating Payment Transaction made by Account number: {}", creditPaymentRequest.getAccountNumber());
+                                log.info("Creating Payment Transaction");
                                 TransactionRequest transactionRequest = transactionRequestMapper.mapPaymentRequestToTransactionRequest(
                                         creditPaymentRequest,
                                         savedCreditCard.getId(),
@@ -152,7 +155,7 @@ public class CreditCardServiceImpl implements CreditCardService {
                                         .thenReturn(savedCreditCard);
                             })
                             .flatMap(savedCreditCard -> {
-                                log.info("Creating Credit Card Transaction for Credit Card with number: {}", creditCardNumber);
+                                log.info("Creating Credit Card Transaction");
                                 CreditCardTransactionRequest creditCardTransactionRequest =
                                         transactionRequestMapper.mapPaymentRequestToCreditCardTransactionRequest(
                                                 creditPaymentRequest, creditCardNumber);
@@ -165,26 +168,41 @@ public class CreditCardServiceImpl implements CreditCardService {
 
     @Override
     public Mono<CreditCardResponse> payCreditCardWithDebitCard(String creditCardNumber, CreditPaymentByDebitCardRequest creditCardPaymentRequest) {
-        log.info("Paying credit card with number: {} using debit card number: {}, amount: {}", creditCardNumber, creditCardPaymentRequest.getDebitCardNumber(), creditCardPaymentRequest.getAmount());
-        if(creditCardPaymentRequest.getCreditType() != CreditPaymentByDebitCardRequest.CreditTypeEnum.CREDIT_CARD_PAYMENT)
+        log.info("Paying credit card with number: {} using debit card number: {}, amount: {}", creditCardNumber,
+                creditCardPaymentRequest.getDebitCardNumber(), creditCardPaymentRequest.getAmount());
+        if (creditCardPaymentRequest.getCreditType() != CreditPaymentByDebitCardRequest.CreditTypeEnum.CREDIT_CARD_PAYMENT)
             return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid credit type. Only CREDIT_CARD_PAYMENT is allowed"));
         return creditCardRepository.findByCreditCardNumber(creditCardNumber)
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Credit card with number " + creditCardNumber + " not found")))
-                .flatMap(creditCard -> validateAndUpdateCreditCard(creditCard, creditCardPaymentRequest.getAmount())
-                        .flatMap(validatedCreditCard -> accountClient.getDebitCardByDebitCardNumber(creditCardPaymentRequest.getDebitCardNumber())
-                                .flatMap(debitCard -> accountClient.getAccountByAccountNumber(debitCard.getMainLinkedAccountNumber())
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Credit card with number " + creditCardNumber + " not found")))
+                .flatMap(creditCard ->
+                        validateAndUpdateCreditCard(creditCard, creditCardPaymentRequest.getAmount())
+                        .flatMap(validatedCreditCard ->
+                                accountClient.getDebitCardByDebitCardNumber(creditCardPaymentRequest.getDebitCardNumber())
+                                        .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
+                                                "Debit card with number " + creditCardPaymentRequest.getDebitCardNumber() + " not found")))
+                                .flatMap(debitCard ->
+                                        accountClient.getAccountByAccountNumber(debitCard.getMainLinkedAccountNumber())
+                                                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
+                                                        "Main Account with number " + debitCard.getMainLinkedAccountNumber() + " not found")))
                                         .flatMap(mainAccount -> {
                                             if (mainAccount.getBalance().compareTo(creditCardPaymentRequest.getAmount()) >= 0) {
-                                                return startCreditCardPaymentWithDebitCard(validatedCreditCard, mainAccount, creditCardPaymentRequest);
+                                                return startCreditCardPaymentWithDebitCard(validatedCreditCard,
+                                                        mainAccount, creditCardPaymentRequest);
                                             } else {
                                                 log.info("Main Account does not have enough balance. Checking other accounts...");
                                                 return Flux.fromIterable(debitCard.getLinkedAccountsNumber())
-                                                        .filter(accountNumber -> !accountNumber.equals(debitCard.getMainLinkedAccountNumber()))
+                                                        .filter(accountNumber ->
+                                                                !accountNumber.equals(debitCard.getMainLinkedAccountNumber()))
                                                         .flatMap(accountClient::getAccountByAccountNumber)
-                                                        .filter(account -> account.getBalance().compareTo(creditCardPaymentRequest.getAmount()) >= 0)
+                                                        .filter(account ->
+                                                                account.getBalance().compareTo(creditCardPaymentRequest.getAmount()) >= 0)
                                                         .next()
-                                                        .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Debit Card does not have enough balance in any of its linked accounts")))
-                                                        .flatMap(accountWithSufficientBalance -> startCreditCardPaymentWithDebitCard(validatedCreditCard, accountWithSufficientBalance, creditCardPaymentRequest));
+                                                        .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                                                                "Debit Card does not have enough balance in any of its linked accounts")))
+                                                        .flatMap(accountWithSufficientBalance ->
+                                                                startCreditCardPaymentWithDebitCard(validatedCreditCard,
+                                                                        accountWithSufficientBalance, creditCardPaymentRequest));
                                             }
                                         })
                                 )

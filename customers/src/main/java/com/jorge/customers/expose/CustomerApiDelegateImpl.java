@@ -1,4 +1,4 @@
-package com.jorge.customers;
+package com.jorge.customers.expose;
 
 import com.jorge.customers.api.CustomersApiDelegate;
 import com.jorge.customers.model.CustomerRequest;

@@ -1,6 +1,5 @@
-package com.jorge.credits.webclient.model;
+package com.jorge.customers.webclient.dto.response;
 
-import lombok.Builder;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -8,13 +7,12 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Builder
 @Data
 public class AccountResponse {
     private String id;
     private String accountNumber;
     private BigDecimal balance;
-    private String customerId;
+    private String customerDni;
     private AccountType accountType;
     private LocalDateTime createdAt;
 

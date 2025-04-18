@@ -1,13 +1,11 @@
-package com.jorge.credits.webclient.model;
+package com.jorge.customers.webclient.dto.response;
 
-import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Builder
 @Data
 public class DebitCardResponse {
     private String id;

@@ -1,4 +1,4 @@
-package com.jorge.credits;
+package com.jorge.credits.expose;
 
 import com.jorge.credits.api.CreditsApiDelegate;
 import com.jorge.credits.model.*;

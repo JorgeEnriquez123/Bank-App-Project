@@ -1,4 +1,4 @@
-package com.jorge.transactions;
+package com.jorge.transactions.expose;
 
 import com.jorge.transactions.api.TransactionsApiDelegate;
 import com.jorge.transactions.model.FeeReportResponse;

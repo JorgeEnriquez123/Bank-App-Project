@@ -8,10 +8,10 @@ import com.jorge.credits.service.CreditService;
 import com.jorge.credits.webclient.client.AccountClient;
 import com.jorge.credits.webclient.client.CustomerClient;
 import com.jorge.credits.webclient.client.TransactionClient;
-import com.jorge.credits.webclient.model.AccountBalanceUpdateRequest;
-import com.jorge.credits.webclient.model.AccountResponse;
-import com.jorge.credits.webclient.model.CustomerResponse;
-import com.jorge.credits.webclient.model.TransactionRequest;
+import com.jorge.credits.webclient.dto.request.AccountBalanceUpdateRequest;
+import com.jorge.credits.webclient.dto.response.AccountResponse;
+import com.jorge.credits.webclient.dto.response.CustomerResponse;
+import com.jorge.credits.webclient.dto.request.TransactionRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -49,6 +49,8 @@ public class CreditServiceImpl implements CreditService {
         Credit credit = creditMapper.mapToCredit(creditRequest);
 
         return customerClient.getCustomerById(creditRequest.getCreditHolderId())
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Customer with Id: " + creditRequest.getCreditHolderId() + " not found")))
                 .flatMap(customerResponse -> {
                     if (customerResponse.getCustomerType() == CustomerResponse.CustomerType.PERSONAL) {
                         log.info("Customer is of type PERSONAL. Only one credit");
@@ -58,6 +60,7 @@ public class CreditServiceImpl implements CreditService {
                                 .hasElements()
                                 .flatMap(hasCredit -> {
                                     if (hasCredit) {
+                                        log.warn("Customer with dni: {} already has a credit", customerResponse.getDni());
                                         return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
                                                 "Customer with dni: " + customerResponse.getDni() + " has one credit already"));
                                     } else {
@@ -70,6 +73,7 @@ public class CreditServiceImpl implements CreditService {
                                 .any(creditAvailable -> creditAvailable.getDueDate().isBefore(LocalDate.now()))
                                 .flatMap(hasOverdueDebt -> {
                                     if (hasOverdueDebt) {
+                                        log.warn("Customer with dni: {} has overdue debts", customerResponse.getDni());
                                         return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
                                                 "Customer with dni: " + customerResponse.getDni() + " has overdue debts"));
                                     } else {
@@ -78,8 +82,6 @@ public class CreditServiceImpl implements CreditService {
                                 });
                     }
                 })
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
-                        "Customer with Id: " + creditRequest.getCreditHolderId() + " not found")))
                 .map(creditMapper::mapToCreditResponse);
     }
 
@@ -120,9 +122,12 @@ public class CreditServiceImpl implements CreditService {
 
     @Override
     public Mono<CreditResponse> payCreditById(String id, CreditPaymentRequest creditPaymentRequest) {
-        log.info("Paying credit with id: {} using account number: {}, amount: {}", id, creditPaymentRequest.getAccountNumber(), creditPaymentRequest.getAmount());
+        log.info("Paying credit with id: {} using account number: {}, amount: {}",
+                id, creditPaymentRequest.getAccountNumber(), creditPaymentRequest.getAmount());
+        // Quick check for credit type
         if(creditPaymentRequest.getCreditType() != CreditPaymentRequest.CreditTypeEnum.CREDIT_PAYMENT)
             return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid credit type. Only CREDIT_PAYMENT is allowed"));
+
         return creditRepository.findById(id)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Credit with id " + id + " not found")))
                 .flatMap(credit -> validateAndUpdateCredit(credit, creditPaymentRequest.getAmount()).flatMap(
@@ -149,25 +154,40 @@ public class CreditServiceImpl implements CreditService {
 
     @Override
     public Mono<CreditResponse> payCreditByIdWithDebitCard(String id, CreditPaymentByDebitCardRequest creditPaymentRequest) {
-        log.info("Paying credit with id: {} using debit card number: {}, amount: {}", id, creditPaymentRequest.getDebitCardNumber(), creditPaymentRequest.getAmount());
-        if(creditPaymentRequest.getCreditType() != CreditPaymentByDebitCardRequest.CreditTypeEnum.CREDIT_PAYMENT)
+        log.info("Paying credit with id: {} using debit card number: {}, amount: {}", id,
+                creditPaymentRequest.getDebitCardNumber(), creditPaymentRequest.getAmount());
+        if (creditPaymentRequest.getCreditType() != CreditPaymentByDebitCardRequest.CreditTypeEnum.CREDIT_PAYMENT)
             return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid credit type. Only CREDIT_PAYMENT is allowed"));
         return creditRepository.findById(id)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Credit with id " + id + " not found")))
                 .flatMap(credit -> validateAndUpdateCredit(credit, creditPaymentRequest.getAmount())
                         .flatMap(validatedCredit -> accountClient.getDebitCardByDebitCardNumber(creditPaymentRequest.getDebitCardNumber())
-                                .flatMap(debitCard -> accountClient.getAccountByAccountNumber(debitCard.getMainLinkedAccountNumber())
+                                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
+                                        "Debit Card with number: " + creditPaymentRequest.getDebitCardNumber() + " not found")))
+                                .flatMap(debitCard ->
+                                        accountClient.getAccountByAccountNumber(debitCard.getMainLinkedAccountNumber())
                                         .flatMap(mainAccount -> {
+                                            log.info("Checking if main account has sufficient balance");
                                             if (mainAccount.getBalance().compareTo(creditPaymentRequest.getAmount()) > 0) {
+                                                log.info("Starting payment with main account");
                                                 return startCreditPaymentWithDebitCard(validatedCredit, mainAccount, creditPaymentRequest);
                                             } else {
+                                                log.info("Checking if other linked accounts have sufficient balance");
                                                 return Flux.fromIterable(debitCard.getLinkedAccountsNumber())
-                                                        .filter(accountNumber -> !accountNumber.equals(debitCard.getMainLinkedAccountNumber()))
+                                                        .filter(accountNumber ->
+                                                                !accountNumber.equals(debitCard.getMainLinkedAccountNumber()))
                                                         .flatMap(accountClient::getAccountByAccountNumber)
-                                                        .filter(account -> account.getBalance().compareTo(creditPaymentRequest.getAmount()) >= 0)
+                                                        .filter(account ->
+                                                                account.getBalance().compareTo(creditPaymentRequest.getAmount()) >= 0)
                                                         .next()
-                                                        .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Debit Card does not have enough balance in any of its linked accounts")))
-                                                        .flatMap(accountWithSufficientBalance -> startCreditPaymentWithDebitCard(validatedCredit, accountWithSufficientBalance, creditPaymentRequest));
+                                                        .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                                                                "Debit Card does not have enough balance in any of its linked accounts")))
+                                                        .flatMap(accountWithSufficientBalance -> {
+                                                            log.info("Starting payment with linked account: {}",
+                                                                    accountWithSufficientBalance.getAccountNumber());
+                                                            return startCreditPaymentWithDebitCard(validatedCredit,
+                                                                        accountWithSufficientBalance, creditPaymentRequest);
+                                                        });
                                             }
                                         })
                                 )
@@ -198,6 +218,7 @@ public class CreditServiceImpl implements CreditService {
         if (credit.getStatus() == Credit.Status.PAID) {
             return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Credit is already PAID"));
         }
+        // Subtract the payment amount from the credit amount
         BigDecimal remainingAmount = credit.getCreditAmount().subtract(paymentAmount);
 
         if (remainingAmount.compareTo(BigDecimal.ZERO) < 0) {

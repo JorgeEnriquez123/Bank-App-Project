@@ -85,7 +85,7 @@ public class DebitCardServiceImpl implements DebitCardService {
 
     @Override
     public Mono<BalanceResponse> withdrawByDebitCardNumber(String debitCardNumber, WithdrawalRequest withdrawalRequest) {
-        log.info("Withdrawing amount: {} from debit card with debit card number: {}", withdrawalRequest.getAmount(), debitCardNumber);
+        log.info("Starting withdrawal of amount: {} from debit card with debit card number: {}", withdrawalRequest.getAmount(), debitCardNumber);
         return debitCardRepository.findByDebitCardNumber(debitCardNumber)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "Debit Card with debit card number: " + debitCardNumber + " not found")))

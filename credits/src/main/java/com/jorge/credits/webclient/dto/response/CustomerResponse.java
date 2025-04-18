@@ -1,4 +1,4 @@
-package com.jorge.credits.webclient.model;
+package com.jorge.credits.webclient.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

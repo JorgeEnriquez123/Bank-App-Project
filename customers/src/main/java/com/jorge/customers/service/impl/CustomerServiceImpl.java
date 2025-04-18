@@ -79,64 +79,21 @@ public class CustomerServiceImpl implements CustomerService {
         log.info("Fetching customer with id: {}", customerId);
         return customerRepository.findById(customerId)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Customer with id: " + customerId + " not found")))
-                .flatMap(customer -> {
-
-                    Flux<ProductsAvailable> accountsFlux = accountClient.getAccountsByCustomerId(customerId)
-                            .map(accountResponse -> {
-                                ProductsAvailable accountSummary = new ProductsAvailable();
-                                accountSummary.setProductType(accountResponse.getAccountType().name() + "_ACCOUNT");
-                                accountSummary.setProductId(accountResponse.getId());
-                                accountSummary.setCreatedAt(accountResponse.getCreatedAt());
-                                return accountSummary;
-                            });
-
-                    Flux<ProductsAvailable> debitCardsFlux = accountClient.getDebitCardsByCardHolderId(customerId)
-                            .map(debitCard -> {
-                                ProductsAvailable debitCardSummary = new ProductsAvailable();
-                                debitCardSummary.setProductType("DEBIT_CARD");
-                                debitCardSummary.setProductId(debitCard.getId());
-                                debitCardSummary.setCreatedAt(debitCard.getCreatedAt());
-                                log.info("Adding debit card to product summary: {}", debitCardSummary);
-                                return debitCardSummary;
-                            });
-
-                    Flux<ProductsAvailable> creditCardsFlux = creditClient.getCreditCardsByCardHolderId(customerId)
-                            .map(creditCard -> {
-                                ProductsAvailable creditCardSummary = new ProductsAvailable();
-                                creditCardSummary.setProductType(creditCard.getType().name());
-                                creditCardSummary.setProductId(creditCard.getId());
-                                creditCardSummary.setCreatedAt(creditCard.getCreatedAt());
-                                log.info("Adding credit card to product summary: {}", creditCardSummary);
-                                return creditCardSummary;
-                            });
-
-                    Flux<ProductsAvailable> creditsFlux = creditClient.getCreditsByCreditHolderId(customerId)
-                            .map(creditResponse -> {
-                                ProductsAvailable creditSummary = new ProductsAvailable();
-                                creditSummary.setProductType(creditResponse.getCreditType().name() + "_CREDIT");
-                                creditSummary.setProductId(creditResponse.getId());
-                                creditSummary.setCreatedAt(creditResponse.getCreatedAt());
-                                log.info("Adding credit to product summary: {}", creditSummary);
-                                return creditSummary;
-                            });
-
-                    Flux<ProductsAvailable> allProductsFlux = Flux.merge(accountsFlux, debitCardsFlux, creditCardsFlux, creditsFlux);
-
-                    return allProductsFlux.collectList()
-                            .map(products -> {
-                                ProductSummaryResponse productSummaryResponse = new ProductSummaryResponse();
-                                productSummaryResponse.setCustomerId(customer.getId());
-                                productSummaryResponse.setCustomerType(ProductSummaryResponse.CustomerTypeEnum
-                                        .valueOf(customer.getCustomerType().name()));
-                                productSummaryResponse.setFirstName(customer.getFirstName());
-                                productSummaryResponse.setLastName(customer.getLastName());
-                                productSummaryResponse.setIsVIP(customer.getIsVIP());
-                                productSummaryResponse.setIsPYME(customer.getIsPYME());
-                                productSummaryResponse.setProducts(products);
-                                log.info("Product summary for customer with id: {}: {}", customerId, productSummaryResponse);
-                                return productSummaryResponse;
-                            });
-                });
+                .flatMap(customer -> getAllProductsFromCustomer(customer)
+                .collectList()
+                        .map(products -> {
+                            ProductSummaryResponse productSummaryResponse = new ProductSummaryResponse();
+                            productSummaryResponse.setCustomerId(customer.getId());
+                            productSummaryResponse.setCustomerType(ProductSummaryResponse.CustomerTypeEnum
+                                    .valueOf(customer.getCustomerType().name()));
+                            productSummaryResponse.setFirstName(customer.getFirstName());
+                            productSummaryResponse.setLastName(customer.getLastName());
+                            productSummaryResponse.setIsVIP(customer.getIsVIP());
+                            productSummaryResponse.setIsPYME(customer.getIsPYME());
+                            productSummaryResponse.setProducts(products);
+                            log.info("Product summary for customer with id: {}: {}", customerId, productSummaryResponse);
+                            return productSummaryResponse;
+                        }));
     }
 
     public Customer updateCustomerFromRequest(Customer existingCustomer, CustomerRequest customerRequest) {
@@ -144,5 +101,50 @@ public class CustomerServiceImpl implements CustomerService {
         Customer updatedCustomer = customerMapper.mapToCustomer(customerRequest);
         updatedCustomer.setId(existingCustomer.getId());
         return updatedCustomer;
+    }
+
+    public Flux<ProductsAvailable> getAllProductsFromCustomer(Customer customer) {
+        String customerId = customer.getId();
+
+        Flux<ProductsAvailable> accountsFlux = accountClient.getAccountsByCustomerId(customerId)
+                .map(accountResponse -> {
+                    ProductsAvailable accountSummary = new ProductsAvailable();
+                    accountSummary.setProductType(accountResponse.getAccountType().name() + "_ACCOUNT");
+                    accountSummary.setProductId(accountResponse.getId());
+                    accountSummary.setCreatedAt(accountResponse.getCreatedAt());
+                    return accountSummary;
+                });
+
+        Flux<ProductsAvailable> debitCardsFlux = accountClient.getDebitCardsByCardHolderId(customerId)
+                .map(debitCard -> {
+                    ProductsAvailable debitCardSummary = new ProductsAvailable();
+                    debitCardSummary.setProductType("DEBIT_CARD");
+                    debitCardSummary.setProductId(debitCard.getId());
+                    debitCardSummary.setCreatedAt(debitCard.getCreatedAt());
+                    log.info("Adding debit card to product summary: {}", debitCardSummary);
+                    return debitCardSummary;
+                });
+
+        Flux<ProductsAvailable> creditCardsFlux = creditClient.getCreditCardsByCardHolderId(customerId)
+                .map(creditCard -> {
+                    ProductsAvailable creditCardSummary = new ProductsAvailable();
+                    creditCardSummary.setProductType(creditCard.getType().name());
+                    creditCardSummary.setProductId(creditCard.getId());
+                    creditCardSummary.setCreatedAt(creditCard.getCreatedAt());
+                    log.info("Adding credit card to product summary: {}", creditCardSummary);
+                    return creditCardSummary;
+                });
+
+        Flux<ProductsAvailable> creditsFlux = creditClient.getCreditsByCreditHolderId(customerId)
+                .map(creditResponse -> {
+                    ProductsAvailable creditSummary = new ProductsAvailable();
+                    creditSummary.setProductType(creditResponse.getCreditType().name() + "_CREDIT");
+                    creditSummary.setProductId(creditResponse.getId());
+                    creditSummary.setCreatedAt(creditResponse.getCreatedAt());
+                    log.info("Adding credit to product summary: {}", creditSummary);
+                    return creditSummary;
+                });
+
+        return Flux.merge(accountsFlux, debitCardsFlux, creditCardsFlux, creditsFlux);
     }
 }
