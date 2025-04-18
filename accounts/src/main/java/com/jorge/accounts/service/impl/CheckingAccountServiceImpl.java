@@ -33,6 +33,8 @@ public class CheckingAccountServiceImpl implements CheckingAccountService {
     public Mono<CheckingAccountResponse> createCheckingAccount(CheckingAccountRequest checkingAccountRequest) {
         log.info("Creating a new account for customer Id: {}", checkingAccountRequest.getCustomerId());
         return customerClient.getCustomerById(checkingAccountRequest.getCustomerId())
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Customer with dni: " + checkingAccountRequest.getCustomerId() + " not found")))
                 .flatMap(customer -> {
                     if(customer.getIsVIP() || customer.getIsPYME())
                         return customerValidation.validateCreditCardExists(customer);  // Validate if customer has Credit Cards
@@ -48,14 +50,19 @@ public class CheckingAccountServiceImpl implements CheckingAccountService {
                 .flatMap(customer ->{
                     CheckingAccount checkingAccount = checkingAccountMapper.mapToCheckingAccount(checkingAccountRequest);
                     // If Customer is PYME, Checking Account has no maintenance fee
-                    if(customer.getIsPYME()) checkingAccount.setMaintenanceFee(BigDecimal.ZERO);
+                    if(customer.getIsPYME()) {
+                        log.info("Customer is PYME, setting maintenance fee to 0");
+                        checkingAccount.setMaintenanceFee(BigDecimal.ZERO);
+                    };
                     return checkingAccountRepository.save(checkingAccount);
                 })
                 .flatMap(checkingAccount ->
                         accountUtils.handleInitialDeposit(checkingAccount, checkingAccountRequest.getBalance()))
                 .map(checkingAccountMapper::mapToCheckingAccountResponse)
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
-                        "Customer with dni: " + checkingAccountRequest.getCustomerId() + " not found")));
+                .doOnSuccess(checkingAccountResponse ->
+                        log.info("Checking account created successfully: {}", checkingAccountResponse))
+                .doOnError(throwable ->
+                        log.error("Error creating Checking account: {}", throwable.getMessage()));
     }
 
     @Override
@@ -66,7 +73,11 @@ public class CheckingAccountServiceImpl implements CheckingAccountService {
                         "Checking Account with account number: " + accountNumber + " not found")))
                 .flatMap(existingCheckingAccount -> checkingAccountRepository.save(
                         updateCheckingAccountFromRequest(existingCheckingAccount, checkingAccountRequest)))
-                .map(checkingAccountMapper::mapToCheckingAccountResponse);
+                .map(checkingAccountMapper::mapToCheckingAccountResponse)
+                .doOnSuccess(checkingAccountResponse ->
+                        log.info("Checking account updated successfully: {}", checkingAccountResponse))
+                .doOnError(throwable ->
+                        log.error("Error updating Checking account: {}", throwable.getMessage()));
     }
 
     private CheckingAccount updateCheckingAccountFromRequest(CheckingAccount existingCheckingAccount, CheckingAccountRequest checkingAccountRequest) {

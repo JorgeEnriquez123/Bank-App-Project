@@ -42,12 +42,15 @@ public class CustomerValidation {
     }
 
     public Mono<CustomerResponse> validateCreditCardExists(CustomerResponse customerResponse){
+        log.info("Validating if customer with Id: {} has credit cards", customerResponse.getId());
         return creditClient.getCreditCardsByCardHolderId(customerResponse.getId())
                 .hasElements()
                 .flatMap(hasCards -> {
                     if (hasCards) {
+                        log.info("Customer with Id: {} has credit cards", customerResponse.getId());
                         return Mono.just(customerResponse);
                     } else {
+                        log.warn("Customer with Id: {} does not have credit cards", customerResponse.getId());
                         return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Customer does not own a credit card. " +
                                 "VIP and PYME need a credit card to create an account"));
                     }
@@ -55,13 +58,16 @@ public class CustomerValidation {
     }
 
     public Mono<CustomerResponse> validateIfCustomerHasOverDueDebt(CustomerResponse customerResponse) {
+        log.info("Validating if customer with Id: {} has overdue debts", customerResponse.getId());
         return creditClient.getCreditsByCreditHolderId(customerResponse.getId())
                 .any(credit -> credit.getDueDate().isBefore(LocalDate.now()))
                 .flatMap(hasOverdueDebt -> {
                     if (hasOverdueDebt) {
+                        log.warn("Customer with Id: {} has overdue debt", customerResponse.getId());
                         return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
                                 "Customer with dni: " + customerResponse.getDni() + " has overdue debts"));
                     } else {
+                        log.info("Customer with Id: {} has no overdue debts", customerResponse.getId());
                         return Mono.just(customerResponse);
                     }
                 });

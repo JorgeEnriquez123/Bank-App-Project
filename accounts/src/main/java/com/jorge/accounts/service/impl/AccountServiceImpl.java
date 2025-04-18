@@ -87,6 +87,7 @@ public class AccountServiceImpl implements AccountService {
                     return accountRepository.save(account);
                 })
                 .map(this::mapToBalanceResponse)
+                .doOnSuccess(balanceResponse -> log.info("Successfully increased balance for account number: {}", accountNumber))
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "Account with account number: " + accountNumber + " not found")));
     }
@@ -97,12 +98,17 @@ public class AccountServiceImpl implements AccountService {
         return accountRepository.findByAccountNumber(accountNumber)
                 .flatMap(account -> {
                     BigDecimal amount = account.getBalance().subtract(balance);
-                    if(account.getBalance().compareTo(amount) < 0) return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                            "Insufficient balance for the decrease account"));
+                    if(account.getBalance().compareTo(amount) < 0) {
+                        log.warn("Insufficient balance for account number: {}", accountNumber);
+                        return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                                "Insufficient balance for the decrease account"));
+                    }
                     account.setBalance(amount);
                     return accountRepository.save(account);
                 })
-                .map(this::mapToBalanceResponse).switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
+                .map(this::mapToBalanceResponse)
+                .doOnSuccess(balanceResponse -> log.info("Successfully decreased balance for account number: {}", accountNumber))
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "Account with account number: " + accountNumber + " not found")));
     }
 
@@ -120,8 +126,10 @@ public class AccountServiceImpl implements AccountService {
 
                     // Apply commission fee if active
                     if (account.getIsCommissionFeeActive()) {
+                        log.info("Applying commission fee of {} for account number: {}", account.getMovementCommissionFee(), accountNumber);
                         depositAmount = depositAmount.subtract(account.getMovementCommissionFee());
                         if (depositAmount.compareTo(BigDecimal.ZERO) < 0) {
+                            log.warn("Commission fee is higher than deposit amount for account number: {}", accountNumber);
                             return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
                                     "Commission fee is higher than deposit amount"));
                         }
@@ -137,10 +145,19 @@ public class AccountServiceImpl implements AccountService {
                                         "Deposit to Account " + accountNumber);
 
                                 return transactionClient.createTransaction(transactionRequest)
+                                        .doOnSuccess(transactionResponse ->
+                                                log.info("Successfully created transaction for " +
+                                                        "deposit to account number: {}, transaction ID: {}", accountNumber, transactionResponse.getId()))
+                                        .doOnError(e ->
+                                                log.error("Error creating transaction for " +
+                                                        "deposit to account number: {}", accountNumber, e))
                                         .thenReturn(savedAccount);
-                            });
+                            })
+                            .doOnSuccess(savedAccount -> log.info("Successfully updated balance for account number: {}", accountNumber));
                 })
-                .map(accountMapper::mapToAccountResponse);
+                .map(accountMapper::mapToAccountResponse)
+                .doOnError(e -> log.error("Error depositing to account number: {}", accountNumber, e));
+
     }
 
     @Override
@@ -159,11 +176,13 @@ public class AccountServiceImpl implements AccountService {
                     if (account.getIsCommissionFeeActive()) {
                         // Add to withdrawal, since it's taken from balance
                         withdrawalAmount = withdrawalAmount.add(account.getMovementCommissionFee());
+                        log.info("Applying commission fee of {} for account number: {}", account.getMovementCommissionFee(), accountNumber);
                     }
                     // Check if balance is less than the withdrawal
                     if(account.getBalance().compareTo(withdrawalAmount) < 0){
+                        log.warn("Insufficient balance for withdrawal from account number: {}", accountNumber);
                         return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                                "Insufficient balance for the withdrawal"));
+                                "Insufficient balance for withdrawal"));
                     }
                     // Update balance
                     account.setBalance(account.getBalance().subtract(withdrawalAmount));
@@ -175,10 +194,18 @@ public class AccountServiceImpl implements AccountService {
                                         TransactionRequest.TransactionType.WITHDRAWAL,
                                         "Withdrawal from Account " + accountNumber);
                                 return transactionClient.createTransaction(transactionRequest)
+                                        .doOnSuccess(transactionResponse ->
+                                                log.info("Successfully created transaction " +
+                                                        "for withdrawal from account number: " +
+                                                        "{}, transaction ID: {}", accountNumber, transactionResponse.getId()))
+                                        .doOnError(e -> log.error("Error creating transaction for " +
+                                                "withdrawal from account number: {}", accountNumber, e))
                                         .thenReturn(savedAccount);
-                            });
+                            })
+                            .doOnSuccess(savedAccount -> log.info("Successfully updated balance for account number: {}", accountNumber));
                 })
-                .map(accountMapper::mapToAccountResponse);
+                .map(accountMapper::mapToAccountResponse)
+                .doOnError(e -> log.error("Error withdrawing from account number: {}", accountNumber, e));
     }
 
     @Override
@@ -188,7 +215,8 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public Mono<AverageMonthlyDailyBalanceResponse> calculateAverageMonthlyDailyBalance(String accountNumber, AverageMonthlyDailyBalanceRequest averageMonthlyDailyBalanceRequest) {
+    public Mono<AverageMonthlyDailyBalanceResponse> calculateAverageMonthlyDailyBalance(String accountNumber,
+                                                                                        AverageMonthlyDailyBalanceRequest averageMonthlyDailyBalanceRequest) {
         YearMonth yearMonth = YearMonth.of(averageMonthlyDailyBalanceRequest.getYear(), averageMonthlyDailyBalanceRequest.getMonth());
         LocalDate firstDayOfMonth = yearMonth.atDay(1);
         LocalDate lastDayOfMonth = yearMonth.atEndOfMonth();
@@ -196,10 +224,13 @@ public class AccountServiceImpl implements AccountService {
         LocalDateTime startOfMonth = firstDayOfMonth.atStartOfDay();
         LocalDateTime endOfMonth = lastDayOfMonth.atTime(23, 59, 59);
 
+        log.info("Calculating average monthly daily balance for account number: {}, year: {}, month: {}",
+                accountNumber, yearMonth.getYear(), yearMonth.getMonthValue());
         // Obtener las transacciones del mes y calcular el saldo promedio
         return transactionClient.getTransactionsByAccountNumberAndDateRange(accountNumber, startOfMonth, endOfMonth)
                 .collectList()
-                .flatMap(transactions -> calculateAverageBalance(accountNumber, transactions, firstDayOfMonth, lastDayOfMonth))
+                .flatMap(transactions -> calculateAverageBalance(accountNumber,
+                        transactions, firstDayOfMonth, lastDayOfMonth))
                 .map(averageBalance -> { // Construir el objeto de respuesta
                     AverageMonthlyDailyBalanceResponse response = new AverageMonthlyDailyBalanceResponse();
                     response.setAccountNumber(accountNumber);
@@ -207,7 +238,11 @@ public class AccountServiceImpl implements AccountService {
                     response.setMonth(yearMonth.getMonthValue());
                     response.setAverageDailyBalance(averageBalance);
                     return response;
-                });
+                })
+                .doOnSuccess(response ->
+                        log.info("Successfully calculated average monthly daily balance for account number: {}, average balance: {}", accountNumber, response.getAverageDailyBalance()))
+                .doOnError(e ->
+                        log.error("Error calculating average monthly daily balance for account number: {}", accountNumber, e));
     }
 
 
@@ -271,6 +306,8 @@ public class AccountServiceImpl implements AccountService {
         String receiverAccountNumber = transferRequest.getReceiverAccountNumber();
         BigDecimal transferAmount = transferRequest.getAmount();
 
+        log.info("Initiating transfer of {} from account {} to account {}", transferAmount, accountNumber, receiverAccountNumber);
+
         // Fetch and Validate Sender ---
         Mono<Account> validatedSender = accountRepository.findByAccountNumber(accountNumber)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Sender account not found: " + accountNumber)))
@@ -278,31 +315,41 @@ public class AccountServiceImpl implements AccountService {
                     // Sender Validations
                     if (account instanceof SavingsAccount savingsAccount) {
                         if (savingsAccount.getMovementsThisMonth() >= savingsAccount.getMonthlyMovementsLimit()) {
+                            log.warn("Savings account {} has reached max movements limit", accountNumber);
                             return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
                                     "Savings account " + accountNumber + " has reached max movements limit ("
                                             + savingsAccount.getMonthlyMovementsLimit() + ") this month."));
                         }
                     } else if (account instanceof FixedTermAccount) {
+                        log.warn("Fixed Term accounts cannot initiate transfers for account {}", accountNumber);
                         return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
                                 "Fixed Term accounts cannot initiate transfers."));
                     }
                     // Basic validation passed
                     return Mono.just(account);
-                });
+                })
+                .doOnSuccess(account -> log.debug("Sender account {} validation passed", accountNumber))
+                .doOnError(e -> log.error("Sender account {} validation failed: {}", accountNumber, e.getMessage()));
+
+        // Fetch and Validate Receiver ---
         Mono<Account> validatedReceiver = accountRepository.findByAccountNumber(receiverAccountNumber)
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Receiver account not found: " + receiverAccountNumber)))
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Receiver account not found: " +
+                        receiverAccountNumber)))
                 .flatMap(account -> {
                     // Receiver Type Validation
                     if (account.getAccountType() == Account.AccountType.FIXED_TERM) {
+                        log.warn("Cannot transfer to Fixed Term account {}", receiverAccountNumber);
                         return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
                                 "Cannot transfer to a Fixed Term account."));
                     }
                     return Mono.just(account);
-                });
+                })
+                .doOnSuccess(account -> log.debug("Receiver account {} validation passed", receiverAccountNumber))
+                .doOnError(e -> log.error("Receiver account {} validation failed: {}", receiverAccountNumber, e.getMessage()));
 
         return Mono.zip(validatedSender, validatedReceiver)
                 .flatMap(accountsTuple ->
-                        processTransferBetweenAccounts(accountsTuple, transferRequest.getAmount()))
+                        processTransferBetweenAccounts(accountsTuple, transferAmount))
                 .flatMap(savedSenderAndFeeTuple -> {
                     Account senderAccount = savedSenderAndFeeTuple.getT1();
                     BigDecimal fee = savedSenderAndFeeTuple.getT2(); // Retrieve the fee calculated earlier
@@ -310,7 +357,7 @@ public class AccountServiceImpl implements AccountService {
                     // Create Sender Transaction
                     TransactionRequest debitRequest = createTransferTransactionRequest(
                             senderAccount.getAccountNumber(), // Sender account
-                            transferRequest.getAmount(),
+                            transferAmount,
                             TransactionRequest.TransactionType.DEBIT,
                             "Transfer to account " + receiverAccountNumber,
                             fee
@@ -319,15 +366,26 @@ public class AccountServiceImpl implements AccountService {
                     // Create Receiver Transaction
                     TransactionRequest creditRequest = createTransferTransactionRequest(
                             accountNumber, // Receiver account
-                            transferRequest.getAmount(),
+                            transferAmount,
                             TransactionRequest.TransactionType.CREDIT,
                             "Transfer from account " + accountNumber,
                             BigDecimal.ZERO // Receiver does not get a fee
                     );
 
                     // Call Transaction Client for Both
-                    Mono<TransactionResponse> debitTransactionMono = transactionClient.createTransaction(debitRequest);
-                    Mono<TransactionResponse> creditTransactionMono = transactionClient.createTransaction(creditRequest);
+                    Mono<TransactionResponse> debitTransactionMono = transactionClient.createTransaction(debitRequest)
+                            .doOnSuccess(transactionResponse ->
+                                    log.info("Debit transaction created for account {}, transaction ID: {}",
+                                    accountNumber, transactionResponse.getId()))
+                            .doOnError(e ->
+                                    log.error("Failed to create debit transaction for account {}: {}", accountNumber, e.getMessage()));
+
+                    Mono<TransactionResponse> creditTransactionMono = transactionClient.createTransaction(creditRequest)
+                            .doOnSuccess(transactionResponse ->
+                                    log.info("Credit transaction created for account {}, transaction ID: {}",
+                                    receiverAccountNumber, transactionResponse.getId()))
+                            .doOnError(e ->
+                                    log.error("Failed to create credit transaction for account {}: {}", receiverAccountNumber, e.getMessage()));
 
                     // Returning the response from the DEBIT transaction
                     return Mono.zip(debitTransactionMono, creditTransactionMono)
@@ -350,6 +408,7 @@ public class AccountServiceImpl implements AccountService {
         // Check if Commission Fee for Sender is applicable
         if (senderAccount.getIsCommissionFeeActive()) {
             fee = senderAccount.getMovementCommissionFee();
+            log.info("Applying commission fee of {} for sender account {}", fee, senderAccount.getAccountNumber());
         } else {
             fee = BigDecimal.ZERO;
         }
@@ -357,6 +416,7 @@ public class AccountServiceImpl implements AccountService {
         BigDecimal totalDeduction = transferAmount.add(fee);
 
         if (senderAccount.getBalance().compareTo(totalDeduction) < 0) {
+            log.warn("Insufficient funds in sender account {}. Required: {}", senderAccount.getAccountNumber(), totalDeduction);
             return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Insufficient funds in sender account " +
                             senderAccount.getAccountNumber() +
@@ -369,13 +429,18 @@ public class AccountServiceImpl implements AccountService {
 
         // Update movements for Savings Account
         if (senderAccount instanceof SavingsAccount savingsAccount) {
+            log.info("Incrementeding movements for sender savings account {}", senderAccount.getAccountNumber());
             savingsAccount.setMovementsThisMonth(savingsAccount.getMovementsThisMonth() + 1);
         }
 
         return accountRepository.save(senderAccount)
                 .flatMap(savedSender -> accountRepository.save(receiverAccount)
-                        .map(savedReceiver -> Tuples.of(savedSender, fee))
-                );
+                        .map(savedReceiver -> {
+                            log.info("Successfully transferred {} from account {} to account {}", transferAmount, senderAccount.getAccountNumber(), receiverAccount.getAccountNumber());
+                            return Tuples.of(savedSender, fee);
+                        })
+                )
+                .doOnError(e -> log.error("Error processing transfer between accounts: {}", e.getMessage()));
     }
 
     public BalanceResponse mapToBalanceResponse(Account account){
@@ -405,6 +470,7 @@ public class AccountServiceImpl implements AccountService {
                     // Check if commission fee should be activated
                     if (!account.getIsCommissionFeeActive() &&
                             account.getMovementsThisMonth().equals(account.getMaxMovementsFeeFreeThisMonth())) {
+                        log.info("Commission activated for account number: {}", account.getAccountNumber());
                         account.setIsCommissionFeeActive(true);
                     }
                     return Mono.just(account);
@@ -412,23 +478,28 @@ public class AccountServiceImpl implements AccountService {
     }
 
     private Mono<Account> validateFixedAccountDeposit(Account account) {
-        // This account is special regarding deposits and withdrawals
+        log.info("Validating Fixed Term account deposit for account number: {}", account.getAccountNumber());
         if(account.getAccountType() == Account.AccountType.FIXED_TERM && account.getBalance().compareTo(BigDecimal.ZERO) > 0) {
+            log.warn("One deposit has already been performed for Fixed Term account number: {}", account.getAccountNumber());
             return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "One deposit has already been performed for this Fixed Term account"));
         }
+        log.info("Fixed Term deposit validation passed for account number: {}", account.getAccountNumber());
         return Mono.just(account);
     }
 
     private Mono<Account> validateFixedAccountWithdraw(Account account) {
-        // If the withdrawal is made on a FIXED_TERM account
+        log.info("Validating Fixed Term account withdrawal for account number: {}", account.getAccountNumber());
         if (account.getAccountType() == Account.AccountType.FIXED_TERM) {
             FixedTermAccount fixedTermAccount = (FixedTermAccount) account;
             if (fixedTermAccount.getAllowedWithdrawal().isAfter(LocalDate.now())) {
+                log.warn("Withdrawal not allowed until {} for Fixed Term account number: {}",
+                        fixedTermAccount.getAllowedWithdrawal(), account.getAccountNumber());
                 return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
                         "Withdrawal not allowed until " + fixedTermAccount.getAllowedWithdrawal()));
             }
         }
+        log.info("Fixed Term withdrawal validation passed for account number: {}", account.getAccountNumber());
         return Mono.just(account);
     }
 

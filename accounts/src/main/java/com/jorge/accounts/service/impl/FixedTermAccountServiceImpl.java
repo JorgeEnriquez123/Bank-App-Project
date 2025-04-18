@@ -31,6 +31,8 @@ public class FixedTermAccountServiceImpl implements FixedTermAccountService {
     public Mono<FixedTermAccountResponse> createFixedTermAccount(FixedTermAccountRequest fixedTermAccountRequest) {
         log.info("Creating a new account for customer Id: {}", fixedTermAccountRequest.getCustomerId());
         return customerClient.getCustomerById(fixedTermAccountRequest.getCustomerId())
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Customer with dni: " + fixedTermAccountRequest.getCustomerId() + " not found")))
                 .flatMap(customer -> {
                     if(customer.getIsVIP() || customer.getIsPYME())
                         return customerValidation.validateCreditCardExists(customer);       // Validate if customer has Credit Cards
@@ -48,8 +50,10 @@ public class FixedTermAccountServiceImpl implements FixedTermAccountService {
                 .flatMap(fixedTermAccount ->
                         accountUtils.handleInitialDeposit(fixedTermAccount, fixedTermAccountRequest.getBalance()))
                 .map(fixedTermAccountMapper::mapToFixedTermAccountResponse)
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
-                        "Customer with dni: " + fixedTermAccountRequest.getCustomerId() + " not found")));
+                .doOnSuccess(fixedTermAccountResponse ->
+                        log.info("Fixed Term Account created successfully: {}", fixedTermAccountResponse))
+                .doOnError(throwable ->
+                        log.error("Error creating Fixed Term Account: {}", throwable.getMessage()));
     }
 
     @Override
@@ -61,7 +65,11 @@ public class FixedTermAccountServiceImpl implements FixedTermAccountService {
                         "Fixed Term Account with account number: " + accountNumber + " not found")))
                 .flatMap(existingFixedTermAccount -> fixedTermAccountRepository.save(
                         updateFixedTermAccountFromRequest(existingFixedTermAccount, fixedTermAccountRequest)))
-                .map(fixedTermAccountMapper::mapToFixedTermAccountResponse);
+                .map(fixedTermAccountMapper::mapToFixedTermAccountResponse)
+                .doOnSuccess(fixedTermAccountResponse ->
+                        log.info("Fixed Term Account updated successfully: {}", fixedTermAccountResponse))
+                .doOnError(throwable ->
+                        log.error("Error updating Fixed Term Account: {}", throwable.getMessage()));
     }
 
     private FixedTermAccount updateFixedTermAccountFromRequest(FixedTermAccount existingFixedTermAccount,

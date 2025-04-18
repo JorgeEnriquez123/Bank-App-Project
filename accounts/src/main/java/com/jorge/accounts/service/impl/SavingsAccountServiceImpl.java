@@ -49,7 +49,10 @@ public class SavingsAccountServiceImpl implements SavingsAccountService {
                         savingsAccountRepository.save(savingsAccountMapper.mapToSavingsAccount(savingsAccountRequest)))
                 .flatMap(savingsAccount ->
                         accountUtils.handleInitialDeposit(savingsAccount, savingsAccountRequest.getBalance()))
-                .map(savingsAccountMapper::mapToSavingsAccountResponse);
+                .map(savingsAccountMapper::mapToSavingsAccountResponse)
+                .doOnSuccess(savingsAccountResponse ->
+                        log.info("Savings account created successfully with account number: {}", savingsAccountResponse.getAccountNumber()))
+                .doOnError(throwable -> log.error("Error creating savings account: {}", throwable.getMessage()));
     }
 
     @Override
@@ -60,7 +63,10 @@ public class SavingsAccountServiceImpl implements SavingsAccountService {
                         "Savings Account with account number: " + accountNumber + " not found")))
                 .flatMap(existingSavingsAccount -> savingsAccountRepository.save(
                         updateSavingsAccountFromRequest(existingSavingsAccount, savingsAccountRequest)))
-                .map(savingsAccountMapper::mapToSavingsAccountResponse);
+                .map(savingsAccountMapper::mapToSavingsAccountResponse)
+                .doOnSuccess(savingsAccountResponse ->
+                        log.info("Savings account updated successfully with account number: {}", savingsAccountResponse.getAccountNumber()))
+                .doOnError(throwable -> log.error("Error updating savings account: {}", throwable.getMessage()));
     }
 
     private SavingsAccount updateSavingsAccountFromRequest(SavingsAccount existingSavingsAccount, SavingsAccountRequest savingsAccountRequest) {
