@@ -20,7 +20,10 @@ import java.util.Collections;
 public class JwtReactiveAuthenticationManager implements ReactiveAuthenticationManager {
 
     private final JwtUtil jwtUtil;
-    private final WebClient.Builder webClientBuilder; // Inyecta WebClient.Builder
+    private final WebClient.Builder webClientBuilder;
+
+    @Value("${web.baseurl.customerservice}")
+    private String customerServiceUrl;
 
     @Override
     public Mono<Authentication> authenticate(Authentication authentication) {
@@ -66,7 +69,7 @@ public class JwtReactiveAuthenticationManager implements ReactiveAuthenticationM
     }
 
     private Mono<Boolean> checkCustomerExists(String dni) {
-        WebClient client = webClientBuilder.baseUrl("http://localhost:8080").build();
+        WebClient client = webClientBuilder.baseUrl(customerServiceUrl).build();
         return client.get()
                 .uri("/customers/dni/" + dni)
                 .retrieve()

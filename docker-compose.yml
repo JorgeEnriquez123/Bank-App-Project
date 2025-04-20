@@ -1,18 +1,335 @@
 version: '3.8'
+
 services:
+  # --- Tier 1: Core Infrastructure ---
   zookeeper:
     image: wurstmeister/zookeeper
+    container_name: zookeeper
     ports:
       - "2181:2181"
     restart: always
+    volumes:
+      - zookeeper_data:/data
+      - zookeeper_datalog:/datalog
+    healthcheck:
+      test: ["CMD", "echo", "ruok", "|", "nc", "-w", "2", "localhost", "2181", "|", "grep", "imok"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
 
   kafka:
     image: wurstmeister/kafka
+    container_name: kafka
     ports:
-      - "9092:9092"
+      - "9092:9092" # Internal port
+      - "9093:9093" # External port
     environment:
-      KAFKA_ADVERTISED_HOST_NAME: localhost  # Cambia si es diferente a localhost
+      KAFKA_ADVERTISED_LISTENERS: INSIDE://kafka:9092,OUTSIDE://localhost:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
+      KAFKA_LISTENERS: INSIDE://0.0.0.0:9092,OUTSIDE://0.0.0.0:9093
+      KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_CREATE_TOPICS: "your_topic_name:1:1" # Optional: Pre-create topics if needed
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock # Usually not needed unless image dynamically finds brokers
+      - kafka_data:/kafka
+    # depends_on is now conditional on zookeeper being healthy
     depends_on:
-      - zookeeper
+      zookeeper:
+        condition: service_healthy
     restart: always
+    healthcheck:
+      # Check if the internal Kafka port is listening (requires netcat in image)
+      test: ["CMD", "nc", "-z", "localhost", "9092"]
+      interval: 10s
+      timeout: 5s
+      retries: 15 # Kafka can take a bit longer
+      start_period: 30s # Give Kafka time to start up
+
+  redis:
+    image: redis:alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    restart: always
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      # Use redis-cli PING command
+      test: ["CMD", "redis-cli", "ping", "|", "grep", "PONG"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s # Redis starts fast
+
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    volumes:
+      - mongodb_data:/data/db
+    restart: always
+    healthcheck:
+      # Use mongosh to ping the admin database
+      test: ["CMD", "mongosh", "--username", "root", "--password", "example", "--authenticationDatabase", "admin", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 20s # MongoDB needs some time
+
+  bankconfigserver:
+    build:
+      context: ./bankconfigserver
+      dockerfile: Dockerfile
+    container_name: bankconfigserver
+    ports:
+      - "8888:8888"
+    restart: always
+    healthcheck:
+      # Check Spring Boot Actuator health endpoint (requires curl in image)
+      test: ["CMD", "curl", "-f", "http://localhost:8888/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s # Spring Boot apps need time
+
+  # --- Tier 2: Discovery and Gateway ---
+  discovery:
+    build:
+      context: ./discovery
+      dockerfile: Dockerfile
+    container_name: discovery
+    ports:
+      - "8761:8761"
+    environment:
+      SPRING_CONFIG_IMPORT: configserver:http://bankconfigserver:8888
+      # Ensure Eureka waits for config server (or use spring-cloud-config-client retry settings)
+    # depends_on is now conditional on bankconfigserver being healthy
+    depends_on:
+      bankconfigserver:
+        condition: service_healthy
+    restart: always
+    healthcheck:
+      # Check Spring Boot Actuator health endpoint (requires curl in image)
+      test: ["CMD", "curl", "-f", "http://localhost:8761/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 45s # Depends on Config Server + own startup
+
+  gateway:
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    container_name: gateway
+    ports:
+      - "6666:6666" # Exposing gateway on 6666
+    environment:
+      SPRING_CONFIG_IMPORT: configserver:http://bankconfigserver:8888
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery:8761/eureka/
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SPRING_DATA_REDIS_HOST: redis
+      WEB_BASEURL_CUSTOMERSERVICE: http://customers:8080
+    # depends_on is now conditional on bankconfigserver and discovery being healthy
+    depends_on:
+      bankconfigserver:
+        condition: service_healthy
+      discovery:
+        condition: service_healthy
+    restart: always
+    healthcheck:
+      # Check Spring Boot Actuator health endpoint (requires curl in image)
+      test: ["CMD", "curl", "-f", "http://localhost:6666/actuator/health"] # Check internal port 8080
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 60s # Depends on Config Server, Discovery + own startup
+
+  # --- Tier 3: Business Microservices ---
+  accounts:
+    build:
+      context: ./accounts
+      dockerfile: Dockerfile
+    container_name: accounts-app
+    ports:
+      - "8081:8081" # Exposing accounts on 8081
+    environment:
+      SPRING_CONFIG_IMPORT: configserver:http://bankconfigserver:8888
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery:8761/eureka/
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_MONGODB_URI: mongodb://root:example@mongodb:27017/accounts?authSource=admin # Added db name to URI
+      # SPRING_DATA_MONGODB_DATABASE: accounts # Can often be omitted if in URI
+      WEB_BASEURL_CUSTOMERSERVICE: http://customers:8080/customers
+      WEB_BASEURL_TRANSACTIONSERVICE: http://transactions:8082/transactions
+      WEB_BASEURL_CREDITSERVICE: http://credits:8083
+    # depends_on all necessary services being healthy
+    depends_on:
+      bankconfigserver:
+        condition: service_healthy
+      discovery:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+    restart: always
+    healthcheck:
+      # Check Spring Boot Actuator health endpoint (requires curl in image)
+      test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health"] # Check internal port 8080
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 60s # Depends on many services + own startup
+
+  customers:
+    build:
+      context: ./customers
+      dockerfile: Dockerfile
+    container_name: customers-app
+    ports:
+      - "8080:8080" # Host 8080 maps to customers container 8080
+    environment:
+      SPRING_CONFIG_IMPORT: configserver:http://bankconfigserver:8888
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery:8761/eureka/
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_MONGODB_URI: mongodb://root:example@mongodb:27017/customers?authSource=admin # Added db name to URI
+      # SPRING_DATA_MONGODB_DATABASE: customers
+      WEB_BASEURL_CREDITSERVICE: http://credits:8083
+      WEB_BASEURL_ACCOUNTSERVICE: http://accounts:8081
+    depends_on:
+      bankconfigserver:
+        condition: service_healthy
+      discovery:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+
+  credits:
+    build:
+      context: ./credits
+      dockerfile: Dockerfile
+    container_name: credits-app
+    ports:
+      - "8083:8083" # Exposing credits on 8083
+    environment:
+      SPRING_CONFIG_IMPORT: configserver:http://bankconfigserver:8888
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery:8761/eureka/
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_MONGODB_URI: mongodb://root:example@mongodb:27017/credit?authSource=admin # Added db name to URI
+      # SPRING_DATA_MONGODB_DATABASE: credit
+      WEB_BASEURL_CUSTOMERSERVICE: http://customers:8080/customers
+      WEB_BASEURL_ACCOUNTSERVICE: http://accounts:8081
+      WEB_BASEURL_TRANSACTIONSERVICE: http://transactions:8082
+    depends_on:
+      bankconfigserver:
+        condition: service_healthy
+      discovery:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8083/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+
+  transactions:
+    build:
+      context: ./transactions
+      dockerfile: Dockerfile
+    container_name: transactions-app
+    ports:
+      - "8082:8082" # Exposing transactions on 8082
+    environment:
+      SPRING_CONFIG_IMPORT: configserver:http://bankconfigserver:8888
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery:8761/eureka/
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_MONGODB_URI: mongodb://root:example@mongodb:27017/transactions?authSource=admin # Added db name to URI
+      # SPRING_DATA_MONGODB_DATABASE: transactions
+    depends_on:
+      bankconfigserver:
+        condition: service_healthy
+      discovery:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8082/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+
+  yanki:
+    build:
+      context: ./yanki
+      dockerfile: Dockerfile
+    container_name: yanki-app
+    ports:
+      - "8084:8084" # Exposing yanki on 8084
+    environment:
+      SPRING_CONFIG_IMPORT: configserver:http://bankconfigserver:8888
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery:8761/eureka/
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_MONGODB_URI: mongodb://root:example@mongodb:27017/yanki?authSource=admin # Added db name to URI
+      # SPRING_DATA_MONGODB_DATABASE: yanki
+    depends_on:
+      bankconfigserver:
+        condition: service_healthy
+      discovery:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8084/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+
+volumes:
+  zookeeper_data:
+  zookeeper_datalog:
+  kafka_data:
+  redis_data:
+  mongodb_data:
