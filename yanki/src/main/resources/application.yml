@@ -1,8 +1,9 @@
 spring:
   application:
-    name: account-service
+    name: yanki-service
   config:
     import: configserver:http://localhost:8888
+
   kafka:
     bootstrap-servers: localhost:9092
     consumer:
@@ -15,6 +16,6 @@ spring:
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
 
 server:
-  port: 8081
+  port: 8084
   error:
     include-message: always

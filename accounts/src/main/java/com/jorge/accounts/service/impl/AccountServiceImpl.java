@@ -355,6 +355,7 @@ public class AccountServiceImpl implements AccountService {
                     BigDecimal fee = savedSenderAndFeeTuple.getT2(); // Retrieve the fee calculated earlier
 
                     // Create Sender Transaction
+                    log.info("Creating transaction for sender account {}", senderAccount.getAccountNumber());
                     TransactionRequest debitRequest = createTransferTransactionRequest(
                             senderAccount.getAccountNumber(), // Sender account
                             transferAmount,
@@ -364,6 +365,7 @@ public class AccountServiceImpl implements AccountService {
                     );
 
                     // Create Receiver Transaction
+                    log.info("Creating transaction for receiver account {}", receiverAccountNumber);
                     TransactionRequest creditRequest = createTransferTransactionRequest(
                             accountNumber, // Receiver account
                             transferAmount,

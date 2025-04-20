@@ -37,9 +37,8 @@ public class CheckingAccountServiceImpl implements CheckingAccountService {
                         "Customer with dni: " + checkingAccountRequest.getCustomerId() + " not found")))
                 .flatMap(customer -> {
                     if(customer.getIsVIP() || customer.getIsPYME())
-                        return customerValidation.validateCreditCardExists(customer);  // Validate if customer has Credit Cards
-                    else
-                        return customerValidation.validateIfCustomerHasOverDueDebt(customer);   // Validate if Customer has over due debts
+                        return customerValidation.validateCreditCardExists(customer);       // Validate if customer has Credit Cards
+                    return customerValidation.validateIfCustomerHasOverDueDebt(customer);   // Validate if Customer has overdue debts
                 })
                 .flatMap(customer -> switch (customer.getCustomerType()) {
                     case PERSONAL -> customerValidation.personalCustomerValidation(customer, Account.AccountType.CHECKING)

@@ -1,6 +1,9 @@
 package com.jorge.accounts.model;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -22,6 +25,7 @@ public abstract class Account {
     private LocalDateTime createdAt;
 
     private Integer movementsThisMonth;
+
     private Integer maxMovementsFeeFreeThisMonth;
     private Boolean isCommissionFeeActive;
     private BigDecimal movementCommissionFee;

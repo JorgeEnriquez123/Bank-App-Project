@@ -35,9 +35,8 @@ public class SavingsAccountServiceImpl implements SavingsAccountService {
                         "Customer with dni: " + savingsAccountRequest.getCustomerId() + " not found")))
                 .flatMap(customer -> {
                     if(customer.getIsVIP() || customer.getIsPYME()) // If Customer is VIP or PYME, perform validations
-                        return customerValidation.validateCreditCardExists(customer);  // Validate if customer has Credit Cards
-                    else
-                        return customerValidation.validateIfCustomerHasOverDueDebt(customer);   // Validate if Customer has overdue debts
+                        return customerValidation.validateCreditCardExists(customer);       // Validate if customer has Credit Cards
+                    return customerValidation.validateIfCustomerHasOverDueDebt(customer);   // Validate if Customer has overdue debts
                 })
                 .flatMap(customer -> switch (customer.getCustomerType()) {
                     case PERSONAL -> customerValidation.personalCustomerValidation(customer, Account.AccountType.SAVINGS)

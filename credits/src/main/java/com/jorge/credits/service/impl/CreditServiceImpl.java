@@ -115,8 +115,6 @@ public class CreditServiceImpl implements CreditService {
     public Flux<CreditResponse> getCreditsByCreditHolderId(String creditHolderId) {
         log.info("Fetching credits by customer Id: {}", creditHolderId);
         return creditRepository.findByCreditHolderId(creditHolderId)
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
-                        "Credits from customer by Id: " + creditHolderId + " not found")))
                 .map(creditMapper::mapToCreditResponse);
     }
 
