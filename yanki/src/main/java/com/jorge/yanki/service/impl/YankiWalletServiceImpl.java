@@ -20,8 +20,12 @@ import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
+
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -31,23 +35,49 @@ public class YankiWalletServiceImpl implements YankiWalletService {
     private final YankiWalletRepository yankiWalletRepository;
     private final YankiWalletMapper yankiWalletMapper;
     private final KafkaTemplate<String, String> kafkaTemplate;
+    private final RedisTemplate<String, Object> redisTemplate;
+    private static final String CACHE_KEY_PREFIX = "yankiwallet::";
+    private static final long CACHE_TTL_MINUTES = 5;
 
     @Override
     public Flowable<YankiWalletResponse> getAllYankiWallets() {
+        log.info("Fetching all yanki wallets");
         return Flowable.fromIterable(yankiWalletRepository.findAll())
                 .map(yankiWalletMapper::mapToYankiWalletResponse);
     }
 
     @Override
     public Single<YankiWalletResponse> getYankiWalletById(String id) {
-        return Single.just(yankiWalletRepository.findById(id)
-                        .orElseThrow(() -> new ResourceNotFoundException("Yanki wallet with id: " + id + " not found")))
-                .map(yankiWalletMapper::mapToYankiWalletResponse)
-                .subscribeOn(Schedulers.io());
+        String cacheKey = CACHE_KEY_PREFIX + id;
+        return Single.defer(() -> {
+            try {
+                Object cachedValue = redisTemplate.opsForValue().get(cacheKey);
+                if (cachedValue != null) {
+                    log.info("Cache HIT for key: {}", cacheKey);
+                    YankiWalletResponse response = objectMapper.convertValue(cachedValue, YankiWalletResponse.class);
+                    return Single.just(response);
+                } else {
+                    log.info("Cache MISS for key: {}", cacheKey);
+                    YankiWallet yankiWallet = yankiWalletRepository.findById(id)
+                            .orElseThrow(() -> new ResourceNotFoundException("Yanki wallet with id: " + id + " not found"));
+                    YankiWalletResponse responseFromDb = yankiWalletMapper.mapToYankiWalletResponse(yankiWallet);
+                    try {
+                        redisTemplate.opsForValue().set(cacheKey, responseFromDb, CACHE_TTL_MINUTES, TimeUnit.MINUTES);
+                        log.info("Stored in cache key: {}", cacheKey);
+                    } catch (Exception e) {
+                        log.error("Error storing value in Redis for key {}: {}", cacheKey, e.getMessage());
+                    }
+                    return Single.just(responseFromDb);
+                }
+            } catch (Exception e) {
+                return Single.error(e);
+            }
+        }).subscribeOn(Schedulers.io());
     }
 
     @Override
     public Single<YankiWalletResponse> createYankiWallet(YankiWalletRequest yankiWalletRequest) {
+        log.info("Creating yanki wallet: {}", yankiWalletRequest);
         YankiWallet yankiWallet = yankiWalletMapper.mapToYankiWallet(yankiWalletRequest);
         // Additionally we can check if the DNI is already registered or not by checking CustomerClient.
         // If it is, we just validated the DNI and proceed to create the YankiWallet.
@@ -63,14 +93,24 @@ public class YankiWalletServiceImpl implements YankiWalletService {
 
     @Override
     public Single<YankiWalletResponse> updateYankiWallet(String id, YankiWalletRequest yankiWalletRequest) {
+        log.info("Updating yanki wallet with id: {} and request: {}", id, yankiWalletRequest);
+        String cacheKey = CACHE_KEY_PREFIX + id;
         return Single.just(yankiWalletRepository.findById(id)
                         .orElseThrow(() -> new ResourceNotFoundException("Yanki wallet with id: " + id + " not found")))
                 .observeOn(Schedulers.io())
                 .flatMap(existingYankiWallet -> {
                     YankiWallet updatedYankiWallet = updateYankiWalletFromRequest(existingYankiWallet, yankiWalletRequest);
                     return Single.just(yankiWalletRepository.save(updatedYankiWallet))
-                            .doOnSuccess(response ->
-                                    log.info("YankiWallet updated successfully: {}", yankiWalletRequest))
+                            .doOnSuccess(response -> {
+                                log.info("YankiWallet updated successfully: {}", yankiWalletRequest);
+                                YankiWalletResponse responseFromDb = yankiWalletMapper.mapToYankiWalletResponse(response);
+                                try {
+                                    redisTemplate.opsForValue().set(cacheKey, responseFromDb, CACHE_TTL_MINUTES, TimeUnit.MINUTES);
+                                    log.info("Updated cache for key: {}", cacheKey);
+                                } catch (Exception e) {
+                                    log.error("Error updating cache for key {}: {}", cacheKey, e.getMessage());
+                                }
+                            })
                             .doOnError(error -> log.error("Error updating YankiWallet: {}", error.getMessage()))
                             .subscribeOn(Schedulers.io())
                             .map(yankiWalletMapper::mapToYankiWalletResponse);
@@ -79,8 +119,17 @@ public class YankiWalletServiceImpl implements YankiWalletService {
 
     @Override
     public Completable deleteYankiWalletById(String id) {
-        return Completable.fromAction(() -> yankiWalletRepository.deleteById(id))
-                .subscribeOn(Schedulers.io());
+        log.info("Deleting yanki wallet with id: {}", id);
+        String cacheKey = CACHE_KEY_PREFIX + id;
+        return Completable.fromAction(() -> {
+            yankiWalletRepository.deleteById(id);
+            try {
+                redisTemplate.delete(cacheKey);
+                log.info("Deleted cache for key: {}", cacheKey);
+            } catch (Exception e) {
+                log.error("Error deleting cache for key {}: {}", cacheKey, e.getMessage());
+            }
+        }).subscribeOn(Schedulers.io());
     }
 
     public YankiWallet updateYankiWalletFromRequest(YankiWallet existingYankiWallet, YankiWalletRequest yankiWalletRequest) {
@@ -92,8 +141,8 @@ public class YankiWalletServiceImpl implements YankiWalletService {
 
     @Override
     public Single<SuccessfulEventOperationResponse> sendPayment(String yankiId, YankiSendPaymentRequest yankiSendPaymentRequest) {
-        Single<YankiWallet> yankiWalletSender = Single.just(yankiWalletRepository.findById(yankiId)
-                .orElseThrow(() -> new ResourceNotFoundException("Yanki wallet with id: " + yankiId + " not found")));
+        log.info("Starting payment process for yankiId: {} and request: {}", yankiId, yankiSendPaymentRequest);
+        Single<YankiWalletResponse> yankiWalletSender = getYankiWalletById(yankiId);
         Single<YankiWallet> yankiWalletReceiver = Single.just(yankiWalletRepository.findByPhoneNumber(yankiSendPaymentRequest.getReceiverYankiPhoneNumber())
                 .orElseThrow(() -> new ResourceNotFoundException("Yanki wallet with phone Number: "
                         + yankiSendPaymentRequest.getReceiverYankiPhoneNumber() + " not found")));
@@ -117,9 +166,8 @@ public class YankiWalletServiceImpl implements YankiWalletService {
 
     @Override
     public Single<SuccessfulEventOperationResponse> associateDebitCard(String yankiId, YankiWalletAssociateCardRequest yankiWalletAssociateCardRequest) {
-        return Single.just(
-                        yankiWalletRepository.findById(yankiId)
-                                .orElseThrow(() -> new ResourceNotFoundException("Yanki wallet with id: " + yankiId + " not found")))
+        log.info("Starting debit card association process for yankiId: {} and request: {}", yankiId, yankiWalletAssociateCardRequest);
+        return getYankiWalletById(yankiId)
                 .map(yankiWallet -> {
                     log.info("Yanki wallet with id: {} found", yankiId);
                     DebitCardAssociationKafkaMessage associationKafkaMessage = new DebitCardAssociationKafkaMessage();
@@ -135,9 +183,9 @@ public class YankiWalletServiceImpl implements YankiWalletService {
                 .subscribeOn(Schedulers.io());
     }
 
-    public void validateYankiWallets(YankiWallet yankiWalletSender, YankiWallet yankiWalletReceiver) {
+    public void validateYankiWallets(YankiWalletResponse yankiWalletSender, YankiWallet yankiWalletReceiver) {
         log.info("Checking if yanki wallets have debit cards associated");
-        if(yankiWalletSender.getStatus().equals(YankiWallet.YankiWalletStatus.PENDING_DEBITCARD_ASSOCIATION)) {
+        if(yankiWalletSender.getStatus().equals(YankiWalletResponse.YankiWalletStatus.PENDING_DEBITCARD_ASSOCIATION)) {
             throw new YankiWalletNotAvailableForPaymentException("Yanki wallet with id: "
                     + yankiWalletSender.getId() + " is not available for payment. It needs to be associated with a debit card");
         }

@@ -9,7 +9,7 @@
         <outputRelativeToContentRoot value="true" />
         <module name="bankconfigserver" />
       </profile>
-      <profile name="Annotation profile for accounts" enabled="true">
+      <profile name="Annotation profile for yanki" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />

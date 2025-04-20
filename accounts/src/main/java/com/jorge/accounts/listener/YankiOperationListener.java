@@ -19,7 +19,7 @@ import java.math.BigDecimal;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class DebitCardListener {
+public class YankiOperationListener {
     private final ObjectMapper objectMapper;
     private final DebitCardRepository debitCardRepository;
     private final AccountService accountService;
