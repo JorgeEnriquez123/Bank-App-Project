@@ -3,6 +3,7 @@ package com.jorge.customers.expose;
 import com.jorge.customers.api.CustomersApiDelegate;
 import com.jorge.customers.model.CustomerRequest;
 import com.jorge.customers.model.CustomerResponse;
+import com.jorge.customers.model.LoginResponse;
 import com.jorge.customers.model.ProductSummaryResponse;
 import com.jorge.customers.service.CustomerService;
 import lombok.RequiredArgsConstructor;
@@ -50,5 +51,10 @@ public class CustomerApiDelegateImpl implements CustomersApiDelegate{
     @Override
     public Mono<ProductSummaryResponse> getCustomerProductSummaryById(String id, ServerWebExchange exchange) {
         return customerService.getProductSummaryByCustomerId(id);
+    }
+
+    @Override
+    public Mono<LoginResponse> loginCustomer(String dni, ServerWebExchange exchange) {
+        return customerService.login(dni);
     }
 }

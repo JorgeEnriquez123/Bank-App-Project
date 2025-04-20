@@ -1,10 +1,10 @@
 spring:
   application:
-    name: yanki-service
+    name: gateway-service
   config:
     import: configserver:http://localhost:8888
 
 server:
-  port: 8084
+  port: 6666
   error:
     include-message: always

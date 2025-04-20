@@ -153,6 +153,13 @@ components:
         message:
           type: string
           description: Mensaje de error detallado
+    LoginResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          description: JWT token
+
 paths:
   /customers:
     get:
@@ -366,6 +373,41 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CustomerResponse'
+        '404':
+          description: Cliente no encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /customers/dni/{dni}/login:
+    post:
+      summary: Iniciar sesión con DNI.
+      tags:
+        - Clientes
+      description: Inicia sesión utilizando el DNI y devuelve un token JWT.
+      operationId: loginCustomer
+      parameters:
+        - in: path
+          name: dni
+          required: true
+          schema:
+            type: string
+            pattern: "^[0-9]{8}[A-Z]$"
+          description: El DNI del cliente a obtener.
+      responses:
+        '200':
+          description: Cliente obtenido exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
         '404':
           description: Cliente no encontrado.
           content:

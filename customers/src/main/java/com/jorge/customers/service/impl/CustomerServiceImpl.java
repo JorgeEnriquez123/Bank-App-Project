@@ -1,5 +1,6 @@
 package com.jorge.customers.service.impl;
 
+import com.jorge.customers.jwt.JwtUtil;
 import com.jorge.customers.mapper.CustomerMapper;
 import com.jorge.customers.model.*;
 import com.jorge.customers.repository.CustomerRepository;
@@ -22,6 +23,7 @@ public class CustomerServiceImpl implements CustomerService {
     private final CustomerMapper customerMapper;
     private final AccountClient accountClient;
     private final CreditClient creditClient;
+    private final JwtUtil jwtUtil;
 
     @Override
     public Flux<CustomerResponse> getAllCustomers() {
@@ -146,5 +148,23 @@ public class CustomerServiceImpl implements CustomerService {
                 });
 
         return Flux.merge(accountsFlux, debitCardsFlux, creditCardsFlux, creditsFlux);
+    }
+
+    @Override
+    public Mono<LoginResponse> login(String dni){
+        log.info("Logging in customer with dni: {}", dni);
+        return customerRepository.findByDni(dni)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Customer with dni: " + dni + " not found")))
+                .flatMap(customer -> {
+                    String jwt = jwtUtil.generateToken(dni);
+                    if (jwt == null) {
+                        return Mono.error(new ResponseStatusException(HttpStatus.UNAUTHORIZED,
+                                "Customer with dni: " + dni + " does not have a JWT"));
+                    }
+                    LoginResponse loginResponse = new LoginResponse();
+                    loginResponse.setToken(jwt);
+                    return Mono.just(loginResponse);
+                });
     }
 }

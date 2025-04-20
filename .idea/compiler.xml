@@ -8,8 +8,9 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="bankconfigserver" />
+        <module name="discovery" />
       </profile>
-      <profile name="Annotation profile for yanki" enabled="true">
+      <profile name="Annotation profile for gateway" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
@@ -17,10 +18,11 @@
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.36/lombok-1.18.36.jar" />
         </processorPath>
         <module name="yanki" />
-        <module name="accounts" />
         <module name="customers" />
+        <module name="accounts" />
         <module name="transactions" />
         <module name="credits" />
+        <module name="gateway" />
       </profile>
     </annotationProcessing>
   </component>
@@ -30,6 +32,8 @@
       <module name="bankconfigserver" options="-parameters" />
       <module name="credits" options="-parameters" />
       <module name="customers" options="-parameters" />
+      <module name="discovery" options="-parameters" />
+      <module name="gateway" options="-parameters" />
       <module name="transactions" options="-parameters" />
       <module name="yanki" options="-parameters" />
     </option>

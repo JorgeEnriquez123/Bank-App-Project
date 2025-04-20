@@ -10,6 +10,8 @@
         <option value="$PROJECT_DIR$/transactions/pom.xml" />
         <option value="$PROJECT_DIR$/bankconfigserver/pom.xml" />
         <option value="$PROJECT_DIR$/yanki/pom.xml" />
+        <option value="$PROJECT_DIR$/discovery/pom.xml" />
+        <option value="$PROJECT_DIR$/gateway/pom.xml" />
       </list>
     </option>
   </component>
