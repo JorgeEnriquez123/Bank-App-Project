@@ -2,6 +2,7 @@ package com.jorge.customers.webclient.client;
 
 import com.jorge.customers.webclient.dto.response.AccountResponse;
 import com.jorge.customers.webclient.dto.response.DebitCardResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.circuitbreaker.ReactiveCircuitBreakerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -12,8 +13,8 @@ public class AccountClient {
     private final WebClient webClient;
     private final ReactiveCircuitBreakerFactory circuitBreakerFactory;
 
-    public AccountClient(WebClient.Builder webClientBuilder, ReactiveCircuitBreakerFactory circuitBreakerFactory) {
-        this.webClient = webClientBuilder.baseUrl("http://localhost:8081").build();
+    public AccountClient(WebClient.Builder webClientBuilder, ReactiveCircuitBreakerFactory circuitBreakerFactory, String baseUrl) {
+        this.webClient = webClientBuilder.baseUrl(baseUrl).build();
         this.circuitBreakerFactory = circuitBreakerFactory;
     }
 

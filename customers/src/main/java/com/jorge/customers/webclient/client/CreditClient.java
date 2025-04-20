@@ -2,18 +2,22 @@ package com.jorge.customers.webclient.client;
 
 import com.jorge.customers.webclient.dto.response.CreditCardResponse;
 import com.jorge.customers.webclient.dto.response.CreditResponse;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.circuitbreaker.ReactiveCircuitBreakerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 
+@Slf4j
 public class CreditClient {
     private final WebClient webClient;
     private final ReactiveCircuitBreakerFactory circuitBreakerFactory;
 
-    public CreditClient(WebClient.Builder webClientBuilder, ReactiveCircuitBreakerFactory circuitBreakerFactory) {
-        this.webClient = webClientBuilder.baseUrl("http://localhost:8083").build();
+    public CreditClient(
+            WebClient.Builder webClientBuilder, ReactiveCircuitBreakerFactory circuitBreakerFactory, String baseUrl) {
+        this.webClient = webClientBuilder.baseUrl(baseUrl).build();
         this.circuitBreakerFactory = circuitBreakerFactory;
     }
 

@@ -12,8 +12,8 @@ public class CreditClient {
     private final WebClient webClient;
     private final ReactiveCircuitBreakerFactory circuitBreakerFactory;
 
-    public CreditClient(WebClient.Builder webClientBuilder, ReactiveCircuitBreakerFactory circuitBreakerFactory) {
-        this.webClient = webClientBuilder.baseUrl("http://localhost:8083").build();
+    public CreditClient(WebClient.Builder webClientBuilder, ReactiveCircuitBreakerFactory circuitBreakerFactory, String baseUrl) {
+        this.webClient = webClientBuilder.baseUrl(baseUrl).build();
         this.circuitBreakerFactory = circuitBreakerFactory;
     }
 

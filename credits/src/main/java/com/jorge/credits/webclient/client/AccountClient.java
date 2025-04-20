@@ -18,8 +18,8 @@ public class AccountClient {
     private final WebClient webClient;
     private final ReactiveCircuitBreakerFactory circuitBreakerFactory;
 
-    public AccountClient(WebClient.Builder webClientBuilder, ReactiveCircuitBreakerFactory circuitBreakerFactory) {
-        this.webClient = webClientBuilder.baseUrl("http://localhost:8081").build();
+    public AccountClient(WebClient.Builder webClientBuilder, ReactiveCircuitBreakerFactory circuitBreakerFactory, String baseUrl) {
+        this.webClient = webClientBuilder.baseUrl(baseUrl).build();
         this.circuitBreakerFactory = circuitBreakerFactory;
     }
 
