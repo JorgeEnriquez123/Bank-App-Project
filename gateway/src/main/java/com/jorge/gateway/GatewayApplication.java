@@ -52,6 +52,22 @@ public class GatewayApplication {
 						.path("/yanki-wallets/**")
 						.uri("lb://YANKI-SERVICE")
 				)
+				.route(p -> p
+						.path("/bootcoin-wallets/**")
+						.uri("lb://BOOTCOIN-SERVICE")
+				)
+				.route(p -> p
+						.path("/bootcoin-transactions/**")
+						.uri("lb://BOOTCOIN-SERVICE")
+				)
+				.route(p -> p
+						.path("/bootcoin-exchange-rates/**")
+						.uri("lb://BOOTCOIN-SERVICE")
+				)
+				.route(p -> p
+						.path("/bootcoin-exchange-petitions/**")
+						.uri("lb://BOOTCOIN-SERVICE")
+				)
 				.build();
 	}
 }

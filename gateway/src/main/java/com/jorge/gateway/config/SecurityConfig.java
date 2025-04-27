@@ -35,7 +35,7 @@ public class SecurityConfig {
 
                 // 3. Configurar manejo de excepciones de autenticación/autorización
                 .exceptionHandling(exceptionHandling -> exceptionHandling
-                        // Entry point para 401 Unauthorized
+                        // Entry point para el 401 Unauthorized
                         .authenticationEntryPoint((swe, e) -> {
                             swe.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
                             return swe.getResponse().setComplete();
