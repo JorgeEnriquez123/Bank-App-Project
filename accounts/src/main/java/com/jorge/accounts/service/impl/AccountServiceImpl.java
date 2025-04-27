@@ -1,5 +1,6 @@
 package com.jorge.accounts.service.impl;
 
+import com.jorge.accounts.listener.dto.BootCoinPurchaseKafkaMessage;
 import com.jorge.accounts.mapper.AccountMapper;
 import com.jorge.accounts.model.*;
 import com.jorge.accounts.repository.AccountRepository;
@@ -96,6 +97,8 @@ public class AccountServiceImpl implements AccountService {
     public Mono<BalanceResponse> decreaseBalanceByAccountNumber(String accountNumber, BigDecimal balance) {
         log.info("Decreasing balance by {} for account number: {}", balance, accountNumber);
         return accountRepository.findByAccountNumber(accountNumber)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Account with account number: " + accountNumber + " not found")))
                 .flatMap(account -> {
                     BigDecimal amount = account.getBalance().subtract(balance);
                     if(account.getBalance().compareTo(amount) < 0) {
@@ -107,9 +110,7 @@ public class AccountServiceImpl implements AccountService {
                     return accountRepository.save(account);
                 })
                 .map(this::mapToBalanceResponse)
-                .doOnSuccess(balanceResponse -> log.info("Successfully decreased balance for account number: {}", accountNumber))
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
-                        "Account with account number: " + accountNumber + " not found")));
+                .doOnSuccess(balanceResponse -> log.info("Successfully decreased balance for account number: {}", accountNumber));
     }
 
     @Override
@@ -299,6 +300,49 @@ public class AccountServiceImpl implements AccountService {
                     }
                     return saldoInicial;
                 });
+    }
+
+    public Mono<AccountResponse> purchaseBootCoin(BootCoinPurchaseKafkaMessage bootCoinPurchaseKafkaMessage) {
+        log.info("Processing BootCoin purchase for wallet ID: {}", bootCoinPurchaseKafkaMessage.getBootCoinWalletId());
+        return accountRepository.findByAccountNumber(bootCoinPurchaseKafkaMessage.getPaymentMethodId())
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Account with account number: " + bootCoinPurchaseKafkaMessage.getPaymentMethodId() + " not found")))
+                .flatMap(this::processAccountMovement) // Validate account movement
+                .flatMap(account -> {
+                    BigDecimal paymentAmount = bootCoinPurchaseKafkaMessage.getPaymentAmount();
+
+                    // Check if balance is enough
+                    if (account.getBalance().compareTo(paymentAmount) < 0) {
+                        log.warn("Insufficient balance for BootCoin purchase for account number: {}", account.getAccountNumber());
+                        return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                                "Insufficient balance for BootCoin purchase"));
+                    }
+
+                    // Decrease balance
+                    account.setBalance(account.getBalance().subtract(paymentAmount));
+
+                    // Save account and create transaction
+                    return accountRepository.save(account)
+                            .flatMap(savedAccount -> {
+                                TransactionRequest transactionRequest = createTransactionRequest(
+                                        savedAccount,
+                                        paymentAmount,
+                                        TransactionRequest.TransactionType.DEBIT,
+                                        "BootCoin purchase for wallet ID: " + bootCoinPurchaseKafkaMessage.getBootCoinWalletId()
+                                );
+
+                                return transactionClient.createTransaction(transactionRequest)
+                                        .doOnSuccess(transactionResponse ->
+                                                log.info("BootCoin purchase transaction created for account number: {}, transaction ID: {}",
+                                                        savedAccount.getAccountNumber(), transactionResponse.getId()))
+                                        .doOnError(e ->
+                                                log.error("Error creating transaction for BootCoin purchase for account number: {}", savedAccount.getAccountNumber(), e))
+                                        .thenReturn(savedAccount);
+                            })
+                            .doOnSuccess(savedAccount -> log.info("Successfully processed BootCoin purchase for account number: {}", savedAccount.getAccountNumber()));
+                })
+                .map(accountMapper::mapToAccountResponse)
+                .doOnError(e -> log.error("Error processing BootCoin purchase: {}", e.getMessage()));
     }
 
     @Override

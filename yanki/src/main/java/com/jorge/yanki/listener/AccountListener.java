@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class YankiWalletListener {
+public class AccountListener {
     private final ObjectMapper objectMapper;
     private final YankiWalletRepository yankiWalletRepository;
 

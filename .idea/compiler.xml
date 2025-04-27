@@ -10,7 +10,7 @@
         <module name="bankconfigserver" />
         <module name="discovery" />
       </profile>
-      <profile name="Annotation profile for gateway" enabled="true">
+      <profile name="Annotation profile for yanki" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
@@ -24,12 +24,22 @@
         <module name="credits" />
         <module name="gateway" />
       </profile>
+      <profile name="Annotation profile for bootcoin" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.38/lombok-1.18.38.jar" />
+        </processorPath>
+        <module name="bootcoin" />
+      </profile>
     </annotationProcessing>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="accounts" options="-parameters" />
       <module name="bankconfigserver" options="-parameters" />
+      <module name="bootcoin" options="-parameters" />
       <module name="credits" options="-parameters" />
       <module name="customers" options="-parameters" />
       <module name="discovery" options="-parameters" />

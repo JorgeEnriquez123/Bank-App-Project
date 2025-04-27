@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: bootcoin-service
+  config:
+    import: configserver:http://localhost:8888
+
+server:
+  port: 8085
+  error:
+    include-message: always

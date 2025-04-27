@@ -3,6 +3,7 @@
   <component name="Encoding">
     <file url="file://$PROJECT_DIR$/accounts/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/bankconfigserver/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/bootcoin/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/credits/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/customers/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/discovery/src/main/java" charset="UTF-8" />

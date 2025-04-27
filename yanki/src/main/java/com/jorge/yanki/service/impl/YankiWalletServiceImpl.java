@@ -79,10 +79,10 @@ public class YankiWalletServiceImpl implements YankiWalletService {
     public Single<YankiWalletResponse> createYankiWallet(YankiWalletRequest yankiWalletRequest) {
         log.info("Creating yanki wallet: {}", yankiWalletRequest);
         YankiWallet yankiWallet = yankiWalletMapper.mapToYankiWallet(yankiWalletRequest);
-        // Additionally we can check if the DNI is already registered or not by checking CustomerClient.
-        // If it is, we just validated the DNI and proceed to create the YankiWallet.
+        // Additionally, we can check if the DNI is already registered or not by checking Customer Service.
+        // If it is, we would validate the DNI and proceed to create the YankiWallet.
         // If it isn't, we can create a customer by getting their personal information using the DNI (maybe using a third party API).
-        // For now, we will just create the YankiWallet assuming the DNI is already registered.
+        // For now, we will just create the BootCoin Wallet assuming the DNI is already registered.
         return Single.just(yankiWalletRepository.save(yankiWallet))
                 .doOnSuccess(response -> log.info("YankiWallet created successfully: {}", yankiWalletRequest))
                 .doOnError(error -> log.error("Error creating YankiWallet: {}", error.getMessage()))

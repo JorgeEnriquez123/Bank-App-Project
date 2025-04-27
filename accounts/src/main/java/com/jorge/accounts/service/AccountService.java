@@ -1,5 +1,6 @@
 package com.jorge.accounts.service;
 
+import com.jorge.accounts.listener.dto.BootCoinPurchaseKafkaMessage;
 import com.jorge.accounts.model.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -25,5 +26,7 @@ public interface AccountService {
     Mono<AverageMonthlyDailyBalanceResponse> calculateAverageMonthlyDailyBalance(String accountNumber, AverageMonthlyDailyBalanceRequest averageMonthlyDailyBalanceRequest);
     Mono<TransactionResponse> transfer (String accountNumber, TransferRequest transferRequest);
     Flux<FeeReportResponse> generateFeeReportBetweenDate(String accountNumber, LocalDateTime startDate, LocalDateTime endDate);
+
+    Mono<AccountResponse> purchaseBootCoin(BootCoinPurchaseKafkaMessage bootCoinPurchaseKafkaMessage);
 }
 
