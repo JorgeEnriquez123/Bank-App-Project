@@ -825,6 +825,8 @@ components:
         accountNumber:
           type: string
           description: Número de cuenta a asociar.
+      required:
+        - accountNumber
 
     AssociateYankiWalletRequest:
       type: object
@@ -832,6 +834,8 @@ components:
         yankiPhoneNumber:
           type: string
           description: Número de teléfono de la billetera yanki a asociar.
+      required:
+        - yankiPhoneNumber
 
     BootCoinExchangePetitionRequest:
       type: object
@@ -850,6 +854,11 @@ components:
         sellerBootCoinWalletId:
           type: string
           description: ID de la billetera del vendedor.
+      required:
+        - bootCoinAmount
+        - paymentType
+        - paymentMethodId
+        - sellerBootCoinWalletId
 
     BootCoinExchangePetitionResponse:
       type: object
@@ -898,6 +907,10 @@ components:
           type: string
           format: date-time
           description: Fecha y hora de efectividad.
+      required:
+        - buyRate
+        - sellRate
+        - effectiveDate
 
     BootCoinExchangeRateResponse:
       type: object
@@ -936,6 +949,10 @@ components:
         paymentMethodId:
           type: string
           description: ID del método de pago.
+      required:
+        - bootCoinAmount
+        - paymentType
+        - paymentMethodId
 
     BootCoinSellerPaymentMethod:
       type: object
@@ -944,6 +961,8 @@ components:
           type: string
           enum: [YANKI_WALLET, BANK_ACCOUNT]
           description: Tipo de pago del vendedor.
+      required:
+        - paymentType
 
     BootCoinTransactionRequest:
       type: object
@@ -962,6 +981,11 @@ components:
           type: string
           enum: [DEBIT, CREDIT]
           description: Tipo de transacción.
+      required:
+        - bootCoinWalletId
+        - amount
+        - description
+        - transactionType
 
     BootCoinTransactionResponse:
       type: object
@@ -1019,6 +1043,12 @@ components:
           type: string
           enum: [ACTIVE, BLOCKED, PENDING_OPERATIONS_APPROVAL]
           description: Estado de la billetera.
+      required:
+        - documentNumber
+        - documentType
+        - phoneNumber
+        - email
+        - balance
 
     BootCoinWalletResponse:
       type: object
