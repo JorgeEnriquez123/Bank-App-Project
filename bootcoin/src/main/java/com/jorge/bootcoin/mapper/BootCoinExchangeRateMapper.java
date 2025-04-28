@@ -1,8 +1,8 @@
 package com.jorge.bootcoin.mapper;
 
 import com.jorge.bootcoin.model.BootCoinExchangeRate;
-import com.jorge.bootcoin.tempdto.BootCoinExchangeRateRequest;
-import com.jorge.bootcoin.tempdto.BootCoinExchangeRateResponse;
+import com.jorge.bootcoin.model.BootCoinExchangeRateRequest;
+import com.jorge.bootcoin.model.BootCoinExchangeRateResponse;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;

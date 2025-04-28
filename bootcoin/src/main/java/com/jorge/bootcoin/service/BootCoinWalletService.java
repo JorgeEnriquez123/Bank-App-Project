@@ -1,7 +1,7 @@
 package com.jorge.bootcoin.service;
 
-import com.jorge.bootcoin.dto.kafka.SuccessfulEventOperationResponse;
-import com.jorge.bootcoin.tempdto.*;
+import com.jorge.bootcoin.model.SuccessfulEventOperationResponse;
+import com.jorge.bootcoin.model.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 

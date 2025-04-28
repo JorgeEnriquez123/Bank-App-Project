@@ -1,8 +1,8 @@
 package com.jorge.bootcoin.mapper;
 
 import com.jorge.bootcoin.model.BootCoinExchangePetition;
-import com.jorge.bootcoin.tempdto.BootCoinExchangePetitionRequest;
-import com.jorge.bootcoin.tempdto.BootCoinExchangePetitionResponse;
+import com.jorge.bootcoin.model.BootCoinExchangePetitionRequest;
+import com.jorge.bootcoin.model.BootCoinExchangePetitionResponse;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -25,12 +25,12 @@ public class BootCoinExchangePetitionMapper {
         BootCoinExchangePetitionResponse response = new BootCoinExchangePetitionResponse();
         response.setId(petition.getId());
         response.setBootCoinAmount(petition.getBootCoinAmount());
-        response.setPaymentType(BootCoinExchangePetitionResponse.PaymentType.valueOf(petition.getPaymentType().name()));
+        response.setPaymentType(BootCoinExchangePetitionResponse.PaymentTypeEnum.valueOf(petition.getPaymentType().name()));
         response.setPaymentMethodId(petition.getPaymentMethodId());
         response.setBuyerBootCoinWalletId(petition.getBuyerBootCoinWalletId());
         response.setSellerBootCoinWalletId(petition.getSellerBootCoinWalletId());
         response.setCreatedAt(petition.getCreatedAt());
-        response.setStatus(BootCoinExchangePetitionResponse.Status.valueOf(petition.getStatus().name()));
+        response.setStatus(BootCoinExchangePetitionResponse.StatusEnum.valueOf(petition.getStatus().name()));
         return response;
     }
 }

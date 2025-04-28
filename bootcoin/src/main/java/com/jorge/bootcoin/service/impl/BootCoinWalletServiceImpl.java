@@ -4,14 +4,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jorge.bootcoin.dto.kafka.AccountNumberAssociationKafkaMessage;
 import com.jorge.bootcoin.dto.kafka.BootCoinPurchaseKafkaMessage;
-import com.jorge.bootcoin.dto.kafka.SuccessfulEventOperationResponse;
+import com.jorge.bootcoin.model.SuccessfulEventOperationResponse;
 import com.jorge.bootcoin.dto.kafka.YankiWalletAssociationKafkaMessage;
 import com.jorge.bootcoin.mapper.BootCoinWalletMapper;
-import com.jorge.bootcoin.model.BootCoinWallet;
+import com.jorge.bootcoin.model.*;
 import com.jorge.bootcoin.repository.BootCoinExchangeRateRepository;
 import com.jorge.bootcoin.repository.BootCoinWalletRepository;
 import com.jorge.bootcoin.service.BootCoinWalletService;
-import com.jorge.bootcoin.tempdto.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -91,24 +90,28 @@ public class BootCoinWalletServiceImpl implements BootCoinWalletService {
                             .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "BootCoin wallet with id: " + bootCoinWalletId + " not found")))
                             .flatMap(this::validateBootCoinWalletStatus)
                             .flatMap(buyerBootCoinWallet -> {
-                                if (bootCoinPurchaseRequest.getPaymentType() == BootCoinPurchaseRequest.PaymentType.BANK_ACCOUNT) {
+                                if (bootCoinPurchaseRequest.getPaymentType() == BootCoinPurchaseRequest.PaymentTypeEnum.BANK_ACCOUNT) {
                                     BootCoinPurchaseKafkaMessage bootCoinPurchaseKafkaMessage = createBootCoinPurchaseKafkaMessage(
                                             buyerBootCoinWallet, bootCoinPurchaseRequest, paymentAmountInSoles);
                                     try {
                                         String kafkaMessage = objectMapper.writeValueAsString(bootCoinPurchaseKafkaMessage);
                                         kafkaTemplate.send("bootcoin-purchase-request", kafkaMessage);
-                                        return Mono.just(new SuccessfulEventOperationResponse("Purchase event sent successfully"));
+                                        SuccessfulEventOperationResponse response = new SuccessfulEventOperationResponse();
+                                        response.setMessage("Purchase event sent successfully");
+                                        return Mono.just(response);
                                     } catch (Exception e) {
                                         return Mono.error(new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error processing Kafka message", e));
                                     }
                                 }
-                                if (bootCoinPurchaseRequest.getPaymentType() == BootCoinPurchaseRequest.PaymentType.YANKI_WALLET) {
+                                if (bootCoinPurchaseRequest.getPaymentType() == BootCoinPurchaseRequest.PaymentTypeEnum.YANKI_WALLET) {
                                     BootCoinPurchaseKafkaMessage bootCoinPurchaseKafkaMessage = createBootCoinPurchaseKafkaMessage(
                                             buyerBootCoinWallet, bootCoinPurchaseRequest, paymentAmountInSoles);
                                     try {
                                         String kafkaMessage = objectMapper.writeValueAsString(bootCoinPurchaseKafkaMessage);
                                         kafkaTemplate.send("bootcoin-purchase-yanki-validation-request", kafkaMessage);
-                                        return Mono.just(new SuccessfulEventOperationResponse("Purchase event sent successfully"));
+                                        SuccessfulEventOperationResponse response = new SuccessfulEventOperationResponse();
+                                        response.setMessage("Purchase event sent successfully");
+                                        return Mono.just(response);
                                     } catch (Exception e) {
                                         return Mono.error(new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error processing Kafka message", e));
                                     }
@@ -134,7 +137,9 @@ public class BootCoinWalletServiceImpl implements BootCoinWalletService {
                     try {
                         String kafkaMessage = objectMapper.writeValueAsString(associationKafkaMessage);
                         kafkaTemplate.send("bootcoin-account-association-request", kafkaMessage);
-                        return Mono.just(new SuccessfulEventOperationResponse("Account association event sent successfully"));
+                        SuccessfulEventOperationResponse response = new SuccessfulEventOperationResponse();
+                        response.setMessage("Account association event sent successfully");
+                        return Mono.just(response);
                     } catch (JsonProcessingException e) {
                         return Mono.error(new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error processing Kafka message", e));
                     }
@@ -156,7 +161,9 @@ public class BootCoinWalletServiceImpl implements BootCoinWalletService {
                     try {
                         String kafkaMessage = objectMapper.writeValueAsString(associationKafkaMessage);
                         kafkaTemplate.send("bootcoin-yanki-wallet-association-request", kafkaMessage);
-                        return Mono.just(new SuccessfulEventOperationResponse("Yanki wallet association event sent successfully"));
+                        SuccessfulEventOperationResponse response = new SuccessfulEventOperationResponse();
+                        response.setMessage("Yanki wallet association event sent successfully");
+                        return Mono.just(response);
                     } catch (JsonProcessingException e) {
                         return Mono.error(new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error processing Kafka message", e));
                     }

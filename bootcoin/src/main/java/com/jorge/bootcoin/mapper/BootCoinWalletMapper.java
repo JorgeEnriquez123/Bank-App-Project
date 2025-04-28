@@ -1,8 +1,8 @@
 package com.jorge.bootcoin.mapper;
 
 import com.jorge.bootcoin.model.BootCoinWallet;
-import com.jorge.bootcoin.tempdto.BootCoinWalletRequest;
-import com.jorge.bootcoin.tempdto.BootCoinWalletResponse;
+import com.jorge.bootcoin.model.BootCoinWalletRequest;
+import com.jorge.bootcoin.model.BootCoinWalletResponse;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -31,13 +31,13 @@ public class BootCoinWalletMapper {
         BootCoinWalletResponse bootCoinWalletResponse = new BootCoinWalletResponse();
         bootCoinWalletResponse.setId(bootCoinWallet.getId());
         bootCoinWalletResponse.setDocumentNumber(bootCoinWallet.getDocumentNumber());
-        bootCoinWalletResponse.setDocumentType(BootCoinWalletResponse.DocumentType.valueOf(bootCoinWallet.getDocumentType().name()));
+        bootCoinWalletResponse.setDocumentType(BootCoinWalletResponse.DocumentTypeEnum.valueOf(bootCoinWallet.getDocumentType().name()));
         bootCoinWalletResponse.setPhoneNumber(bootCoinWallet.getPhoneNumber());
         bootCoinWalletResponse.setEmail(bootCoinWallet.getEmail());
         bootCoinWalletResponse.setBalance(bootCoinWallet.getBalance());
         bootCoinWalletResponse.setAssociatedYankiWalletId(bootCoinWallet.getAssociatedYankiWalletId());
         bootCoinWalletResponse.setAssociatedAccountNumber(bootCoinWallet.getAssociatedAccountNumber());
-        bootCoinWalletResponse.setStatus(BootCoinWalletResponse.BootCoinWalletStatus.valueOf(bootCoinWallet.getStatus().name()));
+        bootCoinWalletResponse.setStatus(BootCoinWalletResponse.StatusEnum.valueOf(bootCoinWallet.getStatus().name()));
         bootCoinWalletResponse.setCreatedAt(bootCoinWallet.getCreatedAt());
         return bootCoinWalletResponse;
     }

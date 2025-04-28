@@ -1,9 +1,9 @@
 package com.jorge.bootcoin.service;
 
-import com.jorge.bootcoin.dto.kafka.SuccessfulEventOperationResponse;
-import com.jorge.bootcoin.tempdto.BootCoinExchangePetitionRequest;
-import com.jorge.bootcoin.tempdto.BootCoinExchangePetitionResponse;
-import com.jorge.bootcoin.tempdto.BootCoinSellerPaymentMethod;
+import com.jorge.bootcoin.model.SuccessfulEventOperationResponse;
+import com.jorge.bootcoin.model.BootCoinExchangePetitionRequest;
+import com.jorge.bootcoin.model.BootCoinExchangePetitionResponse;
+import com.jorge.bootcoin.model.BootCoinSellerPaymentMethod;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 

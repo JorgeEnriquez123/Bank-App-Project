@@ -1,8 +1,8 @@
 package com.jorge.bootcoin.mapper;
 
 import com.jorge.bootcoin.model.BootCoinTransaction;
-import com.jorge.bootcoin.tempdto.BootCoinTransactionRequest;
-import com.jorge.bootcoin.tempdto.BootCoinTransactionResponse;
+import com.jorge.bootcoin.model.BootCoinTransactionRequest;
+import com.jorge.bootcoin.model.BootCoinTransactionResponse;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -25,7 +25,7 @@ public class BootCoinTransactionMapper {
         bootCoinTransactionResponse.setBootCoinWalletId(bootCoinTransaction.getBootCoinWalletId());
         bootCoinTransactionResponse.setAmount(bootCoinTransaction.getAmount());
         bootCoinTransactionResponse.setDescription(bootCoinTransaction.getDescription());
-        bootCoinTransactionResponse.setTransactionType(BootCoinTransactionResponse.BootCoinTransactionType.valueOf(bootCoinTransaction.getTransactionType().name()));
+        bootCoinTransactionResponse.setTransactionType(BootCoinTransactionResponse.TransactionTypeEnum.valueOf(bootCoinTransaction.getTransactionType().name()));
         bootCoinTransactionResponse.setCreatedAt(bootCoinTransaction.getCreatedAt());
         return bootCoinTransactionResponse;
     }

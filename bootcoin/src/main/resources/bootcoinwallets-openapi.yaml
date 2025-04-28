@@ -1,0 +1,1091 @@
+openapi: 3.0.0
+info:
+  title: BootCoin API
+  version: 1.0.0
+  description: API para la gestión de BootCoin.
+servers:
+  - url: http://localhost:8085
+    description: Development server
+
+paths:
+  /bootcoin-exchange-petitions:
+    get:
+      summary: Obtiene todas las peticiones de intercambio de BootCoin.
+      tags:
+        - BootCoinExchangePetitions
+      operationId: getAllPetitions
+      responses:
+        '200':
+          description: Lista de peticiones obtenida exitosamente.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BootCoinExchangePetitionResponse'
+        '500':
+          description: Error interno del servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /bootcoin-exchange-petitions/{id}:
+    get:
+      summary: Obtiene una petición de intercambio de BootCoin por su ID.
+      tags:
+        - BootCoinExchangePetitions
+      operationId: getPetitionById
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID de la petición de intercambio.
+      responses:
+        '200':
+          description: Petición obtenida exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BootCoinExchangePetitionResponse'
+        '404':
+          description: Petición no encontrada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      summary: Actualiza una petición de intercambio de BootCoin por su ID.
+      tags:
+        - BootCoinExchangePetitions
+      operationId: updatePetition
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID de la petición de intercambio a actualizar.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BootCoinExchangePetitionRequest'
+      responses:
+        '200':
+          description: Petición actualizada exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BootCoinExchangePetitionResponse'
+        '400':
+          description: Solicitud inválida.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Petición no encontrada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Elimina una petición de intercambio de BootCoin por su ID.
+      tags:
+        - BootCoinExchangePetitions
+      operationId: deletePetition
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID de la petición de intercambio a eliminar.
+      responses:
+        '204':
+          description: Petición eliminada exitosamente.
+        '404':
+          description: Petición no encontrada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /bootcoin-exchange-petitions/{id}/accept:
+    post:
+      summary: Acepta una petición de intercambio de BootCoin por su ID.
+      tags:
+        - BootCoinExchangePetitions
+      operationId: acceptBootCoinExchangePetition
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID de la petición de intercambio a aceptar.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BootCoinSellerPaymentMethod'
+      responses:
+        '200':
+          description: Petición aceptada exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessfulEventOperationResponse'
+        '400':
+          description: Solicitud inválida.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Petición no encontrada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /bootcoin-exchange-petitions/buyer-wallet/{id}:
+    post:
+      summary: Crea una nueva petición de intercambio de BootCoin asociada a una billetera de comprador.
+      tags:
+        - BootCoinExchangePetitions
+      operationId: createPetition
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID de la billetera del comprador.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BootCoinExchangePetitionRequest'
+      responses:
+        '201':
+          description: Petición creada exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BootCoinExchangePetitionResponse'
+        '400':
+          description: Solicitud inválida.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /bootcoin-exchange-rates:
+    get:
+      summary: Obtiene todos los tipos de cambio de BootCoin.
+      tags:
+        - BootCoinExchangeRates
+      operationId: getAllExchangeRates
+      responses:
+        '200':
+          description: Lista de tipos de cambio obtenida exitosamente.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BootCoinExchangeRateResponse'
+        '500':
+          description: Error interno del servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Crea un nuevo tipo de cambio de BootCoin.
+      tags:
+        - BootCoinExchangeRates
+      operationId: createExchangeRate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BootCoinExchangeRateRequest'
+      responses:
+        '201':
+          description: Tipo de cambio creado exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BootCoinExchangeRateResponse'
+        '400':
+          description: Solicitud inválida.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /bootcoin-exchange-rates/{id}:
+    get:
+      summary: Obtiene un tipo de cambio de BootCoin por su ID.
+      tags:
+        - BootCoinExchangeRates
+      operationId: getExchangeRateById
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID del tipo de cambio.
+      responses:
+        '200':
+          description: Tipo de cambio obtenido exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BootCoinExchangeRateResponse'
+        '404':
+          description: Tipo de cambio no encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      summary: Actualiza un tipo de cambio de BootCoin por su ID.
+      tags:
+        - BootCoinExchangeRates
+      operationId: updateExchangeRate
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID del tipo de cambio a actualizar.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BootCoinExchangeRateRequest'
+      responses:
+        '200':
+          description: Tipo de cambio actualizado exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BootCoinExchangeRateResponse'
+        '400':
+          description: Solicitud inválida.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Tipo de cambio no encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Elimina un tipo de cambio de BootCoin por su ID.
+      tags:
+        - BootCoinExchangeRates
+      operationId: deleteExchangeRate
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID del tipo de cambio a eliminar.
+      responses:
+        '204':
+          description: Tipo de cambio eliminado exitosamente.
+        '404':
+          description: Tipo de cambio no encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /bootcoin-transactions:
+    get:
+      summary: Obtiene todas las transacciones de BootCoin.
+      tags:
+        - BootCoinTransactions
+      operationId: getAllBootCoinTransactions
+      responses:
+        '200':
+          description: Lista de transacciones obtenida exitosamente.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BootCoinTransactionResponse'
+        '500':
+          description: Error interno del servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Crea una nueva transacción de BootCoin.
+      tags:
+        - BootCoinTransactions
+      operationId: createBootCoinTransaction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BootCoinTransactionRequest'
+      responses:
+        '201':
+          description: Transacción creada exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BootCoinTransactionResponse'
+        '400':
+          description: Solicitud inválida.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /bootcoin-transactions/{id}:
+    get:
+      summary: Obtiene una transacción de BootCoin por su ID.
+      tags:
+        - BootCoinTransactions
+      operationId: getBootCoinTransactionById
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID de la transacción.
+      responses:
+        '200':
+          description: Transacción obtenida exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BootCoinTransactionResponse'
+        '404':
+          description: Transacción no encontrada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      summary: Actualiza una transacción de BootCoin por su ID.
+      tags:
+        - BootCoinTransactions
+      operationId: updateBootCoinTransaction
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID de la transacción a actualizar.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BootCoinTransactionRequest'
+      responses:
+        '200':
+          description: Transacción actualizada exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BootCoinTransactionResponse'
+        '400':
+          description: Solicitud inválida.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Transacción no encontrada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Elimina una transacción de BootCoin por su ID.
+      tags:
+        - BootCoinTransactions
+      operationId: deleteBootCoinTransactionById
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID de la transacción a eliminar.
+      responses:
+        '204':
+          description: Transacción eliminada exitosamente.
+        '404':
+          description: Transacción no encontrada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /bootcoin-wallets:
+    get:
+      summary: Obtiene todas las billeteras de BootCoin.
+      tags:
+        - BootCoinWallets
+      operationId: getAllBootCoinWallets
+      responses:
+        '200':
+          description: Lista de billeteras obtenida exitosamente.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BootCoinWalletResponse'
+        '500':
+          description: Error interno del servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Crea una nueva billetera de BootCoin.
+      tags:
+        - BootCoinWallets
+      operationId: createBootCoinWallet
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BootCoinWalletRequest'
+      responses:
+        '201':
+          description: Billetera creada exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BootCoinWalletResponse'
+        '400':
+          description: Solicitud inválida.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /bootcoin-wallets/{id}:
+    get:
+      summary: Obtiene una billetera de BootCoin por su ID.
+      tags:
+        - BootCoinWallets
+      operationId: getBootCoinWalletById
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID de la billetera.
+      responses:
+        '200':
+          description: Billetera obtenida exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BootCoinWalletResponse'
+        '404':
+          description: Billetera no encontrada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      summary: Actualiza una billetera de BootCoin por su ID.
+      tags:
+        - BootCoinWallets
+      operationId: updateBootCoinWallet
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID de la billetera a actualizar.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BootCoinWalletRequest'
+      responses:
+        '200':
+          description: Billetera actualizada exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BootCoinWalletResponse'
+        '400':
+          description: Solicitud inválida.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Billetera no encontrada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Elimina una billetera de BootCoin por su ID.
+      tags:
+        - BootCoinWallets
+      operationId: deleteBootCoinWalletById
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID de la billetera a eliminar.
+      responses:
+        '204':
+          description: Billetera eliminada exitosamente.
+        '404':
+          description: Billetera no encontrada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /bootcoin-wallets/{id}/purchase:
+    post:
+      summary: Realiza una compra de BootCoin.
+      tags:
+        - BootCoinWallets
+      operationId: purchaseBootCoin
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID de la billetera.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BootCoinPurchaseRequest'
+      responses:
+        '200':
+          description: Compra realizada exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessfulEventOperationResponse'
+        '400':
+          description: Solicitud inválida.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Billetera no encontrada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /bootcoin-wallets/{id}/associate-account:
+    post:
+      summary: Asocia un número de cuenta a una billetera de BootCoin.
+      tags:
+        - BootCoinWallets
+      operationId: associateAccountNumber
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID de la billetera.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssociateAccountNumberRequest'
+      responses:
+        '200':
+          description: Número de cuenta asociado exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessfulEventOperationResponse'
+        '400':
+          description: Solicitud inválida.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Billetera no encontrada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /bootcoin-wallets/{id}/associate-yanki-wallet:
+    post:
+      summary: Asocia una billetera yanki a una billetera de BootCoin.
+      tags:
+        - BootCoinWallets
+      operationId: associateYankiWallet
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID de la billetera.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssociateYankiWalletRequest'
+      responses:
+        '200':
+          description: Billetera yanki asociada exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessfulEventOperationResponse'
+        '400':
+          description: Solicitud inválida.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Billetera no encontrada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    AssociateAccountNumberRequest:
+      type: object
+      properties:
+        accountNumber:
+          type: string
+          description: Número de cuenta a asociar.
+
+    AssociateYankiWalletRequest:
+      type: object
+      properties:
+        yankiPhoneNumber:
+          type: string
+          description: Número de teléfono de la billetera yanki a asociar.
+
+    BootCoinExchangePetitionRequest:
+      type: object
+      properties:
+        bootCoinAmount:
+          type: number
+          format: decimal
+          description: Monto de BootCoin a intercambiar.
+        paymentType:
+          type: string
+          enum: [YANKI_WALLET, BANK_ACCOUNT]
+          description: Tipo de pago.
+        paymentMethodId:
+          type: string
+          description: ID del método de pago.
+        sellerBootCoinWalletId:
+          type: string
+          description: ID de la billetera del vendedor.
+
+    BootCoinExchangePetitionResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ID de la petición de intercambio.
+        bootCoinAmount:
+          type: number
+          format: decimal
+          description: Monto de BootCoin a intercambiar.
+        paymentType:
+          type: string
+          enum: [YANKI_WALLET, BANK_ACCOUNT]
+          description: Tipo de pago.
+        paymentMethodId:
+          type: string
+          description: ID del método de pago.
+        buyerBootCoinWalletId:
+          type: string
+          description: ID de la billetera del comprador.
+        sellerBootCoinWalletId:
+          type: string
+          description: ID de la billetera del vendedor.
+        createdAt:
+          type: string
+          format: date-time
+          description: Fecha y hora de creación.
+        status:
+          type: string
+          enum: [PENDING, ACCEPTED, REJECTED]
+          description: Estado de la petición.
+
+    BootCoinExchangeRateRequest:
+      type: object
+      properties:
+        buyRate:
+          type: number
+          format: decimal
+          description: Tasa de compra.
+        sellRate:
+          type: number
+          format: decimal
+          description: Tasa de venta.
+        effectiveDate:
+          type: string
+          format: date-time
+          description: Fecha y hora de efectividad.
+
+    BootCoinExchangeRateResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ID del tipo de cambio.
+        buyRate:
+          type: number
+          format: decimal
+          description: Tasa de compra.
+        sellRate:
+          type: number
+          format: decimal
+          description: Tasa de venta.
+        effectiveDate:
+          type: string
+          format: date-time
+          description: Fecha y hora de efectividad.
+        createdAt:
+          type: string
+          format: date-time
+          description: Fecha y hora de creación.
+
+    BootCoinPurchaseRequest:
+      type: object
+      properties:
+        bootCoinAmount:
+          type: number
+          format: decimal
+          description: Monto de BootCoin a comprar.
+        paymentType:
+          type: string
+          enum: [YANKI_WALLET, BANK_ACCOUNT]
+          description: Tipo de pago.
+        paymentMethodId:
+          type: string
+          description: ID del método de pago.
+
+    BootCoinSellerPaymentMethod:
+      type: object
+      properties:
+        paymentType:
+          type: string
+          enum: [YANKI_WALLET, BANK_ACCOUNT]
+          description: Tipo de pago del vendedor.
+
+    BootCoinTransactionRequest:
+      type: object
+      properties:
+        bootCoinWalletId:
+          type: string
+          description: ID de la billetera de BootCoin.
+        amount:
+          type: number
+          format: decimal
+          description: Monto de la transacción.
+        description:
+          type: string
+          description: Descripción de la transacción.
+        transactionType:
+          type: string
+          enum: [DEBIT, CREDIT]
+          description: Tipo de transacción.
+
+    BootCoinTransactionResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ID de la transacción.
+        bootCoinWalletId:
+          type: string
+          description: ID de la billetera de BootCoin.
+        amount:
+          type: number
+          format: decimal
+          description: Monto de la transacción.
+        description:
+          type: string
+          description: Descripción de la transacción.
+        transactionType:
+          type: string
+          enum: [DEBIT, CREDIT]
+          description: Tipo de transacción.
+        createdAt:
+          type: string
+          format: date-time
+          description: Fecha y hora de creación.
+
+    BootCoinWalletRequest:
+      type: object
+      properties:
+        documentNumber:
+          type: string
+          description: Número de documento.
+        documentType:
+          type: string
+          enum: [DNI, CEX, PASSPORT]
+          description: Tipo de documento.
+        phoneNumber:
+          type: string
+          description: Número de teléfono.
+        email:
+          type: string
+          format: email
+          description: Correo electrónico.
+        balance:
+          type: number
+          format: decimal
+          description: Saldo.
+        associatedYankiWalletId:
+          type: string
+          description: ID de la billetera yanki asociada.
+        associatedAccountNumber:
+          type: string
+          description: Número de cuenta asociado.
+        status:
+          type: string
+          enum: [ACTIVE, BLOCKED, PENDING_OPERATIONS_APPROVAL]
+          description: Estado de la billetera.
+
+    BootCoinWalletResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ID de la billetera.
+        documentNumber:
+          type: string
+          description: Número de documento.
+        documentType:
+          type: string
+          enum: [DNI, CEX, PASSPORT]
+          description: Tipo de documento.
+        phoneNumber:
+          type: string
+          description: Número de teléfono.
+        email:
+          type: string
+          format: email
+          description: Correo electrónico.
+        balance:
+          type: number
+          format: decimal
+          description: Saldo.
+        associatedYankiWalletId:
+          type: string
+          description: ID de la billetera yanki asociada.
+        associatedAccountNumber:
+          type: string
+          description: Número de cuenta asociado.
+        status:
+          type: string
+          enum: [ACTIVE, BLOCKED, PENDING_OPERATIONS_APPROVAL]
+          description: Estado de la billetera.
+        createdAt:
+          type: string
+          format: date-time
+          description: Fecha y hora de creación.
+
+    SuccessfulEventOperationResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Mensaje de éxito de la operación.
+
+    ErrorResponse:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+          description: Fecha y hora del error.
+        path:
+          type: string
+          description: Ruta de la solicitud.
+        status:
+          type: integer
+          format: int32
+          description: Código de estado HTTP.
+        error:
+          type: string
+          description: Mensaje de error corto.
+        requestId:
+          type: string
+          description: ID de la solicitud.
+        message:
+          type: string
+          description: Mensaje de error detallado.

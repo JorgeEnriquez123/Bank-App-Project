@@ -1,10 +1,8 @@
 package com.jorge.bootcoin.service.impl;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jorge.bootcoin.dto.kafka.BootCoinExchangeKafkaMessage;
-import com.jorge.bootcoin.dto.kafka.BootCoinPurchaseKafkaMessage;
-import com.jorge.bootcoin.dto.kafka.SuccessfulEventOperationResponse;
+import com.jorge.bootcoin.model.SuccessfulEventOperationResponse;
 import com.jorge.bootcoin.mapper.BootCoinExchangePetitionMapper;
 import com.jorge.bootcoin.model.BootCoinExchangePetition;
 import com.jorge.bootcoin.model.BootCoinWallet;
@@ -12,10 +10,9 @@ import com.jorge.bootcoin.repository.BootCoinExchangePetitionRepository;
 import com.jorge.bootcoin.repository.BootCoinExchangeRateRepository;
 import com.jorge.bootcoin.repository.BootCoinWalletRepository;
 import com.jorge.bootcoin.service.BootCoinExchangePetitionService;
-import com.jorge.bootcoin.service.BootCoinWalletService;
-import com.jorge.bootcoin.tempdto.BootCoinExchangePetitionRequest;
-import com.jorge.bootcoin.tempdto.BootCoinExchangePetitionResponse;
-import com.jorge.bootcoin.tempdto.BootCoinSellerPaymentMethod;
+import com.jorge.bootcoin.model.BootCoinExchangePetitionRequest;
+import com.jorge.bootcoin.model.BootCoinExchangePetitionResponse;
+import com.jorge.bootcoin.model.BootCoinSellerPaymentMethod;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -129,10 +126,10 @@ public class BootCoinExchangePetitionServiceImpl implements BootCoinExchangePeti
                                         kafkaMessage.setBuyerBootCoinWalletId(petition.getBuyerBootCoinWalletId());
                                         kafkaMessage.setSellerBootCoinWalletId(sellerWallet.getId());
 
-                                        if (sellerPaymentMethod.getPaymentType() == BootCoinSellerPaymentMethod.PaymentType.YANKI_WALLET ||
+                                        if (sellerPaymentMethod.getPaymentType() == BootCoinSellerPaymentMethod.PaymentTypeEnum.YANKI_WALLET ||
                                                 petition.getPaymentType() == BootCoinExchangePetition.PaymentType.YANKI_WALLET) {
                                             log.info("Yanki Wallet payment method detected");
-                                            if (sellerPaymentMethod.getPaymentType() == BootCoinSellerPaymentMethod.PaymentType.YANKI_WALLET) {
+                                            if (sellerPaymentMethod.getPaymentType() == BootCoinSellerPaymentMethod.PaymentTypeEnum.YANKI_WALLET) {
                                                 log.info("Seller payment method is Yanki Wallet");
                                                 kafkaMessage.setSellerPaymentMethodId(sellerWallet.getAssociatedYankiWalletId());
                                             } else {
@@ -142,8 +139,9 @@ public class BootCoinExchangePetitionServiceImpl implements BootCoinExchangePeti
                                             try {
                                                 String message = objectMapper.writeValueAsString(kafkaMessage);
                                                 kafkaTemplate.send("bootcoin-exchange-yanki-validation-request", message);
-                                                return Mono.just(new SuccessfulEventOperationResponse(
-                                                        "Exchange acceptance event sent successfully"));
+                                                SuccessfulEventOperationResponse response = new SuccessfulEventOperationResponse();
+                                                response.setMessage("Exchange acceptance event sent successfully");
+                                                return Mono.just(response);
                                             } catch (Exception e) {
                                                 return Mono.error(new ResponseStatusException
                                                         (HttpStatus.INTERNAL_SERVER_ERROR, "Error processing Kafka message", e));
@@ -154,8 +152,9 @@ public class BootCoinExchangePetitionServiceImpl implements BootCoinExchangePeti
                                                 kafkaMessage.setSellerPaymentMethodId(sellerWallet.getAssociatedAccountNumber());
                                                 String message = objectMapper.writeValueAsString(kafkaMessage);
                                                 kafkaTemplate.send("bootcoin-exchange-request", message);
-                                                return Mono.just(new SuccessfulEventOperationResponse(
-                                                        "Exchange acceptance event sent successfully"));
+                                                SuccessfulEventOperationResponse response = new SuccessfulEventOperationResponse();
+                                                response.setMessage("Exchange acceptance event sent successfully");
+                                                return Mono.just(response);
                                             } catch (Exception e) {
                                                 return Mono.error(new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error processing Kafka message", e));
                                             }

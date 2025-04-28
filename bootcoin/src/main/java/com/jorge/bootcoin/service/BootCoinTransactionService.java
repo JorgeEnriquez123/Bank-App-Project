@@ -1,7 +1,7 @@
 package com.jorge.bootcoin.service;
 
-import com.jorge.bootcoin.tempdto.BootCoinTransactionRequest;
-import com.jorge.bootcoin.tempdto.BootCoinTransactionResponse;
+import com.jorge.bootcoin.model.BootCoinTransactionRequest;
+import com.jorge.bootcoin.model.BootCoinTransactionResponse;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
