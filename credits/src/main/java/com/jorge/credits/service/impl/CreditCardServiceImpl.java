@@ -71,6 +71,9 @@ public class CreditCardServiceImpl implements CreditCardService {
                 })
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "Customer with Id: " + creditCardRequest.getCardHolderId() + " not found")))
+                .doOnSuccess(creditCardResponse ->
+                        log.info("Credit card created successfully with number: {}", creditCardResponse.getCreditCardNumber()))
+                .doOnError(throwable -> log.error("Error creating credit card: {}", throwable.getMessage()))
                 .map(creditCardMapper::mapToCreditCardResponse);
     }
 
@@ -163,6 +166,8 @@ public class CreditCardServiceImpl implements CreditCardService {
                                         .thenReturn(savedCreditCard);
                             });
                 })
+                .doOnSuccess(creditCardResponse -> log.info("Credit card payment successful with number: {}", creditCardResponse.getCreditCardNumber()))
+                .doOnError(throwable -> log.error("Error processing credit card payment: {}", throwable.getMessage()))
                 .map(creditCardMapper::mapToCreditCardResponse);
     }
 
@@ -208,11 +213,13 @@ public class CreditCardServiceImpl implements CreditCardService {
                                 )
                         )
                 )
+                .doOnSuccess(creditCardResponse -> log.info("Credit card payment with DebitCard successful with number: {}", creditCardResponse.getCreditCardNumber()))
+                .doOnError(throwable -> log.error("Error processing credit card payment with Debitcard: {}", throwable.getMessage()))
                 .map(creditCardMapper::mapToCreditCardResponse);
     }
 
     private Mono<CreditCard> startCreditCardPaymentWithDebitCard(CreditCard creditCard, AccountResponse account, CreditPaymentByDebitCardRequest creditPaymentByDebitCardRequest) {
-
+        log.info("Starting credit card payment with debit card");
         BigDecimal paymentAmount = creditPaymentByDebitCardRequest.getAmount();
         AccountBalanceUpdateRequest accountBalanceUpdateRequest =
                 AccountBalanceUpdateRequest.builder().balance(paymentAmount).build();
@@ -247,6 +254,7 @@ public class CreditCardServiceImpl implements CreditCardService {
     }
 
     private Mono<CreditCard> validateAndUpdateCreditCard(CreditCard creditCard, BigDecimal paymentAmount) {
+        log.info("Validating and updating credit card with number: {}", creditCard.getCreditCardNumber());
         BigDecimal newOutstandingBalance = creditCard.getOutstandingBalance().subtract(paymentAmount);
         if (newOutstandingBalance.compareTo(BigDecimal.ZERO) < 0) {
             return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Payment exceeds outstanding balance"));
@@ -283,11 +291,14 @@ public class CreditCardServiceImpl implements CreditCardService {
                                         .thenReturn(savedCreditCard);
                             });
                 })
+                .doOnSuccess(creditCardResponse -> log.info("Credit card consumption successful with number: {}", creditCardResponse.getCreditCardNumber()))
+                .doOnError(throwable -> log.error("Error processing credit card consumption: {}", throwable.getMessage()))
                 .map(creditCardMapper::mapToCreditCardResponse);
     }
 
     @Override
     public Flux<CreditCardTransactionResponse> getCreditCardTransactionsByCreditCardNumber(String creditCardNumber) {
+        log.info("Fetching credit card transactions by credit card number: {}", creditCardNumber);
         return creditCardRepository.findByCreditCardNumber(creditCardNumber)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "Credit card with number : " + creditCardNumber + " not found")))
@@ -296,6 +307,7 @@ public class CreditCardServiceImpl implements CreditCardService {
 
     @Override
     public Flux<CreditCardTransactionResponse> getCreditCardTransactionsByCreditCardNumberLast10(String creditCardNumber) {
+        log.info("Fetching last 10 credit card transactions by credit card number: {}", creditCardNumber);
         return creditCardRepository.findByCreditCardNumber(creditCardNumber)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "Credit card with number : " + creditCardNumber + " not found")))

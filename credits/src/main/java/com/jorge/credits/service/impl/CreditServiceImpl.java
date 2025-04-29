@@ -82,6 +82,8 @@ public class CreditServiceImpl implements CreditService {
                                 });
                     }
                 })
+                .doOnSuccess(creditResponse -> log.info("Credit created successfully: {}", creditResponse))
+                .doOnError(throwable -> log.error("Error creating credit: {}", throwable.getMessage()))
                 .map(creditMapper::mapToCreditResponse);
     }
 
@@ -191,6 +193,8 @@ public class CreditServiceImpl implements CreditService {
                                 )
                         )
                 )
+                .doOnSuccess(creditResponse -> log.info("Credit payment with id: {} completed successfully", id))
+                .doOnError(throwable -> log.error("Error processing credit payment with id: {}. Error: {}", id, throwable.getMessage()))
                 .map(creditMapper::mapToCreditResponse);
     }
 

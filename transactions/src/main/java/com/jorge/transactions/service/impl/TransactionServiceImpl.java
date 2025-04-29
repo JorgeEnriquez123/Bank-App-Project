@@ -96,6 +96,7 @@ public class TransactionServiceImpl implements TransactionService {
     @Override
     public Flux<FeeReportResponse> getTransactionsFeesByAccountNumberAndDateRange(String accountNumber,
                                                                                   LocalDateTime createdAtStart, LocalDateTime createdAtEnd) {
+        log.info("Fetching transactions fees for account number: {} and created at: {}", accountNumber, createdAtStart);
         return transactionRepository.findByAccountNumberAndFeeGreaterThanAndCreatedAtBetweenOrderByCreatedAt(accountNumber,
                         BigDecimal.ZERO, createdAtStart, createdAtEnd)
                 .map(transaction -> {
