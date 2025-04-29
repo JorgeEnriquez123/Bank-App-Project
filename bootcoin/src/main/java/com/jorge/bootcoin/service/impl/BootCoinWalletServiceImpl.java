@@ -13,6 +13,10 @@ import com.jorge.bootcoin.repository.BootCoinWalletRepository;
 import com.jorge.bootcoin.service.BootCoinWalletService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
@@ -23,6 +27,7 @@ import reactor.core.publisher.Mono;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -33,6 +38,8 @@ public class BootCoinWalletServiceImpl implements BootCoinWalletService {
     private final BootCoinWalletMapper bootCoinWalletMapper;
     private final KafkaTemplate<String, String> kafkaTemplate;
     private final ObjectMapper objectMapper;
+    private final RedisTemplate<String, Object> redisTemplate;
+    private static final long CACHE_TTL_MINUTES = 5;
 
     @Override
     public Flux<BootCoinWalletResponse> getAllBootCoinWallets() {
@@ -42,9 +49,32 @@ public class BootCoinWalletServiceImpl implements BootCoinWalletService {
 
     @Override
     public Mono<BootCoinWalletResponse> getBootCoinWalletById(String id) {
-        return bootCoinWalletRepository.findById(id)
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "BootCoin wallet with id: " + id + " not found")))
-                .map(bootCoinWalletMapper::mapToBootCoinWalletResponse);
+        String cacheKey = "bootcoin-wallet:" + id;
+        return Mono.defer(() -> {
+            try {
+                Object cachedValue = redisTemplate.opsForValue().get(cacheKey);
+                if (cachedValue != null) {
+                    log.info("Cache HIT for key: {}", cacheKey);
+                    BootCoinWalletResponse response = objectMapper.convertValue(cachedValue, BootCoinWalletResponse.class);
+                    return Mono.just(response);
+                } else {
+                    log.info("Cache MISS for key: {}", cacheKey);
+                    return bootCoinWalletRepository.findById(id)
+                            .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "BootCoin wallet with id: " + id + " not found")))
+                            .map(bootCoinWalletMapper::mapToBootCoinWalletResponse)
+                            .doOnNext(response -> {
+                                try {
+                                    redisTemplate.opsForValue().set(cacheKey, response, CACHE_TTL_MINUTES, TimeUnit.MINUTES);
+                                    log.info("Stored in cache key: {}", cacheKey);
+                                } catch (Exception e) {
+                                    log.error("Error storing value in Redis for key {}: {}", cacheKey, e.getMessage());
+                                }
+                            });
+                }
+            } catch (Exception e) {
+                return Mono.error(e);
+            }
+        });
     }
 
     @Override
@@ -60,6 +90,7 @@ public class BootCoinWalletServiceImpl implements BootCoinWalletService {
 
     @Override
     public Mono<BootCoinWalletResponse> updateBootCoinWallet(String id, BootCoinWalletRequest bootCoinWalletRequest) {
+        String cacheKey = "bootcoin-wallet:" + id;
         return bootCoinWalletRepository.findById(id)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "BootCoin wallet with id: " + id + " not found")))
                 .flatMap(existingWallet -> {
@@ -68,12 +99,15 @@ public class BootCoinWalletServiceImpl implements BootCoinWalletService {
                     updatedWallet.setCreatedAt(existingWallet.getCreatedAt());
                     return bootCoinWalletRepository.save(updatedWallet);
                 })
-                .map(bootCoinWalletMapper::mapToBootCoinWalletResponse);
+                .map(bootCoinWalletMapper::mapToBootCoinWalletResponse)
+                .doOnNext(response -> redisTemplate.opsForValue().set(cacheKey, response));
     }
 
     @Override
     public Mono<Void> deleteBootCoinWalletById(String id) {
-        return bootCoinWalletRepository.deleteById(id);
+        String cacheKey = "bootcoin-wallet:" + id;
+        return bootCoinWalletRepository.deleteById(id)
+                .doOnSuccess(unused -> redisTemplate.delete(cacheKey));
     }
 
     @Override
