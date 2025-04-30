@@ -1,0 +1,3399 @@
+{
+	"info": {
+		"_postman_id": "c5c9be2e-d8ce-44a0-a02c-0356f776419f",
+		"name": "Bank App Project",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "21412918",
+		"_collection_link": "https://martian-crater-774677.postman.co/workspace/NTT-DATA-Bootcamp-2025-March---~7dd68048-8ec9-4496-a429-09c9ad435c64/collection/21412918-c5c9be2e-d8ce-44a0-a02c-0356f776419f?action=share&source=collection_link&creator=21412918"
+	},
+	"item": [
+		{
+			"name": "Transaction Service",
+			"item": [
+				{
+					"name": "Transaction API",
+					"item": [
+						{
+							"name": "Get All Transactions",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8082/transactions",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8082",
+									"path": [
+										"transactions"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Transaction by ID",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8082/transactions/:id",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8082",
+									"path": [
+										"transactions",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "12312"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Transactions by Account Number and Between Dates",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8082/transactions/account-number/:accountNumber/by-date-range?firstDayOfMonth=2024-01-01T00:00:01.00&lastDayOfMonth=2025-06-10T20:20:20.00",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8082",
+									"path": [
+										"transactions",
+										"account-number",
+										":accountNumber",
+										"by-date-range"
+									],
+									"query": [
+										{
+											"key": "firstDayOfMonth",
+											"value": "2024-01-01T00:00:01.00"
+										},
+										{
+											"key": "lastDayOfMonth",
+											"value": "2025-06-10T20:20:20.00"
+										}
+									],
+									"variable": [
+										{
+											"key": "accountNumber",
+											"value": "12807250816109"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Fees by Account Number and Between Dates",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8082/transactions/account-number/:accountNumber/fees-by-date-range?startDate=2024-01-01T00:00:01.00&endDate=2025-06-10T20:20:20.00",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8082",
+									"path": [
+										"transactions",
+										"account-number",
+										":accountNumber",
+										"fees-by-date-range"
+									],
+									"query": [
+										{
+											"key": "startDate",
+											"value": "2024-01-01T00:00:01.00"
+										},
+										{
+											"key": "endDate",
+											"value": "2025-06-10T20:20:20.00"
+										}
+									],
+									"variable": [
+										{
+											"key": "accountNumber",
+											"value": "12807250816109"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Transaction",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"accountNumber\": \"2243453453\",\n  \"fee\": 0.50,\n  \"transactionType\": \"DEPOSIT\",\n  \"amount\": 100,\n  \"description\": \"Deposito\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8082/transactions",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8082",
+									"path": [
+										"transactions"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Transaction",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"accountNumber\": \"2243453453\",\n  \"fee\": 0.50,\n  \"transactionType\": \"DEPOSIT\",\n  \"amount\": 1000,\n  \"description\": \"Deposito\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8082/transactions/:id",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8082",
+									"path": [
+										"transactions",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "67f06f8f57b69652b78600da"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete Transaction by ID",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8082/transactions/:id",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8082",
+									"path": [
+										"transactions",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "67f06f8f57b69652b78600da"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Transactions by Account Number",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8082/transactions/account-number/:accountNumber",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8082",
+									"path": [
+										"transactions",
+										"account-number",
+										":accountNumber"
+									],
+									"variable": [
+										{
+											"key": "accountNumber",
+											"value": "2243453453"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Transactions by Credit ID",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8082/transactions/credit-id/:creditId",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8082",
+									"path": [
+										"transactions",
+										"credit-id",
+										":creditId"
+									],
+									"variable": [
+										{
+											"key": "creditId",
+											"value": "1"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Credit Card Transaction API",
+					"item": [
+						{
+							"name": "Get All Credit Card Transactions",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8082/credit-card-transactions",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8082",
+									"path": [
+										"credit-card-transactions"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Credit Card Transaction by ID",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8082/credit-card-transactions/:id",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8082",
+									"path": [
+										"credit-card-transactions",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "67f0706e57b69652b78600dd"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Credit Card Transaction",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"creditCardNumber\": \"123123123124\",\n  \"transactionType\": \"CREDIT_CARD_CONSUMPTION\",\n  \"amount\": 1000\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8082/credit-card-transactions",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8082",
+									"path": [
+										"credit-card-transactions"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Credit Card Transaction",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"id\": \"67f0706e57b69652b78600dd\",\n    \"creditCardNumber\": \"123123123124\",\n    \"transactionType\": \"CREDIT_CARD_CONSUMPTION\",\n    \"amount\": 100\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8082/credit-card-transactions/:id",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8082",
+									"path": [
+										"credit-card-transactions",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "67f0706e57b69652b78600dd"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete Credit Card Transaction by ID",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8082/credit-card-transactions/:id",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8082",
+									"path": [
+										"credit-card-transactions",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "67f0706e57b69652b78600dd"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Credit Card Transactions by Credit Card Number",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8082/credit-card-transactions/credit-card-number/:creditCardNumber",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8082",
+									"path": [
+										"credit-card-transactions",
+										"credit-card-number",
+										":creditCardNumber"
+									],
+									"variable": [
+										{
+											"key": "creditCardNumber",
+											"value": "1234123412341234"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Credit Service",
+			"item": [
+				{
+					"name": "Credits API",
+					"item": [
+						{
+							"name": "Get All Credits",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8083/credits",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8083",
+									"path": [
+										"credits"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Credit",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"creditHolderId\": \"67f302237d00737591d0a022\",\n  \"creditType\": \"PERSONAL\",\n  \"status\": \"ACTIVE\",\n  \"creditAmount\": 2000,\n  \"dueDate\": \"2027-01-05\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8083/credits",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8083",
+									"path": [
+										"credits"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Credit by ID",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8083/credits/:id",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8083",
+									"path": [
+										"credits",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "67f17021a698b202d4458ea7"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Credit by ID",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"creditHolderId\": \"67ed8327e9b6f04945cf3dda\",\n  \"creditType\": \"PERSONAL\",\n  \"status\": \"ACTIVE\",\n  \"creditAmount\": 2000\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8083/credits/:id",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8083",
+									"path": [
+										"credits",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "67f17021a698b202d4458ea7"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete Credit by ID",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8083/credits/:id",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8083",
+									"path": [
+										"credits",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "67f17021a698b202d4458ea7"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Credits by Credit Holder ID",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8083/credits/customer/:creditHolderId",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8083",
+									"path": [
+										"credits",
+										"customer",
+										":creditHolderId"
+									],
+									"variable": [
+										{
+											"key": "creditHolderId",
+											"value": "67ed8327e9b6f04945cf3dda"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Transactions by Credit ID",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8083/credits/:id/transactions",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8083",
+									"path": [
+										"credits",
+										":id",
+										"transactions"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "67f172ac82241c285d671e04"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Pay Credit by ID",
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"amount\": 10,\n  \"accountNumber\": \"22876798495907\",\n  \"creditTypeEnum\": \"CREDIT_PAYMENT\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8083/credits/:id/pay",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8083",
+									"path": [
+										"credits",
+										":id",
+										"pay"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "67f172ac82241c285d671e04"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Pay Credit With Debit Card",
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"amount\": 100,\n  \"debitCardNumber\": \"5555666677778888\",\n  \"creditType\": \"CREDIT_PAYMENT\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8083/credits/:id/pay-with-debit-card",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8083",
+									"path": [
+										"credits",
+										":id",
+										"pay-with-debit-card"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "67f805504467ca26dbcd5683"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Credit Cards API",
+					"item": [
+						{
+							"name": "Get All Credit Cards",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8083/credit-cards",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8083",
+									"path": [
+										"credit-cards"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Credit Card",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"cardHolderId\": \"67f302237d00737591d0a022\",\n  \"type\": \"PERSONAL_CREDIT_CARD\",\n  \"creditCardNumber\": \"1234123412341234\",\n  \"cvv\": \"123\",\n  \"expiryDate\": \"2028-01-01\",\n  \"status\": \"ACTIVE\",\n  \"creditLimit\": 5000,\n  \"availableBalance\": 5000,\n  \"outstandingBalance\": 0\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8083/credit-cards",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8083",
+									"path": [
+										"credit-cards"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Credit Card by ID",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8083/credit-cards/:id",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8083",
+									"path": [
+										"credit-cards",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "67f17ad631514663d65c9f82"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Credit Card by ID",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"cardHolderId\": \"67ed8327e9b6f04945cf3dda\",\n    \"type\": \"PERSONAL_CREDIT_CARD\",\n    \"creditCardNumber\": \"1234123412341234\",\n    \"cvv\": \"123\",\n    \"expiryDate\": \"2028-01-01\",\n    \"status\": \"ACTIVE\",\n    \"creditLimit\": \"6000\",\n    \"availableBalance\": 6000,\n    \"outstandingBalance\": 0\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8083/credit-cards/:id",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8083",
+									"path": [
+										"credit-cards",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "67f17ad631514663d65c9f82"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete Credit Card by ID",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8083/credit-cards/:id",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8083",
+									"path": [
+										"credit-cards",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "67f17ad631514663d65c9f82"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Credit Cards by Card Holder ID",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8083/credit-cards/customer/:cardHolderId",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8083",
+									"path": [
+										"credit-cards",
+										"customer",
+										":cardHolderId"
+									],
+									"variable": [
+										{
+											"key": "cardHolderId",
+											"value": "67ed8327e9b6f04945cf3dda"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Credit Card Available Balance by Credit Card Number",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8083/credit-cards/credit-card-number/:creditCardNumber/available-balance",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8083",
+									"path": [
+										"credit-cards",
+										"credit-card-number",
+										":creditCardNumber",
+										"available-balance"
+									],
+									"variable": [
+										{
+											"key": "creditCardNumber",
+											"value": "1234123412341234"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Pay Credit Card by Credit Card Number",
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"amount\": 100,\n  \"accountNumber\": \"12807250816109\",\n  \"creditType\": \"CREDIT_CARD_PAYMENT\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8083/credit-cards/credit-card-number/:creditCardNumber/pay",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8083",
+									"path": [
+										"credit-cards",
+										"credit-card-number",
+										":creditCardNumber",
+										"pay"
+									],
+									"variable": [
+										{
+											"key": "creditCardNumber",
+											"value": "1234123412341234"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Pay Credit Card With Debit Card",
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"amount\": 50,\n  \"debitCardNumber\": \"5555666677778888\",\n  \"creditType\": \"CREDIT_CARD_PAYMENT\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8083/credit-cards/credit-card-number/:creditCardNumber/pay-with-debit-card",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8083",
+									"path": [
+										"credit-cards",
+										"credit-card-number",
+										":creditCardNumber",
+										"pay-with-debit-card"
+									],
+									"variable": [
+										{
+											"key": "creditCardNumber",
+											"value": "1234123412341234"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Consume Credit Card by Credit Card Number",
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"amount\": 200\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8083/credit-cards/credit-card-number/:creditCardNumber/consume",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8083",
+									"path": [
+										"credit-cards",
+										"credit-card-number",
+										":creditCardNumber",
+										"consume"
+									],
+									"variable": [
+										{
+											"key": "creditCardNumber",
+											"value": "1234123412341234"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Transactions by Credit Card Number",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8083/credit-cards/credit-card-number/:creditCardNumber/transactions",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8083",
+									"path": [
+										"credit-cards",
+										"credit-card-number",
+										":creditCardNumber",
+										"transactions"
+									],
+									"variable": [
+										{
+											"key": "creditCardNumber",
+											"value": "1234123412341234"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Last 10 Transactions by Credit Card Number",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8083/credit-cards/credit-card-number/:creditCardNumber/transactions/last-transactions",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8083",
+									"path": [
+										"credit-cards",
+										"credit-card-number",
+										":creditCardNumber",
+										"transactions",
+										"last-transactions"
+									],
+									"variable": [
+										{
+											"key": "creditCardNumber",
+											"value": "1234123412341234"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Account Service",
+			"item": [
+				{
+					"name": "Savings Account",
+					"item": [
+						{
+							"name": "Create Savings Account",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"customerId\": \"6805736dab344752fcad7a8f\",\n    \"balance\": 0,\n    \"movementsThisMonth\": 0,\n    \"maxMovementsFeeFreeThisMonth\": 6,\n    \"isCommissionFeeActive\": false,\n    \"movementCommissionFee\": 0.50,\n    \"monthlyMovementsLimit\": 10\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8081/accounts/savings",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8081",
+									"path": [
+										"accounts",
+										"savings"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Savings Account by Account Number",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"balance\": 3000,\n    \"customerId\": \"\",\n    \"accountType\": \"SAVINGS\",\n    \"createdAt\": \"2025-04-06T01:15:44.6691288\",\n    \"movementsThisMonth\": 0,\n    \"maxMovementsFeeFreeThisMonth\": 5,\n    \"isCommissionFeeActive\": false,\n    \"movementCommissionFee\": 0.50,\n    \"monthlyMovementsLimit\": 6\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8081/accounts/savings/account-number/:accountNumber",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8081",
+									"path": [
+										"accounts",
+										"savings",
+										"account-number",
+										":accountNumber"
+									],
+									"variable": [
+										{
+											"key": "accountNumber",
+											"value": "93480800805029"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Checking Account",
+					"item": [
+						{
+							"name": "Create Checking Account",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"customerId\": \"\",\n    \"balance\": 100,\n    \"movementsThisMonth\": 0,\n    \"maxMovementsFeeFreeThisMonth\": 5,\n    \"isCommissionFeeActive\": false,\n    \"movementCommissionFee\": 0.50,\n    \"maintenanceFee\": 5.00,\n    \"holders\": [\n        \"22334455\"\n    ],\n    \"authorizedSigners\": [\n    ]\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8081/accounts/checking",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8081",
+									"path": [
+										"accounts",
+										"checking"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Checking Account by Account Number",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"customerId\": \"\",\n    \"balance\": 2000,\n    \"movementsThisMonth\": 0,\n    \"maxMovementsFeeFreeThisMonth\": 5,\n    \"isCommissionFeeActive\": false,\n    \"movementCommissionFee\": 0.50,\n    \"maintenanceFee\": 5.00,\n    \"holders\": [\n        \"22334455\"\n    ],\n    \"authorizedSigners\": [\n        \"11223344\"\n    ]\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8081/accounts/checking/account-number/:accountNumber",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8081",
+									"path": [
+										"accounts",
+										"checking",
+										"account-number",
+										":accountNumber"
+									],
+									"variable": [
+										{
+											"key": "accountNumber",
+											"value": "69457959386785"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Fixed Term Account",
+					"item": [
+						{
+							"name": "Create Fixed Term Account",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"customerId\": \"67f302237d00737591d0a022\",\n    \"balance\": 3000,\n    \"movementsThisMonth\": 0,\n    \"maxMovementsFeeFreeThisMonth\": 5,\n    \"isCommissionFeeActive\": false,\n    \"movementCommissionFee\": 0.00,\n    \"allowedWithdrawal\": \"2026-01-01\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8081/accounts/fixed-term",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8081",
+									"path": [
+										"accounts",
+										"fixed-term"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Fixed Term Account by Account Number",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"customerId\": \"\",\n    \"balance\": 4000,\n    \"movementsThisMonth\": 0,\n    \"maxMovementsFeeFreeThisMonth\": 5,\n    \"isCommissionFeeActive\": false,\n    \"movementCommissionFee\": 0.50,\n    \"allowedWithdrawal\": \"2026-01-01\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8081/accounts/fixed-term/account-number/:accountNumber",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8081",
+									"path": [
+										"accounts",
+										"fixed-term",
+										"account-number",
+										":accountNumber"
+									],
+									"variable": [
+										{
+											"key": "accountNumber",
+											"value": "79699127174464"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "General Account",
+					"item": [
+						{
+							"name": "Get All Accounts",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8081/accounts",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8081",
+									"path": [
+										"accounts"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Accounts by Customer Id",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8081/accounts/customer/:customerId",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8081",
+									"path": [
+										"accounts",
+										"customer",
+										":customerId"
+									],
+									"variable": [
+										{
+											"key": "customerId",
+											"value": "67f302237d00737591d0a022"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Account by Account Number",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8081/accounts/account-number/:accountNumber",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8081",
+									"path": [
+										"accounts",
+										"account-number",
+										":accountNumber"
+									],
+									"variable": [
+										{
+											"key": "accountNumber",
+											"value": "12807250816109"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete Account by Account Number",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8081/accounts/account-number/:accountNumber",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8081",
+									"path": [
+										"accounts",
+										"account-number",
+										":accountNumber"
+									],
+									"variable": [
+										{
+											"key": "accountNumber",
+											"value": "79699127174464"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Balance by Account Number",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8081/accounts/account-number/:accountNumber/balance",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8081",
+									"path": [
+										"accounts",
+										"account-number",
+										":accountNumber",
+										"balance"
+									],
+									"variable": [
+										{
+											"key": "accountNumber",
+											"value": "93480800805029"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Increase Balance by Account Number",
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"balance\": 100\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8081/accounts/account-number/:accountNumber/balance/increase",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8081",
+									"path": [
+										"accounts",
+										"account-number",
+										":accountNumber",
+										"balance",
+										"increase"
+									],
+									"variable": [
+										{
+											"key": "accountNumber",
+											"value": "98760610258078"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Reduce Balance by Account Number",
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"balance\": 100\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8081/accounts/account-number/:accountNumber/balance/reduction",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8081",
+									"path": [
+										"accounts",
+										"account-number",
+										":accountNumber",
+										"balance",
+										"reduction"
+									],
+									"variable": [
+										{
+											"key": "accountNumber",
+											"value": "93480800805029"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Deposit by Account Number",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"amount\": 600\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8081/accounts/account-number/:accountNumber/deposit",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8081",
+									"path": [
+										"accounts",
+										"account-number",
+										":accountNumber",
+										"deposit"
+									],
+									"variable": [
+										{
+											"key": "accountNumber",
+											"value": "16516731528791"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Withdraw by Account Number",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"amount\": 200\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8081/accounts/account-number/:accountNumber/withdrawal",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8081",
+									"path": [
+										"accounts",
+										"account-number",
+										":accountNumber",
+										"withdrawal"
+									],
+									"variable": [
+										{
+											"key": "accountNumber",
+											"value": "12807250816109"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Transfer by Account Number",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"receiverAccountNumber\": 16516731528791,\r\n    \"amount\": 100.00\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8081/accounts/account-number/:accountNumber/transfer",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8081",
+									"path": [
+										"accounts",
+										"account-number",
+										":accountNumber",
+										"transfer"
+									],
+									"query": [
+										{
+											"key": "",
+											"value": null,
+											"disabled": true
+										}
+									],
+									"variable": [
+										{
+											"key": "accountNumber",
+											"value": "21848441062922"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Average Monthly Balance By Account Number",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"year\": 2025,\r\n    \"month\": 4\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8081/accounts/account-number/:accountNumber/average-monthly-balance",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8081",
+									"path": [
+										"accounts",
+										"account-number",
+										":accountNumber",
+										"average-monthly-balance"
+									],
+									"variable": [
+										{
+											"key": "accountNumber",
+											"value": "12807250816109"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Transactions by Account Number",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8081/accounts/account-number/:accountNumber/transactions",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8081",
+									"path": [
+										"accounts",
+										"account-number",
+										":accountNumber",
+										"transactions"
+									],
+									"variable": [
+										{
+											"key": "accountNumber",
+											"value": "12807250816109"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Fees by Account Number and Between Dates",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"year\": 2025,\r\n    \"month\": 4\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8081/accounts/account-number/:accountNumber/fee-report?startDate=2024-01-01T00:00:01.00&endDate=2025-06-10T20:20:20.00",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8081",
+									"path": [
+										"accounts",
+										"account-number",
+										":accountNumber",
+										"fee-report"
+									],
+									"query": [
+										{
+											"key": "startDate",
+											"value": "2024-01-01T00:00:01.00"
+										},
+										{
+											"key": "endDate",
+											"value": "2025-06-10T20:20:20.00"
+										}
+									],
+									"variable": [
+										{
+											"key": "accountNumber",
+											"value": "12807250816109"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Debit Card",
+					"item": [
+						{
+							"name": "Get All Debit Cards",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8081/debit-cards",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8081",
+									"path": [
+										"debit-cards"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Debit Card",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"cardHolderId\": \"6805736dab344752fcad7a8f\",\r\n  \"linkedAccountsNumber\": [\r\n    \"16516731528791\"\r\n  ],\r\n  \"mainLinkedAccountNumber\": \"16516731528791\",\r\n  \"debitCardNumber\": \"2222333344445555\",\r\n  \"cvv\": \"234\",\r\n  \"expiryDate\": \"2026-12-31\",\r\n  \"status\": \"ACTIVE\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8081/debit-cards",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8081",
+									"path": [
+										"debit-cards"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Debit Card by ID",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8081/debit-cards/:id",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8081",
+									"path": [
+										"debit-cards",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "67f844ec6d26bb7ff76157a0"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Debit Card by ID Card Number",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8081/debit-cards/card-number/:debitCardNumber",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8081",
+									"path": [
+										"debit-cards",
+										"card-number",
+										":debitCardNumber"
+									],
+									"variable": [
+										{
+											"key": "debitCardNumber",
+											"value": "5555666677778888"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Debit Card Balance By Card Number",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8081/debit-cards/card-number/:debitCardNumber/balance",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8081",
+									"path": [
+										"debit-cards",
+										"card-number",
+										":debitCardNumber",
+										"balance"
+									],
+									"variable": [
+										{
+											"key": "debitCardNumber",
+											"value": "5555666677778888"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Debit Card Transactions By Card Numbe",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8081/debit-cards/card-number/:debitCardNumber/last-transactions",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8081",
+									"path": [
+										"debit-cards",
+										"card-number",
+										":debitCardNumber",
+										"last-transactions"
+									],
+									"variable": [
+										{
+											"key": "debitCardNumber",
+											"value": "5555666677778888"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Debit Card by Card Number",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"cardHolderId\": \"67f302237d00737591d0a022\",\r\n    \"linkedAccountsNumber\": [\r\n        \"12807250816109\",\r\n        \"54082653616969\"\r\n    ],\r\n    \"mainLinkedAccountNumber\": \"12807250816109\",\r\n    \"debitCardNumber\": \"2222333344445555\",\r\n    \"cvv\": \"234\",\r\n    \"expiryDate\": \"2025-12-31\",\r\n    \"status\": \"ACTIVE\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8081/debit-cards/card-number/:debitCardNumber",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8081",
+									"path": [
+										"debit-cards",
+										"card-number",
+										":debitCardNumber"
+									],
+									"variable": [
+										{
+											"key": "debitCardNumber",
+											"value": "2222333344445555"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete Debit Card by Card Number",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8081/debit-cards/card-number/:debitCardNumber",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8081",
+									"path": [
+										"debit-cards",
+										"card-number",
+										":debitCardNumber"
+									],
+									"variable": [
+										{
+											"key": "debitCardNumber",
+											"value": "5555666677778888"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Withdraw by Debit Card Number",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"amount\": 100.00\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8081/debit-cards/card-number/:debitCardNumber/withdrawal",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8081",
+									"path": [
+										"debit-cards",
+										"card-number",
+										":debitCardNumber",
+										"withdrawal"
+									],
+									"variable": [
+										{
+											"key": "debitCardNumber",
+											"value": "5555666677778888"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Customer Service",
+			"item": [
+				{
+					"name": "Get Customers",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/customers",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"customers"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Customers by Id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/customers/:id",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"customers",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "67f302237d00737591d0a022"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Product Summary by Customer ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/customers/:id/product-summary",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"customers",
+								":id",
+								"product-summary"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "6805702a0c6ddb1c78594b32"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Customers by Dni",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/customers/dni/:dni",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"customers",
+								"dni",
+								":dni"
+							],
+							"variable": [
+								{
+									"key": "dni",
+									"value": "22334455"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Customer login",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:6666/customers/dni/:dni/login",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "6666",
+							"path": [
+								"customers",
+								"dni",
+								":dni",
+								"login"
+							],
+							"variable": [
+								{
+									"key": "dni",
+									"value": "22334455"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Save Customer PERSONAL",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"customerType\": \"PERSONAL\",\r\n    \"email\": \"maria.sanchez@gmail.com\",\r\n    \"phoneNumber\": \"998877665\",\r\n    \"address\": \"Av. El Sol 789, Cusco\",\r\n    \"dni\": \"22334455\",\r\n    \"firstName\": \"Maria\",\r\n    \"lastName\": \"Sanchez\",\r\n    \"isVIP\": false,\r\n    \"isPYME\": false\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/customers",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"customers"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Save Customer BUSINESS",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"customerType\": \"BUSINESS\",\r\n    \"email\": \"juan.perez@negocio.com\",\r\n    \"phoneNumber\": \"987654321\",\r\n    \"address\": \"Calle Falsa 123, Lima\",\r\n    \"dni\": \"11223344\",\r\n    \"firstName\": \"Juan\",\r\n    \"lastName\": \"Perez\",\r\n    \"isVIP\": false,\r\n    \"isPYME\": false\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/customers",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"customers"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Save Customer RANDOM",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"customerType\": \"PERSONAL\",\r\n    \"email\": \"{{$randomEmail}}\",\r\n    \"phoneNumber\": \"{{$randomPhoneNumber}}\",\r\n    \"address\": \"{{$randomStreetAddress}}\",\r\n    \"dni\": \"75059409\",\r\n    \"firstName\": \"{{$randomFirstName}}\",\r\n    \"lastName\": \"{{$randomLastName}}\",\r\n    \"isVIP\": false,\r\n    \"isPYME\": false\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/customers",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"customers"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Customer",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"customerType\": \"PERSONAL\",\r\n  \"email\": \"maria.sanchez@gmail.com\",\r\n  \"phoneNumber\": \"998877665\",\r\n  \"address\": \"Av. El Sol 565, Cusco\",\r\n  \"dni\": \"22334455\",\r\n  \"firstName\": \"Maria\",\r\n  \"lastName\": \"Sanchez\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/customers/:id",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"customers",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "67f222c36b732810d28d2936"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Customer",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"ruc\": \"2123\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/customers/:id",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"customers",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "67f222c36b732810d28d2936"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Yanki Service",
+			"item": [
+				{
+					"name": "Get All Yanki Wallets",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8084/yanki-wallets",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8084",
+							"path": [
+								"yanki-wallets"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Yanki Wallet by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8084/yanki-wallets/:yankiWalletId",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8084",
+							"path": [
+								"yanki-wallets",
+								":yankiWalletId"
+							],
+							"variable": [
+								{
+									"key": "yankiWalletId",
+									"value": "68043952a5f3852fc2ef0b2e"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Yanki Wallet",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"documentNumber\": \"75059409\",\r\n  \"documentType\": \"DNI\",\r\n  \"phoneNumber\": \"111122223\",\r\n  \"imei\": \"357155987654321\",\r\n  \"email\": \"ejemplo@correo.com\"\r\n  //\"associatedDebitCardNumber\": \"2222333344445555\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8084/yanki-wallets",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8084",
+							"path": [
+								"yanki-wallets"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Yanki Wallet",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"documentNumber\": \"22334455\",\r\n    \"documentType\": \"DNI\",\r\n    \"phoneNumber\": \"123456789\",\r\n    \"imei\": \"111155987654321\",\r\n    \"email\": \"ejemplo@correo.com\",\r\n    \"associatedDebitCardNumber\": \"2222333344445555\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8084/yanki-wallets/:yankiWalletId",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8084",
+							"path": [
+								"yanki-wallets",
+								":yankiWalletId"
+							],
+							"variable": [
+								{
+									"key": "yankiWalletId",
+									"value": "6805731d14ec4c72bc7758f1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Yanki Wallet by ID Copy",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8084/yanki-wallets/:yankiWalletId",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8084",
+							"path": [
+								"yanki-wallets",
+								":yankiWalletId"
+							],
+							"variable": [
+								{
+									"key": "yankiWalletId",
+									"value": "68043952a5f3852fc2ef0b2e"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Associate Debit Card to Yanki Wallet",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"debitCardNumber\": \"5555666677778888\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8084/yanki-wallets/:yankiWalletId/associate-debit-card",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8084",
+							"path": [
+								"yanki-wallets",
+								":yankiWalletId",
+								"associate-debit-card"
+							],
+							"variable": [
+								{
+									"key": "yankiWalletId",
+									"value": "6804592d24d03c77859b7be5"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Send Payment to Yanki Wallet",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"receiverYankiPhoneNumber\": \"111122223\",\r\n  \"amount\": 100.00\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8084/yanki-wallets/:yankiWalletId/send-payment",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8084",
+							"path": [
+								"yanki-wallets",
+								":yankiWalletId",
+								"send-payment"
+							],
+							"variable": [
+								{
+									"key": "yankiWalletId",
+									"value": "6805731d14ec4c72bc7758f1"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "BootCoin Service",
+			"item": [
+				{
+					"name": "BootCoin Wallet",
+					"item": [
+						{
+							"name": "Get All BootCoin Wallets",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8085/bootcoin-wallets",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8085",
+									"path": [
+										"bootcoin-wallets"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get BootCoin Wallet by ID",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8085/bootcoin-wallets/:id",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8085",
+									"path": [
+										"bootcoin-wallets",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "680d32566ddac90982a1f409"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create BootCoin Wallet",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"documentNumber\": \"75059409\",\n    \"documentType\": \"DNI\",\n    \"phoneNumber\": \"999654321\",\n    \"email\": \"test@example.com\",\n    \"balance\": 0.00\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8085/bootcoin-wallets",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8085",
+									"path": [
+										"bootcoin-wallets"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update BootCoin Wallet",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"documentNumber\": \"22334455\",\n    \"documentType\": \"DNI\",\n    \"phoneNumber\": \"987654321\",\n    \"email\": \"test@example.pe\",\n    \"balance\": 14.00,\n    \"associatedYankiWalletId\": \"111122223\",\n    \"associatedAccountNumber\": \"12807250816109\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8085/bootcoin-wallets/:id",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8085",
+									"path": [
+										"bootcoin-wallets",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "680d32566ddac90982a1f409"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete BootCoin Wallet",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8085/bootcoin-wallets/:id",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8085",
+									"path": [
+										"bootcoin-wallets",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "680d3019a283f21521be5a66"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Purchase BootCoin",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"bootCoinAmount\": 20.00,\n    \"paymentType\": \"BANK_ACCOUNT\",\n    \"paymentMethodId\": \"12807250816109\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8085/bootcoin-wallets/:id/purchase",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8085",
+									"path": [
+										"bootcoin-wallets",
+										":id",
+										"purchase"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "680d32566ddac90982a1f409"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Associate Account Number",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"accountNumber\": \"12807250816109\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8085/bootcoin-wallets/:id/associate-account",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8085",
+									"path": [
+										"bootcoin-wallets",
+										":id",
+										"associate-account"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "680d32566ddac90982a1f409"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Associate Yanki Wallet",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"yankiPhoneNumber\": \"111122223\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8085/bootcoin-wallets/:id/associate-yanki-wallet",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8085",
+									"path": [
+										"bootcoin-wallets",
+										":id",
+										"associate-yanki-wallet"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "680d32566ddac90982a1f409"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "BootCoin Exchange Petition",
+					"item": [
+						{
+							"name": "Get All Petitions",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8085/bootcoin-exchange-petitions",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8085",
+									"path": [
+										"bootcoin-exchange-petitions"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Petition By ID",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8085/bootcoin-exchange-petitions/:id",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8085",
+									"path": [
+										"bootcoin-exchange-petitions",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "680e74b91d4d1103ff8b6079"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Petition",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"bootCoinAmount\": 1.0,\n    \"paymentType\": \"YANKI_WALLET\",\n    \"paymentMethodId\": \"123456789\",\n    \"sellerBootCoinWalletId\": \"680d32566ddac90982a1f409\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8085/bootcoin-exchange-petitions/buyer-wallet/:id",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8085",
+									"path": [
+										"bootcoin-exchange-petitions",
+										"buyer-wallet",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "680e7143a860284f63caf081"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Petition",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"bootCoinAmount\": 5.0,\n    \"paymentType\": \"BANK_ACCOUNT\",\n    \"paymentMethodId\": \"12807250816109\",\n    \"sellerBootCoinWalletId\": \"680d32566ddac90982a1f409\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8085/bootcoin-exchange-petitions/:id",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8085",
+									"path": [
+										"bootcoin-exchange-petitions",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "680e74b91d4d1103ff8b6079"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete Petition",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8085/bootcoin-exchange-petitions/:id",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8085",
+									"path": [
+										"bootcoin-exchange-petitions",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "680e72f542f29754723406be"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Accept Petition",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"paymentType\": \"YANKI_WALLET\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8085/bootcoin-exchange-petitions/:id/accept",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8085",
+									"path": [
+										"bootcoin-exchange-petitions",
+										":id",
+										"accept"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "680eb8f42edf115ca367e680"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "BootCoin Transactions",
+					"item": [
+						{
+							"name": "Get All Transactions",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8085/bootcoin-transactions",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8085",
+									"path": [
+										"bootcoin-transactions"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Transaction By ID",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8085/bootcoin-transactions/:id",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8085",
+									"path": [
+										"bootcoin-transactions",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "680d381d57d95b074a9581ce"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Transaction",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"bootCoinWalletId\": \"680d32566ddac90982a1f409\",\n    \"amount\": 10.00,\n    \"description\": \"Transaction Test\",\n    \"transactionType\": \"DEBIT\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8085/bootcoin-transactions",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8085",
+									"path": [
+										"bootcoin-transactions"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Transaction",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"bootCoinWalletId\": \"680d32566ddac90982a1f409\",\n    \"amount\": 15.00,\n    \"description\": \"Transaction Test 2\",\n    \"transactionType\": \"DEBIT\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8085/bootcoin-transactions/:id",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8085",
+									"path": [
+										"bootcoin-transactions",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "680e4993d3091e6a1e27cc61"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete Transaction",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8085/bootcoin-transactions/:id",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8085",
+									"path": [
+										"bootcoin-transactions",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "680e4993d3091e6a1e27cc61"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "BootCoin Exchange Rate",
+					"item": [
+						{
+							"name": "Get All Exchange Rates",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8085/bootcoin-exchange-rates",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8085",
+									"path": [
+										"bootcoin-exchange-rates"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Exchange Rate By ID",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8085/bootcoin-exchange-rates/:id",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8085",
+									"path": [
+										"bootcoin-exchange-rates",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "680e6fc520c37453b4f7740e"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Exchange Rate",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"buyRate\": 2.00,\n    \"sellRate\": 4.00,\n    \"effectiveDate\": \"2025-01-01T00:00:00\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8085/bootcoin-exchange-rates",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8085",
+									"path": [
+										"bootcoin-exchange-rates"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Exchange Rate",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"buyRate\": 2.00,\n    \"sellRate\": 4.00,\n    \"effectiveDate\": \"2025-02-01T00:00:00\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8085/bootcoin-exchange-rates/:id",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8085",
+									"path": [
+										"bootcoin-exchange-rates",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "680e6fc520c37453b4f7740e"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete Exchange Rate",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8085/bootcoin-exchange-rates/:id",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8085",
+									"path": [
+										"bootcoin-exchange-rates",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "YOUR_EXCHANGE_RATE_ID"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		}
+	]
+}
