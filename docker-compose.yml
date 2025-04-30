@@ -327,6 +327,39 @@ services:
       retries: 5
       start_period: 60s
 
+  bootcoin:
+    build:
+      context: ./bootcoin
+      dockerfile: Dockerfile
+    container_name: bootcoin-app
+    ports:
+      - "8085:8085" # Exposing bootcoin on 8085
+    environment:
+      SPRING_CONFIG_IMPORT: configserver:http://bankconfigserver:8888
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery:8761/eureka/
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_MONGODB_URI: mongodb://root:example@mongodb:27017/bootcoin?authSource=admin # Added db name to URI
+      # SPRING_DATA_MONGODB_DATABASE: bootcoin
+    depends_on:
+      bankconfigserver:
+        condition: service_healthy
+      discovery:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+    restart: always
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8085/actuator/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+
 volumes:
   zookeeper_data:
   zookeeper_datalog:
