@@ -5,6 +5,8 @@ import com.jorge.accounts.model.SavingsAccount;
 import com.jorge.accounts.model.SavingsAccountRequest;
 import com.jorge.accounts.model.SavingsAccountResponse;
 import com.jorge.accounts.utils.AccountUtils;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

@@ -13,6 +13,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -80,10 +82,8 @@ public class DebitCardServiceImplTest {
 
         when(accountRepository.findByAccountNumber(debitCard.getMainLinkedAccountNumber())).thenReturn(Mono.just(account));
 
-        // Call the method under test
         Mono<BalanceResponse> balanceMono = debitCardServiceImpl.getBalanceByDebitCardNumber(debitCardNumber);
 
-        // Verify the result
         StepVerifier.create(balanceMono)
                 .assertNext(balanceResponse -> {
                     assertEquals(debitCard.getMainLinkedAccountNumber(), balanceResponse.getAccountNumber());
@@ -158,6 +158,7 @@ public class DebitCardServiceImplTest {
                 .verifyComplete();
     }
 
+
     @Test
     void whenGetTransactionsByDebitCardNumberLast10_WithExistingDebitCard_ThenReturnTransactions(){
         account = new SavingsAccount();
@@ -189,5 +190,233 @@ public class DebitCardServiceImplTest {
                     assertEquals(transactionResponse.getAccountNumber(), transaction1.getAccountNumber());
                 })
                 .verifyComplete();
+    }
+
+    @Test
+    void whenGetAllDebitCards_thenReturnDebitCardList() {
+        List<DebitCard> debitCardList = new ArrayList<>();
+        debitCardList.add(debitCard);
+        when(debitCardRepository.findAll()).thenReturn(Flux.fromIterable(debitCardList));
+
+        Flux<DebitCardResponse> debitCardResponseFlux = debitCardServiceImpl.getAllDebitCards();
+
+        StepVerifier.create(debitCardResponseFlux)
+                .assertNext(debitCardResponse -> {
+                    assertEquals(debitCard.getId(), debitCardResponse.getId());
+                    assertEquals(debitCard.getCardHolderId(), debitCardResponse.getCardHolderId());
+                    assertEquals(debitCard.getDebitCardNumber(), debitCardResponse.getDebitCardNumber());
+                })
+                .verifyComplete();
+    }
+
+    @Test
+    void whenGetDebitCardById_WithExistingId_ThenReturnDebitCard() {
+        String id = UUID.randomUUID().toString();
+        debitCard.setId(id);
+        when(debitCardRepository.findById(id)).thenReturn(Mono.just(debitCard));
+
+        Mono<DebitCardResponse> debitCardResponseMono = debitCardServiceImpl.getDebitCardById(id);
+
+        StepVerifier.create(debitCardResponseMono)
+                .assertNext(debitCardResponse -> {
+                    assertEquals(debitCard.getId(), debitCardResponse.getId());
+                    assertEquals(debitCard.getCardHolderId(), debitCardResponse.getCardHolderId());
+                    assertEquals(debitCard.getDebitCardNumber(), debitCardResponse.getDebitCardNumber());
+                })
+                .verifyComplete();
+    }
+
+    @Test
+    void whenGetDebitCardById_WithNonExistingId_ThenReturnNotFound() {
+        String id = UUID.randomUUID().toString();
+        when(debitCardRepository.findById(id)).thenReturn(Mono.empty());
+
+        Mono<DebitCardResponse> debitCardResponseMono = debitCardServiceImpl.getDebitCardById(id);
+
+        StepVerifier.create(debitCardResponseMono)
+                .expectErrorMatches(throwable -> throwable instanceof ResponseStatusException &&
+                        ((ResponseStatusException) throwable).getStatusCode() == HttpStatus.NOT_FOUND)
+                .verify();
+    }
+
+    @Test
+    void whenGetDebitCardByDebitCardNumber_WithExistingNumber_ThenReturnDebitCard() {
+        when(debitCardRepository.findByDebitCardNumber(debitCardNumber)).thenReturn(Mono.just(debitCard));
+
+        Mono<DebitCardResponse> debitCardResponseMono = debitCardServiceImpl.getDebitCardByDebitCardNumber(debitCardNumber);
+
+        StepVerifier.create(debitCardResponseMono)
+                .assertNext(debitCardResponse -> {
+                    assertEquals(debitCard.getId(), debitCardResponse.getId());
+                    assertEquals(debitCard.getCardHolderId(), debitCardResponse.getCardHolderId());
+                    assertEquals(debitCard.getDebitCardNumber(), debitCardResponse.getDebitCardNumber());
+                })
+                .verifyComplete();
+    }
+
+    @Test
+    void whenGetDebitCardByDebitCardNumber_WithNonExistingNumber_ThenReturnNotFound() {
+        when(debitCardRepository.findByDebitCardNumber(debitCardNumber)).thenReturn(Mono.empty());
+
+        Mono<DebitCardResponse> debitCardResponseMono = debitCardServiceImpl.getDebitCardByDebitCardNumber(debitCardNumber);
+
+        StepVerifier.create(debitCardResponseMono)
+                .expectErrorMatches(throwable -> throwable instanceof ResponseStatusException &&
+                        ((ResponseStatusException) throwable).getStatusCode() == HttpStatus.NOT_FOUND)
+                .verify();
+    }
+
+    @Test
+    void whenGetDebitCardsByCardHolderId_WithExistingCardHolderId_ThenReturnDebitCards() {
+        String cardHolderId = "100";
+        List<DebitCard> debitCardList = new ArrayList<>();
+        debitCardList.add(debitCard);
+        when(debitCardRepository.findByCardHolderId(cardHolderId)).thenReturn(Flux.fromIterable(debitCardList));
+
+        Flux<DebitCardResponse> debitCardResponseFlux = debitCardServiceImpl.getDebitCardsByCardHolderId(cardHolderId);
+
+        StepVerifier.create(debitCardResponseFlux)
+                .assertNext(debitCardResponse -> {
+                    assertEquals(debitCard.getId(), debitCardResponse.getId());
+                    assertEquals(debitCard.getCardHolderId(), debitCardResponse.getCardHolderId());
+                    assertEquals(debitCard.getDebitCardNumber(), debitCardResponse.getDebitCardNumber());
+                })
+                .verifyComplete();
+    }
+
+    @Test
+    void whenCreateDebitCard_WithValidRequest_ThenReturnCreatedDebitCard() {
+        DebitCardRequest debitCardRequest = new DebitCardRequest();
+        debitCardRequest.setCardHolderId("100");
+        debitCardRequest.setLinkedAccountsNumber(List.of(mainAccountNumber, secondAccountNumber));
+        debitCardRequest.setMainLinkedAccountNumber(mainAccountNumber);
+        debitCardRequest.setDebitCardNumber(debitCardNumber);
+        debitCardRequest.setCvv("123");
+        debitCardRequest.setExpiryDate(LocalDate.now().plusYears(1));
+        debitCardRequest.setStatus(DebitCardRequest.StatusEnum.ACTIVE);
+
+        when(debitCardRepository.save(any(DebitCard.class))).thenReturn(Mono.just(debitCard));
+
+        Mono<DebitCardResponse> debitCardResponseMono = debitCardServiceImpl.createDebitCard(debitCardRequest);
+
+        StepVerifier.create(debitCardResponseMono)
+                .assertNext(debitCardResponse -> {
+                    assertEquals(debitCard.getId(), debitCardResponse.getId());
+                    assertEquals(debitCard.getCardHolderId(), debitCardResponse.getCardHolderId());
+                    assertEquals(debitCard.getDebitCardNumber(), debitCardResponse.getDebitCardNumber());
+                })
+                .verifyComplete();
+    }
+
+    @Test
+    void whenUpdateDebitCardByDebitCardNumber_WithExistingNumber_ThenReturnUpdatedDebitCard() {
+        DebitCardRequest debitCardRequest = new DebitCardRequest();
+        debitCardRequest.setCardHolderId("200");
+        debitCardRequest.setLinkedAccountsNumber(List.of(mainAccountNumber));
+        debitCardRequest.setMainLinkedAccountNumber(mainAccountNumber);
+        debitCardRequest.setDebitCardNumber("9999999999999999");
+        debitCardRequest.setCvv("456");
+        debitCardRequest.setExpiryDate(LocalDate.now().plusYears(2));
+        debitCardRequest.setStatus(DebitCardRequest.StatusEnum.ACTIVE);
+
+        when(debitCardRepository.findByDebitCardNumber(debitCardNumber)).thenReturn(Mono.just(debitCard));
+        when(debitCardRepository.save(any(DebitCard.class))).thenReturn(Mono.just(debitCard));
+
+        Mono<DebitCardResponse> debitCardResponseMono = debitCardServiceImpl.updateDebitCardByDebitCardNumber(debitCardNumber, debitCardRequest);
+
+        StepVerifier.create(debitCardResponseMono)
+                .assertNext(debitCardResponse -> {
+                    assertEquals(debitCard.getId(), debitCardResponse.getId());
+                    assertEquals(debitCard.getCardHolderId(), debitCardResponse.getCardHolderId()); //Still the old value because you are mocking the save method
+                    assertEquals(debitCard.getDebitCardNumber(), debitCardResponse.getDebitCardNumber()); //Still the old value because you are mocking the save method
+                })
+                .verifyComplete();
+    }
+
+    @Test
+    void whenUpdateDebitCardByDebitCardNumber_WithNonExistingNumber_ThenReturnNotFound() {
+        DebitCardRequest debitCardRequest = new DebitCardRequest();
+        debitCardRequest.setCardHolderId("200");
+        debitCardRequest.setLinkedAccountsNumber(List.of(mainAccountNumber));
+        debitCardRequest.setMainLinkedAccountNumber(mainAccountNumber);
+        debitCardRequest.setDebitCardNumber("9999999999999999");
+        debitCardRequest.setCvv("456");
+        debitCardRequest.setExpiryDate(LocalDate.now().plusYears(2));
+        debitCardRequest.setStatus(DebitCardRequest.StatusEnum.ACTIVE);
+
+        when(debitCardRepository.findByDebitCardNumber(debitCardNumber)).thenReturn(Mono.empty());
+
+        Mono<DebitCardResponse> debitCardResponseMono = debitCardServiceImpl.updateDebitCardByDebitCardNumber(debitCardNumber, debitCardRequest);
+
+        StepVerifier.create(debitCardResponseMono)
+                .expectErrorMatches(throwable -> throwable instanceof ResponseStatusException &&
+                        ((ResponseStatusException) throwable).getStatusCode() == HttpStatus.NOT_FOUND)
+                .verify();
+    }
+
+    @Test
+    void whenDeleteDebitCardByDebitCardNumber_WithExistingNumber_ThenDeleteDebitCard() {
+        when(debitCardRepository.deleteByDebitCardNumber(debitCardNumber)).thenReturn(Mono.empty().then());
+
+        Mono<Void> voidMono = debitCardServiceImpl.deleteDebitCardByDebitCardNumber(debitCardNumber);
+
+        StepVerifier.create(voidMono)
+                .verifyComplete();
+    }
+
+    @Test
+    void whenWithdrawalByDebitCard_DebitCardNotFound_ThenReturnError() {
+        when(debitCardRepository.findByDebitCardNumber(debitCardNumber)).thenReturn(Mono.empty());
+
+        WithdrawalRequest withdrawalRequest = new WithdrawalRequest();
+        withdrawalRequest.setAmount(BigDecimal.valueOf(100.0));
+
+        Mono<BalanceResponse> balanceMono = debitCardServiceImpl.withdrawByDebitCardNumber(debitCardNumber, withdrawalRequest);
+
+        StepVerifier.create(balanceMono)
+                .expectErrorMatches(throwable -> throwable instanceof ResponseStatusException &&
+                        ((ResponseStatusException) throwable).getStatusCode() == HttpStatus.NOT_FOUND)
+                .verify();
+    }
+
+    @Test
+    void whenWithdrawalByDebitCard_AccountNotFound_ThenReturnError() {
+        when(debitCardRepository.findByDebitCardNumber(debitCardNumber)).thenReturn(Mono.just(debitCard));
+        when(accountRepository.findByAccountNumber(debitCard.getMainLinkedAccountNumber())).thenReturn(Mono.empty());
+
+        WithdrawalRequest withdrawalRequest = new WithdrawalRequest();
+        withdrawalRequest.setAmount(BigDecimal.valueOf(100.0));
+
+        Mono<BalanceResponse> balanceMono = debitCardServiceImpl.withdrawByDebitCardNumber(debitCardNumber, withdrawalRequest);
+
+        StepVerifier.create(balanceMono)
+                .expectErrorMatches(throwable -> throwable instanceof ResponseStatusException &&
+                        ((ResponseStatusException) throwable).getStatusCode() == HttpStatus.NOT_FOUND)
+                .verify();
+    }
+
+    @Test
+    void whenGetTransactionsByDebitCardNumberLast10_DebitCardNotFound_ThenReturnError() {
+        when(debitCardRepository.findByDebitCardNumber(debitCardNumber)).thenReturn(Mono.empty());
+
+        Flux<TransactionResponse> transactionsFlux = debitCardServiceImpl.getTransactionsByDebitCardNumberLast10(debitCardNumber);
+
+        StepVerifier.create(transactionsFlux)
+                .expectErrorMatches(throwable -> throwable instanceof ResponseStatusException &&
+                        ((ResponseStatusException) throwable).getStatusCode() == HttpStatus.NOT_FOUND)
+                .verify();
+    }
+
+    @Test
+    void whenGetTransactionsByDebitCardNumberLast10_AccountNotFound_ThenReturnError() {
+        when(debitCardRepository.findByDebitCardNumber(debitCardNumber)).thenReturn(Mono.just(debitCard));
+        when(accountRepository.findByAccountNumber(debitCard.getMainLinkedAccountNumber())).thenReturn(Mono.empty());
+
+        Flux<TransactionResponse> transactionsFlux = debitCardServiceImpl.getTransactionsByDebitCardNumberLast10(debitCardNumber);
+
+        StepVerifier.create(transactionsFlux)
+                .expectErrorMatches(throwable -> throwable instanceof ResponseStatusException &&
+                        ((ResponseStatusException) throwable).getStatusCode() == HttpStatus.NOT_FOUND)
+                .verify();
     }
 }
