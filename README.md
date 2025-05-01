@@ -33,6 +33,7 @@ docker-compose up --build
 ```
 
 ## Running each service separately and running the dependencies with Docker
+If you wish to make quick changes and test them, or have issues with docker resources, you can run each service separately and run the dependencies with Docker.
 ### IMPORTANT
 You need to de-comment the "config import" in the application.yml file of each service to be able to connect to the Config Server.
 
