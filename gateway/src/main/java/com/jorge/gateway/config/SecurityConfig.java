@@ -46,7 +46,7 @@ public class SecurityConfig {
 
                 // 4. Reglas de autorización
                 .authorizeExchange(exchanges -> exchanges
-                        .pathMatchers("/customers/dni/**").permitAll()
+                        .pathMatchers("/customers/**").permitAll()
                                 .anyExchange().authenticated())
                 // 5. Añadir filtro JWT personalizado ANTES del filtro de autorización
                 .addFilterAt(authenticationWebFilter, SecurityWebFiltersOrder.AUTHENTICATION);

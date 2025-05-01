@@ -22,3 +22,14 @@ services:
     ports:
       - "6379:6379"
     restart: always
+
+  mongodb:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    restart: always
+    volumes:
+      - mongodb_data:/data/db
+
+volumes:
+  mongodb_data:
