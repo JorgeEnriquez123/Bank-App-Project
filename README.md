@@ -33,6 +33,9 @@ docker-compose up --build
 ```
 
 ## Running each service separately and running the dependencies with Docker
+### IMPORTANT
+You need to de-comment the "config import" in the application.yml file of each service to be able to connect to the Config Server.
+
 1. Start the dependencies:
 ```shell
 docker-compose -f docker-compose-dependencies.yml up
@@ -53,3 +56,7 @@ The security requirement is simulated by requiring a JWT token that contains the
 1. Register a new customer using the Customer Service
 2. Use the '/customers/dni/:dni/login' path to get a JWT token
 3. Use the JWT token to make requests to the other services through the API Gateway by using the gateway base URL (http://localhost:6666) and the service path.
+
+# Extra notes
+If you wish to change the properties in the Config Server, you can do so by changing the git repository that the Config Server is pointing to.
+Or use local properties files instead of the git repository.
